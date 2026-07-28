@@ -1,0 +1,1047 @@
+{
+  "generatedAt": "2026-07-27T23:27:00Z",
+  "subjects": [
+    {
+      "id": "g3_ela",
+      "name": "Grade 3 English Language Arts (EOG)",
+      "type": "EOG",
+      "grade": "Grade 3"
+    },
+    {
+      "id": "g5_math",
+      "name": "Grade 5 Mathematics (EOG)",
+      "type": "EOG",
+      "grade": "Grade 5"
+    },
+    {
+      "id": "g8_sci",
+      "name": "Grade 8 Science (EOG)",
+      "type": "EOG",
+      "grade": "Grade 8"
+    },
+    {
+      "id": "alg1_eoc",
+      "name": "Algebra I (End of Course EOC)",
+      "type": "EOC",
+      "grade": "High School"
+    },
+    {
+      "id": "bio_eoc",
+      "name": "Biology (End of Course EOC)",
+      "type": "EOC",
+      "grade": "High School"
+    }
+  ],
+  "results": {
+    "g3_ela": {
+      "subjectId": "g3_ela",
+      "subjectName": "Grade 3 English Language Arts (EOG)",
+      "category": "EOG",
+      "gradeLevel": "Grade 3",
+      "ols": {
+        "slope": -0.947,
+        "intercept": 100.78,
+        "rSquared": 0.901,
+        "r": -0.949,
+        "equation": "Predicted Score = 100.8 + (-0.95 \u00d7 % Economically Disadvantaged)"
+      },
+      "dataPoints": [
+        {
+          "schoolId": "sch_721_101",
+          "schoolName": "Davidson Fine Arts Magnet",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 32.0,
+          "score": 88.4,
+          "predictedScore": 70.5,
+          "residual": 17.9,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_667_101",
+          "schoolName": "GSMST (Gwinnett Math & Tech)",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 21.0,
+          "score": 94.2,
+          "predictedScore": 80.9,
+          "residual": 13.3,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_723_101",
+          "schoolName": "Savannah Arts Academy",
+          "district": "Savannah-Chatham",
+          "districtCode": "SAV",
+          "ecoDisadvPct": 25.4,
+          "score": 84.1,
+          "predictedScore": 76.7,
+          "residual": 7.4,
+          "performanceStatus": "Above Expected"
+        },
+        {
+          "schoolId": "sch_636_104",
+          "schoolName": "Grovetown High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 38.1,
+          "score": 66.4,
+          "predictedScore": 64.7,
+          "residual": 1.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_103",
+          "schoolName": "Lucy C. Laney High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 78.2,
+          "score": 26.4,
+          "predictedScore": 26.7,
+          "residual": -0.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_660_103",
+          "schoolName": "Banneker High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 72.4,
+          "score": 31.5,
+          "predictedScore": 32.2,
+          "residual": -0.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_103",
+          "schoolName": "Evans High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 29.5,
+          "score": 71.8,
+          "predictedScore": 72.8,
+          "residual": -1.0,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_102",
+          "schoolName": "Academy of Richmond County",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 64.5,
+          "score": 38.2,
+          "predictedScore": 39.7,
+          "residual": -1.5,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_103",
+          "schoolName": "Norcross High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 56.2,
+          "score": 45.8,
+          "predictedScore": 47.5,
+          "residual": -1.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_601_101",
+          "schoolName": "Appling County High School",
+          "district": "Appling County",
+          "districtCode": "APPL",
+          "ecoDisadvPct": 52.1,
+          "score": 49.2,
+          "predictedScore": 51.4,
+          "residual": -2.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_102",
+          "schoolName": "Brookwood High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 26.8,
+          "score": 72.4,
+          "predictedScore": 75.4,
+          "residual": -3.0,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_104",
+          "schoolName": "Westside High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 58.4,
+          "score": 42.1,
+          "predictedScore": 45.5,
+          "residual": -3.4,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_201",
+          "schoolName": "Riverside Middle School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 24.1,
+          "score": 74.1,
+          "predictedScore": 77.9,
+          "residual": -3.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_102",
+          "schoolName": "Lakeside High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 22.4,
+          "score": 75.2,
+          "predictedScore": 79.6,
+          "residual": -4.4,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_636_101",
+          "schoolName": "Greenbrier High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 18.2,
+          "score": 78.5,
+          "predictedScore": 83.5,
+          "residual": -5.0,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_101",
+          "schoolName": "Northview High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 8.5,
+          "score": 86.2,
+          "predictedScore": 92.7,
+          "residual": -6.5,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_102",
+          "schoolName": "Chattahoochee High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 12.1,
+          "score": 82.5,
+          "predictedScore": 89.3,
+          "residual": -6.8,
+          "performanceStatus": "Below Expected"
+        }
+      ]
+    },
+    "g5_math": {
+      "subjectId": "g5_math",
+      "subjectName": "Grade 5 Mathematics (EOG)",
+      "category": "EOG",
+      "gradeLevel": "Grade 5",
+      "ols": {
+        "slope": -1.026,
+        "intercept": 105.13,
+        "rSquared": 0.917,
+        "r": -0.958,
+        "equation": "Predicted Score = 105.1 + (-1.03 \u00d7 % Economically Disadvantaged)"
+      },
+      "dataPoints": [
+        {
+          "schoolId": "sch_721_101",
+          "schoolName": "Davidson Fine Arts Magnet",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 32.0,
+          "score": 89.1,
+          "predictedScore": 72.3,
+          "residual": 16.8,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_667_101",
+          "schoolName": "GSMST (Gwinnett Math & Tech)",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 21.0,
+          "score": 96.8,
+          "predictedScore": 83.6,
+          "residual": 13.2,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_723_101",
+          "schoolName": "Savannah Arts Academy",
+          "district": "Savannah-Chatham",
+          "districtCode": "SAV",
+          "ecoDisadvPct": 25.4,
+          "score": 86.2,
+          "predictedScore": 79.1,
+          "residual": 7.1,
+          "performanceStatus": "Above Expected"
+        },
+        {
+          "schoolId": "sch_636_104",
+          "schoolName": "Grovetown High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 38.1,
+          "score": 68.2,
+          "predictedScore": 66.0,
+          "residual": 2.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_103",
+          "schoolName": "Norcross High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 56.2,
+          "score": 47.2,
+          "predictedScore": 47.5,
+          "residual": -0.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_601_101",
+          "schoolName": "Appling County High School",
+          "district": "Appling County",
+          "districtCode": "APPL",
+          "ecoDisadvPct": 52.1,
+          "score": 51.4,
+          "predictedScore": 51.7,
+          "residual": -0.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_103",
+          "schoolName": "Evans High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 29.5,
+          "score": 74.5,
+          "predictedScore": 74.9,
+          "residual": -0.4,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_103",
+          "schoolName": "Lucy C. Laney High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 78.2,
+          "score": 24.1,
+          "predictedScore": 24.9,
+          "residual": -0.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_660_103",
+          "schoolName": "Banneker High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 72.4,
+          "score": 29.8,
+          "predictedScore": 30.8,
+          "residual": -1.0,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_102",
+          "schoolName": "Academy of Richmond County",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 64.5,
+          "score": 36.4,
+          "predictedScore": 38.9,
+          "residual": -2.5,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_102",
+          "schoolName": "Brookwood High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 26.8,
+          "score": 75.1,
+          "predictedScore": 77.6,
+          "residual": -2.5,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_201",
+          "schoolName": "Riverside Middle School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 24.1,
+          "score": 77.4,
+          "predictedScore": 80.4,
+          "residual": -3.0,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_102",
+          "schoolName": "Lakeside High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 22.4,
+          "score": 78.9,
+          "predictedScore": 82.1,
+          "residual": -3.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_104",
+          "schoolName": "Westside High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 58.4,
+          "score": 40.5,
+          "predictedScore": 45.2,
+          "residual": -4.7,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_636_101",
+          "schoolName": "Greenbrier High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 18.2,
+          "score": 81.2,
+          "predictedScore": 86.5,
+          "residual": -5.3,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_101",
+          "schoolName": "Northview High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 8.5,
+          "score": 88.9,
+          "predictedScore": 96.4,
+          "residual": -7.5,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_102",
+          "schoolName": "Chattahoochee High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 12.1,
+          "score": 84.8,
+          "predictedScore": 92.7,
+          "residual": -7.9,
+          "performanceStatus": "Below Expected"
+        }
+      ]
+    },
+    "g8_sci": {
+      "subjectId": "g8_sci",
+      "subjectName": "Grade 8 Science (EOG)",
+      "category": "EOG",
+      "gradeLevel": "Grade 8",
+      "ols": {
+        "slope": -0.955,
+        "intercept": 97.38,
+        "rSquared": 0.896,
+        "r": -0.947,
+        "equation": "Predicted Score = 97.4 + (-0.96 \u00d7 % Economically Disadvantaged)"
+      },
+      "dataPoints": [
+        {
+          "schoolId": "sch_721_101",
+          "schoolName": "Davidson Fine Arts Magnet",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 32.0,
+          "score": 84.5,
+          "predictedScore": 66.8,
+          "residual": 17.7,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_667_101",
+          "schoolName": "GSMST (Gwinnett Math & Tech)",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 21.0,
+          "score": 92.4,
+          "predictedScore": 77.3,
+          "residual": 15.1,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_723_101",
+          "schoolName": "Savannah Arts Academy",
+          "district": "Savannah-Chatham",
+          "districtCode": "SAV",
+          "ecoDisadvPct": 25.4,
+          "score": 80.5,
+          "predictedScore": 73.1,
+          "residual": 7.4,
+          "performanceStatus": "Above Expected"
+        },
+        {
+          "schoolId": "sch_636_104",
+          "schoolName": "Grovetown High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 38.1,
+          "score": 62.5,
+          "predictedScore": 61.0,
+          "residual": 1.5,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_103",
+          "schoolName": "Lucy C. Laney High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 78.2,
+          "score": 22.8,
+          "predictedScore": 22.7,
+          "residual": 0.1,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_660_103",
+          "schoolName": "Banneker High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 72.4,
+          "score": 27.4,
+          "predictedScore": 28.2,
+          "residual": -0.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_601_101",
+          "schoolName": "Appling County High School",
+          "district": "Appling County",
+          "districtCode": "APPL",
+          "ecoDisadvPct": 52.1,
+          "score": 46.8,
+          "predictedScore": 47.6,
+          "residual": -0.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_103",
+          "schoolName": "Norcross High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 56.2,
+          "score": 42.1,
+          "predictedScore": 43.7,
+          "residual": -1.6,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_103",
+          "schoolName": "Evans High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 29.5,
+          "score": 67.2,
+          "predictedScore": 69.2,
+          "residual": -2.0,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_102",
+          "schoolName": "Academy of Richmond County",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 64.5,
+          "score": 33.1,
+          "predictedScore": 35.8,
+          "residual": -2.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_102",
+          "schoolName": "Brookwood High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 26.8,
+          "score": 68.9,
+          "predictedScore": 71.8,
+          "residual": -2.9,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_104",
+          "schoolName": "Westside High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 58.4,
+          "score": 38.2,
+          "predictedScore": 41.6,
+          "residual": -3.4,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_201",
+          "schoolName": "Riverside Middle School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 24.1,
+          "score": 70.8,
+          "predictedScore": 74.4,
+          "residual": -3.6,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_102",
+          "schoolName": "Lakeside High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 22.4,
+          "score": 71.0,
+          "predictedScore": 76.0,
+          "residual": -5.0,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_636_101",
+          "schoolName": "Greenbrier High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 18.2,
+          "score": 74.6,
+          "predictedScore": 80.0,
+          "residual": -5.4,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_102",
+          "schoolName": "Chattahoochee High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 12.1,
+          "score": 79.4,
+          "predictedScore": 85.8,
+          "residual": -6.4,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_101",
+          "schoolName": "Northview High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 8.5,
+          "score": 82.1,
+          "predictedScore": 89.3,
+          "residual": -7.2,
+          "performanceStatus": "Below Expected"
+        }
+      ]
+    },
+    "alg1_eoc": {
+      "subjectId": "alg1_eoc",
+      "subjectName": "Algebra I (End of Course EOC)",
+      "category": "EOC",
+      "gradeLevel": "High School",
+      "ols": {
+        "slope": -0.947,
+        "intercept": 104.32,
+        "rSquared": 0.907,
+        "r": -0.952,
+        "equation": "Predicted Score = 104.3 + (-0.95 \u00d7 % Economically Disadvantaged)"
+      },
+      "dataPoints": [
+        {
+          "schoolId": "sch_721_101",
+          "schoolName": "Davidson Fine Arts Magnet",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 32.0,
+          "score": 91.2,
+          "predictedScore": 74.0,
+          "residual": 17.2,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_667_101",
+          "schoolName": "GSMST (Gwinnett Math & Tech)",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 21.0,
+          "score": 97.5,
+          "predictedScore": 84.4,
+          "residual": 13.1,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_723_101",
+          "schoolName": "Savannah Arts Academy",
+          "district": "Savannah-Chatham",
+          "districtCode": "SAV",
+          "ecoDisadvPct": 25.4,
+          "score": 87.4,
+          "predictedScore": 80.3,
+          "residual": 7.1,
+          "performanceStatus": "Above Expected"
+        },
+        {
+          "schoolId": "sch_636_104",
+          "schoolName": "Grovetown High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 38.1,
+          "score": 69.4,
+          "predictedScore": 68.2,
+          "residual": 1.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_103",
+          "schoolName": "Norcross High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 56.2,
+          "score": 50.4,
+          "predictedScore": 51.1,
+          "residual": -0.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_103",
+          "schoolName": "Lucy C. Laney High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 78.2,
+          "score": 29.5,
+          "predictedScore": 30.3,
+          "residual": -0.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_103",
+          "schoolName": "Evans High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 29.5,
+          "score": 75.1,
+          "predictedScore": 76.4,
+          "residual": -1.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_660_103",
+          "schoolName": "Banneker High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 72.4,
+          "score": 34.2,
+          "predictedScore": 35.8,
+          "residual": -1.6,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_102",
+          "schoolName": "Academy of Richmond County",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 64.5,
+          "score": 41.5,
+          "predictedScore": 43.3,
+          "residual": -1.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_601_101",
+          "schoolName": "Appling County High School",
+          "district": "Appling County",
+          "districtCode": "APPL",
+          "ecoDisadvPct": 52.1,
+          "score": 53.2,
+          "predictedScore": 55.0,
+          "residual": -1.8,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_104",
+          "schoolName": "Westside High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 58.4,
+          "score": 46.8,
+          "predictedScore": 49.0,
+          "residual": -2.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_102",
+          "schoolName": "Brookwood High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 26.8,
+          "score": 76.4,
+          "predictedScore": 78.9,
+          "residual": -2.5,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_102",
+          "schoolName": "Lakeside High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 22.4,
+          "score": 79.8,
+          "predictedScore": 83.1,
+          "residual": -3.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_201",
+          "schoolName": "Riverside Middle School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 24.1,
+          "score": 78.2,
+          "predictedScore": 81.5,
+          "residual": -3.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_101",
+          "schoolName": "Greenbrier High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 18.2,
+          "score": 82.4,
+          "predictedScore": 87.1,
+          "residual": -4.7,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_101",
+          "schoolName": "Northview High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 8.5,
+          "score": 89.5,
+          "predictedScore": 96.3,
+          "residual": -6.8,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_102",
+          "schoolName": "Chattahoochee High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 12.1,
+          "score": 85.1,
+          "predictedScore": 92.9,
+          "residual": -7.8,
+          "performanceStatus": "Below Expected"
+        }
+      ]
+    },
+    "bio_eoc": {
+      "subjectId": "bio_eoc",
+      "subjectName": "Biology (End of Course EOC)",
+      "category": "EOC",
+      "gradeLevel": "High School",
+      "ols": {
+        "slope": -0.966,
+        "intercept": 101.33,
+        "rSquared": 0.901,
+        "r": -0.949,
+        "equation": "Predicted Score = 101.3 + (-0.97 \u00d7 % Economically Disadvantaged)"
+      },
+      "dataPoints": [
+        {
+          "schoolId": "sch_721_101",
+          "schoolName": "Davidson Fine Arts Magnet",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 32.0,
+          "score": 88.7,
+          "predictedScore": 70.4,
+          "residual": 18.3,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_667_101",
+          "schoolName": "GSMST (Gwinnett Math & Tech)",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 21.0,
+          "score": 95.1,
+          "predictedScore": 81.0,
+          "residual": 14.1,
+          "performanceStatus": "Significantly Outperforming (Beating Odds \u2605)"
+        },
+        {
+          "schoolId": "sch_723_101",
+          "schoolName": "Savannah Arts Academy",
+          "district": "Savannah-Chatham",
+          "districtCode": "SAV",
+          "ecoDisadvPct": 25.4,
+          "score": 83.9,
+          "predictedScore": 76.8,
+          "residual": 7.1,
+          "performanceStatus": "Above Expected"
+        },
+        {
+          "schoolId": "sch_636_104",
+          "schoolName": "Grovetown High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 38.1,
+          "score": 65.2,
+          "predictedScore": 64.5,
+          "residual": 0.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_103",
+          "schoolName": "Lucy C. Laney High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 78.2,
+          "score": 25.4,
+          "predictedScore": 25.8,
+          "residual": -0.4,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_103",
+          "schoolName": "Norcross High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 56.2,
+          "score": 46.5,
+          "predictedScore": 47.1,
+          "residual": -0.6,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_103",
+          "schoolName": "Evans High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 29.5,
+          "score": 71.8,
+          "predictedScore": 72.8,
+          "residual": -1.0,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_102",
+          "schoolName": "Academy of Richmond County",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 64.5,
+          "score": 37.8,
+          "predictedScore": 39.0,
+          "residual": -1.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_660_103",
+          "schoolName": "Banneker High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 72.4,
+          "score": 30.1,
+          "predictedScore": 31.4,
+          "residual": -1.3,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_601_101",
+          "schoolName": "Appling County High School",
+          "district": "Appling County",
+          "districtCode": "APPL",
+          "ecoDisadvPct": 52.1,
+          "score": 48.9,
+          "predictedScore": 51.0,
+          "residual": -2.1,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_667_102",
+          "schoolName": "Brookwood High School",
+          "district": "Gwinnett County",
+          "districtCode": "GWIN",
+          "ecoDisadvPct": 26.8,
+          "score": 73.2,
+          "predictedScore": 75.4,
+          "residual": -2.2,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_721_104",
+          "schoolName": "Westside High School",
+          "district": "Richmond County",
+          "districtCode": "RICH",
+          "ecoDisadvPct": 58.4,
+          "score": 41.2,
+          "predictedScore": 44.9,
+          "residual": -3.7,
+          "performanceStatus": "On Par"
+        },
+        {
+          "schoolId": "sch_636_201",
+          "schoolName": "Riverside Middle School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 24.1,
+          "score": 73.9,
+          "predictedScore": 78.1,
+          "residual": -4.2,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_636_102",
+          "schoolName": "Lakeside High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 22.4,
+          "score": 75.4,
+          "predictedScore": 79.7,
+          "residual": -4.3,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_636_101",
+          "schoolName": "Greenbrier High School",
+          "district": "Columbia County",
+          "districtCode": "COLCS",
+          "ecoDisadvPct": 18.2,
+          "score": 79.1,
+          "predictedScore": 83.8,
+          "residual": -4.7,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_101",
+          "schoolName": "Northview High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 8.5,
+          "score": 86.4,
+          "predictedScore": 93.1,
+          "residual": -6.7,
+          "performanceStatus": "Below Expected"
+        },
+        {
+          "schoolId": "sch_660_102",
+          "schoolName": "Chattahoochee High School",
+          "district": "Fulton County",
+          "districtCode": "FULT",
+          "ecoDisadvPct": 12.1,
+          "score": 82.0,
+          "predictedScore": 89.6,
+          "residual": -7.6,
+          "performanceStatus": "Below Expected"
+        }
+      ]
+    }
+  }
+}

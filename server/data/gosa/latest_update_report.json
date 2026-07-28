@@ -1,0 +1,1354 @@
+{
+  "timestamp": "2026-07-28T16:01:09.529068",
+  "total_tracked_files": 399,
+  "new_files_count": 0,
+  "refetched_files_count": 1,
+  "updated_files_count": 0,
+  "unchanged_files_count": 398,
+  "blocked_files_count": 99,
+  "skipped_blocked_this_run": 99,
+  "new_files": [],
+  "refetched_files": [
+    {
+      "filename": "EL_EXIT_RATE_STATE_LEVEL_2019.csv",
+      "filepath": "/Users/ncarroll/Claude/server/data/gosa/ell/EL_EXIT_RATE_STATE_LEVEL_2019.csv",
+      "relative_path": "ell/EL_EXIT_RATE_STATE_LEVEL_2019.csv",
+      "size_bytes": 99,
+      "md5": "4fc0e4e015942a1d1a5dd306f45abdde",
+      "url": "https://download.gosa.ga.gov/2019/EL_EXIT_RATE_STATE_LEVEL_2019.csv",
+      "downloaded_at": "2026-07-28T16:01:09.605407"
+    }
+  ],
+  "updated_files": [],
+  "blocked_files": [
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Attendance_2012.xlsx",
+      "filename": "Attendance_2012.xlsx",
+      "category": "attendance",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Attendance_2013.csv",
+      "filename": "Attendance_2013.csv",
+      "category": "attendance",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Attendance_2014_Jan_15th_2015.csv",
+      "filename": "Attendance_2014_Jan_15th_2015.csv",
+      "category": "attendance",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Attendance_2015_DEC_1st_2016.csv",
+      "filename": "Attendance_2015_DEC_1st_2016.csv",
+      "category": "attendance",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Attendance_2016_Feb_2_2017.csv",
+      "filename": "Attendance_2016_Feb_2_2017.csv",
+      "category": "attendance",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Attendance_2017_DEC_1st_2017.csv",
+      "filename": "Attendance_2017_DEC_1st_2017.csv",
+      "category": "attendance",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Certified_Personnel_Data_2012_Jan_15th_2015.csv",
+      "filename": "Certified_Personnel_Data_2012_Jan_15th_2015.csv",
+      "category": "certified_personnel",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Certified_Personnel_Data_2013_Jan_15th_2015.csv",
+      "filename": "Certified_Personnel_Data_2013_Jan_15th_2015.csv",
+      "category": "certified_personnel",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Certified_Personnel_Data_2014_Jan_15th_2015.csv",
+      "filename": "Certified_Personnel_Data_2014_Jan_15th_2015.csv",
+      "category": "certified_personnel",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Certified_Personnel_Data_2015_DEC_1st_2016.csv",
+      "filename": "Certified_Personnel_Data_2015_DEC_1st_2016.csv",
+      "category": "certified_personnel",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Certified_Personnel_Data_2016_DEC_1st_2016.csv",
+      "filename": "Certified_Personnel_Data_2016_DEC_1st_2016.csv",
+      "category": "certified_personnel",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Certified_Personnel_Data_2017_MAR_23rd_2018.csv",
+      "filename": "Certified_Personnel_Data_2017_MAR_23rd_2018.csv",
+      "category": "certified_personnel",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate-2011_Jan_15th_2015.csv",
+      "filename": "7-12%20Dropout%20Rate-2011_Jan_15th_2015.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate-2012_DEC_1st_2016.csv",
+      "filename": "7-12%20Dropout%20Rate-2012_DEC_1st_2016.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate-2013_Jan_15th_2015.csv",
+      "filename": "7-12%20Dropout%20Rate-2013_Jan_15th_2015.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate-2014_Jan_15th_2015.csv",
+      "filename": "7-12%20Dropout%20Rate-2014_Jan_15th_2015.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate-2015_DEC_1st_2016.csv",
+      "filename": "7-12%20Dropout%20Rate-2015_DEC_1st_2016.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate-2017_DEC_1st_2017.csv",
+      "filename": "7-12%20Dropout%20Rate-2017_DEC_1st_2017.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/7-12%20Dropout%20Rate_2016_Feb_2_2017.csv",
+      "filename": "7-12%20Dropout%20Rate_2016_Feb_2_2017.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate-2011_Jan_15th_2015.csv",
+      "filename": "9-12%20Dropout%20Rate-2011_Jan_15th_2015.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate-2012_DEC_1st_2016.csv",
+      "filename": "9-12%20Dropout%20Rate-2012_DEC_1st_2016.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate-2013_Jan_15th_2015.csv",
+      "filename": "9-12%20Dropout%20Rate-2013_Jan_15th_2015.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate-2014_Jan_15th_2015.csv",
+      "filename": "9-12%20Dropout%20Rate-2014_Jan_15th_2015.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate-2015_DEC_1st_2016.csv",
+      "filename": "9-12%20Dropout%20Rate-2015_DEC_1st_2016.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate-2017_DEC_1st_2017.csv",
+      "filename": "9-12%20Dropout%20Rate-2017_DEC_1st_2017.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/9-12%20Dropout%20Rate_2016_Feb_2_2017.csv",
+      "filename": "9-12%20Dropout%20Rate_2016_Feb_2_2017.csv",
+      "category": "dropout_rates",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/ELL_Deferred_2016_DEC_1st_2017.csv",
+      "filename": "ELL_Deferred_2016_DEC_1st_2017.csv",
+      "category": "ell",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/ELL_Deferred_2017_DEC_1st_2017.csv",
+      "filename": "ELL_Deferred_2017_DEC_1st_2017.csv",
+      "category": "ell",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/ELL_Deffered_2014_Jan_15th_2015.csv",
+      "filename": "ELL_Deffered_2014_Jan_15th_2015.csv",
+      "category": "ell",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/ELL_Deffered_2015_Mar292016.csv",
+      "filename": "ELL_Deffered_2015_Mar292016.csv",
+      "category": "ell",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/ELL_New_by_County_2012.csv",
+      "filename": "ELL_New_by_County_2012.csv",
+      "category": "ell",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/ELL_New_by_County_2013.csv",
+      "filename": "ELL_New_by_County_2013.csv",
+      "category": "ell",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Enrollment_By_Grade_2013.csv",
+      "filename": "Enrollment_By_Grade_2013.csv",
+      "category": "enrollment",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Enrollment_By_Grade_Level_2012.csv",
+      "filename": "Enrollment_By_Grade_Level_2012.csv",
+      "category": "enrollment",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Enrollment_By_Grade_Level_2014_Jan_15th_2015.csv",
+      "filename": "Enrollment_By_Grade_Level_2014_Jan_15th_2015.csv",
+      "category": "enrollment",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Enrollment_By_Grade_Level_2015_DEC_1st_2016.csv",
+      "filename": "Enrollment_By_Grade_Level_2015_DEC_1st_2016.csv",
+      "category": "enrollment",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Enrollment_By_Grade_Level_2016_DEC_1st_2016.csv",
+      "filename": "Enrollment_By_Grade_Level_2016_DEC_1st_2016.csv",
+      "category": "enrollment",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Enrollment_By_Grade_Level_2017_DEC_1st_2017.csv",
+      "filename": "Enrollment_By_Grade_Level_2017_DEC_1st_2017.csv",
+      "category": "enrollment",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2016%20CCRPI%20FESR%20_%201.18.17.xlsx",
+      "filename": "2016%20CCRPI%20FESR%20_%201.18.17.xlsx",
+      "category": "financial_efficiency",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2017%20CCRPI%20District%20FESR.xlsx",
+      "filename": "2017%20CCRPI%20District%20FESR.xlsx",
+      "category": "financial_efficiency",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2017%20CCRPI%20School%20FESR.xlsx",
+      "filename": "2017%20CCRPI%20School%20FESR.xlsx",
+      "category": "financial_efficiency",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/data/2010-11/Copy%20of%20GHSGT.xls",
+      "filename": "Copy%20of%20GHSGT.xls",
+      "category": "ghsgt",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/GHSWT_2015_APR132016.csv",
+      "filename": "GHSWT_2015_APR132016.csv",
+      "category": "ghswt",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Graduation_Rate_2012_4yr.csv",
+      "filename": "Graduation_Rate_2012_4yr.csv",
+      "category": "graduation_rate",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Graduation_Rate_2013_DEC_1st_2016.csv",
+      "filename": "Graduation_Rate_2013_DEC_1st_2016.csv",
+      "category": "graduation_rate",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Graduation_Rate_2014_DEC_1st_2016.csv",
+      "filename": "Graduation_Rate_2014_DEC_1st_2016.csv",
+      "category": "graduation_rate",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Graduation_Rate_2015_DEC_1st_2016.csv",
+      "filename": "Graduation_Rate_2015_DEC_1st_2016.csv",
+      "category": "graduation_rate",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Graduation_Rate_2016_DEC_1st_2016.csv",
+      "filename": "Graduation_Rate_2016_DEC_1st_2016.csv",
+      "category": "graduation_rate",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Graduation_Rate_2017_DEC_1st_2017.csv",
+      "filename": "Graduation_Rate_2017_DEC_1st_2017.csv",
+      "category": "graduation_rate",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/HS_Completers_2012_Jan_15th_2015.csv",
+      "filename": "HS_Completers_2012_Jan_15th_2015.csv",
+      "category": "hs_completers",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/HS_Completers_2013_Jan_15th_2015.csv",
+      "filename": "HS_Completers_2013_Jan_15th_2015.csv",
+      "category": "hs_completers",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/HS_Completers_2014_Jan_15th_2015.csv",
+      "filename": "HS_Completers_2014_Jan_15th_2015.csv",
+      "category": "hs_completers",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/HS_Completers_2015_DEC_1st_2016.csv",
+      "filename": "HS_Completers_2015_DEC_1st_2016.csv",
+      "category": "hs_completers",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/HS_Completers_2016_Feb_2_2017.csv",
+      "filename": "HS_Completers_2016_Feb_2_2017.csv",
+      "category": "hs_completers",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/HS_Completers_2017_DEC_1st_2017.csv",
+      "filename": "HS_Completers_2017_DEC_1st_2017.csv",
+      "category": "hs_completers",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2012%20District%20Churn%20for%20Display.xls",
+      "filename": "2012%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2012%20School%20Churn%20for%20Display.xls",
+      "filename": "2012%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2013%20District%20Churn%20for%20Display.xls",
+      "filename": "2013%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2013%20School%20Churn%20for%20Display.xls",
+      "filename": "2013%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2014%20District%20Churn%20for%20Display.xls",
+      "filename": "2014%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2014%20School%20Churn%20for%20Display.xls",
+      "filename": "2014%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2015%20District%20Churn%20for%20Display.xls",
+      "filename": "2015%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2015%20School%20Churn%20for%20Display.xls",
+      "filename": "2015%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2016%20District%20Churn%20for%20Display.xls",
+      "filename": "2016%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2016%20School%20Churn%20for%20Display.xls",
+      "filename": "2016%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2017%20District%20Churn%20for%20Display.xls",
+      "filename": "2017%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2017%20School%20Churn%20for%20Display.xls",
+      "filename": "2017%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2018%20District%20Churn%20for%20Display.xls",
+      "filename": "2018%20District%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://gosa.georgia.gov/sites/gosa.georgia.gov/files/related_files/site_page/2018%20School%20Churn%20for%20Display.xls",
+      "filename": "2018%20School%20Churn%20for%20Display.xls",
+      "category": "mobility",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C11_FY2014_HS%20Graduates%202012_Enrolled%20in%20College%20in%2016%20Mos_Jan_15_2015.xlsx",
+      "filename": "C11_FY2014_HS%20Graduates%202012_Enrolled%20in%20College%20in%2016%20Mos_Jan_15_2015.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C11_FY2015_HS%20Graduates%202013_Enrolled%20in%20College%20in%2016%20Mos_Redacted.xlsx",
+      "filename": "C11_FY2015_HS%20Graduates%202013_Enrolled%20in%20College%20in%2016%20Mos_Redacted.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C11_FY2016_HS%20Graduates%202014_Enrolled%20in%20College%20in%2016%20Mos_Redacted.xlsx",
+      "filename": "C11_FY2016_HS%20Graduates%202014_Enrolled%20in%20College%20in%2016%20Mos_Redacted.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C11_FY2017_HS%20Graduates%202015_Enrolled%20in%20College%20in%2016%20Mos_Redacted.xlsx",
+      "filename": "C11_FY2017_HS%20Graduates%202015_Enrolled%20in%20College%20in%2016%20Mos_Redacted.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C12_FY2014_HS%20Graduates%202010_Enrolled%20in%2016%20Mos%20_%20Completed%2024_Jan_15_2015.xlsx",
+      "filename": "C12_FY2014_HS%20Graduates%202010_Enrolled%20in%2016%20Mos%20_%20Completed%2024_Jan_15_2015.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C12_FY2015_HS%20Graduates%202011_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits%20Redacted.xlsx",
+      "filename": "C12_FY2015_HS%20Graduates%202011_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits%20Redacted.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C12_FY2016_HS%20Graduates%202012_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits%20-Redacted.xlsx",
+      "filename": "C12_FY2016_HS%20Graduates%202012_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits%20-Redacted.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/C12_FY2017_HS%20Graduates%202013_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits%20-Redacted.xlsx",
+      "filename": "C12_FY2017_HS%20Graduates%202013_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits%20-Redacted.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/PostSecondary_C11_FY2012_HS%20Graduate%202010_Enrolled%20in%20College%20in%2016%20Mos_0.xlsx",
+      "filename": "PostSecondary_C11_FY2012_HS%20Graduate%202010_Enrolled%20in%20College%20in%2016%20Mos_0.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/PostSecondary_C11_FY2013_HS%20Graduates%202011_Enrolled%20in%20College%20in%2016%20Mos.xlsx",
+      "filename": "PostSecondary_C11_FY2013_HS%20Graduates%202011_Enrolled%20in%20College%20in%2016%20Mos.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/PostSecondary_C12_FY2012_HS%20Graduates%202008_Enrolled%20in%2016%20Mos_Completed%2024%20credits.xlsx",
+      "filename": "PostSecondary_C12_FY2012_HS%20Graduates%202008_Enrolled%20in%2016%20Mos_Completed%2024%20credits.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/PostSecondary_C12_FY2013_HS%20Graduates%202009_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits.xlsx",
+      "filename": "PostSecondary_C12_FY2013_HS%20Graduates%202009_Enrolled%20in%2016%20Mos%20_%20Completed%2024%20Credits.xlsx",
+      "category": "postsecondary_outcomes",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Retained_2012.xlsx",
+      "filename": "Retained_2012.xlsx",
+      "category": "retention",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Retained_2013.csv",
+      "filename": "Retained_2013.csv",
+      "category": "retention",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Retained_2014_Dec_2_2015.csv",
+      "filename": "Retained_2014_Dec_2_2015.csv",
+      "category": "retention",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Retained_2015_DEC_1st_2016.csv",
+      "filename": "Retained_2015_DEC_1st_2016.csv",
+      "category": "retention",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Retained_2016_DEC_1st_2016.csv",
+      "filename": "Retained_2016_DEC_1st_2016.csv",
+      "category": "retention",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Retained_2017_DEC_1st_2017.csv",
+      "filename": "Retained_2017_DEC_1st_2017.csv",
+      "category": "retention",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Revenues_and_Expenditures_2012_Jan_15th_2015.csv",
+      "filename": "Revenues_and_Expenditures_2012_Jan_15th_2015.csv",
+      "category": "revenue_expenditures",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Revenues_and_Expenditures_2013_Jan_15th_2015.csv",
+      "filename": "Revenues_and_Expenditures_2013_Jan_15th_2015.csv",
+      "category": "revenue_expenditures",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Revenues_and_Expenditures_2014_Jan_15th_2015.csv",
+      "filename": "Revenues_and_Expenditures_2014_Jan_15th_2015.csv",
+      "category": "revenue_expenditures",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Revenues_and_Expenditures_2015_Mar292016.csv",
+      "filename": "Revenues_and_Expenditures_2015_Mar292016.csv",
+      "category": "revenue_expenditures",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Revenues_and_Expenditures_2016_Feb_2_2017.csv",
+      "filename": "Revenues_and_Expenditures_2016_Feb_2_2017.csv",
+      "category": "revenue_expenditures",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Revenues_and_Expenditures_2017_MAR_23rd_2018.csv",
+      "filename": "Revenues_and_Expenditures_2017_MAR_23rd_2018.csv",
+      "category": "revenue_expenditures",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Salaries_and_Benefits_2012_Jan_15th_2015.csv",
+      "filename": "Salaries_and_Benefits_2012_Jan_15th_2015.csv",
+      "category": "salaries_benefits",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Salaries_and_Benefits_2013_Jan_15th_2015.csv",
+      "filename": "Salaries_and_Benefits_2013_Jan_15th_2015.csv",
+      "category": "salaries_benefits",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Salaries_and_Benefits_2014_Jan_15th_2015.csv",
+      "filename": "Salaries_and_Benefits_2014_Jan_15th_2015.csv",
+      "category": "salaries_benefits",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Salaries_and_Benefits_2015_Mar292016.csv",
+      "filename": "Salaries_and_Benefits_2015_Mar292016.csv",
+      "category": "salaries_benefits",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Salaries_and_Benefits_2016_Feb_2_2017.csv",
+      "filename": "Salaries_and_Benefits_2016_Feb_2_2017.csv",
+      "category": "salaries_benefits",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    },
+    {
+      "url": "https://goews.georgia.gov/sites/goews.georgia.gov/files/related_files/site_page/Salaries_and_Benefits_2017_MAR_23rd_2018.csv",
+      "filename": "Salaries_and_Benefits_2017_MAR_23rd_2018.csv",
+      "category": "salaries_benefits",
+      "first_failed": "2026-07-28T12:44:22.375525",
+      "last_attempt": "2026-07-28T12:44:22.375525",
+      "attempts": 1
+    }
+  ],
+  "coverage_by_category": {
+    "act_scores": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "ap_scores": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "attendance": {
+      "years_present": [
+        2011,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "certified_personnel": {
+      "years_present": [
+        2011,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "crct": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "direct_cert": {
+      "years_present": [
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "dropout_rates": {
+      "years_present": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "educator_qualifications": {
+      "years_present": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "egwa": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "ell": {
+      "years_present": [
+        2011,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "enrollment": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "financial_efficiency": {
+      "years_present": [
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": [
+        2016,
+        2017
+      ]
+    },
+    "gaa": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2020,
+        2021
+      ],
+      "unreachable_years_blocked_by_source": []
+    },
+    "ghswt": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": [
+        2015
+      ]
+    },
+    "graduation_rate": {
+      "years_present": [
+        2011,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "hope_scholarship": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    },
+    "hs_completers": {
+      "years_present": [
+        2011,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "milestones_eoc": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "missing_years_in_range": [
+        2020
+      ],
+      "unreachable_years_blocked_by_source": []
+    },
+    "milestones_eog": {
+      "years_present": [
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "missing_years_in_range": [
+        2020
+      ],
+      "unreachable_years_blocked_by_source": []
+    },
+    "mobility": {
+      "years_present": [
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018
+      ]
+    },
+    "postsecondary_outcomes": {
+      "years_present": [
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016
+      ]
+    },
+    "retention": {
+      "years_present": [
+        2011,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "revenue_expenditures": {
+      "years_present": [
+        2011,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "salaries_benefits": {
+      "years_present": [
+        2011,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ],
+      "unreachable_years_blocked_by_source": [
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017
+      ]
+    },
+    "sat_scores": {
+      "years_present": [
+        2011,
+        2012,
+        2013,
+        2014,
+        2015,
+        2016,
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024
+      ],
+      "missing_years_in_range": [],
+      "unreachable_years_blocked_by_source": []
+    }
+  }
+}

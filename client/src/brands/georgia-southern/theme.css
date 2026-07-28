@@ -1,0 +1,39 @@
+/* Georgia Southern University - Official Brand Guidelines Theme Tokens */
+:root[data-brand="georgia-southern"],
+.theme-georgia-southern {
+  --brand-id: "georgia-southern";
+  --brand-name: "Georgia Southern University";
+  --brand-location: "Statesboro / Savannah / Hinesville, Georgia";
+  
+  /* Primary Brand Colors (Official GSU Brand Guidelines) */
+  --brand-primary: rgb(0, 19, 68);             /* GS Navy #001344 (PMS 282) */
+  --brand-primary-hover: rgb(0, 32, 96);       /* Lighter GS Navy */
+  --brand-secondary: rgb(185, 131, 45);        /* Accessible Web Gold #B9832D */
+  --brand-secondary-hover: rgb(154, 131, 72);  /* Logo Gold #9A8348 */
+  --brand-accent: rgb(104, 202, 235);          /* Southern Sky Blue #68CAEB */
+  
+  /* Neutral & Athletic Grays */
+  --brand-gray: rgb(165, 172, 175);            /* Athletic Grey #A5ACAF */
+  --brand-silver: rgb(180, 174, 168);          /* Tybee Beach Silver #B4AEA8 */
+  
+  /* Special Accent Palette */
+  --brand-accent-green: rgb(158, 176, 0);     /* Spanish Moss Green #9EB000 */
+  --brand-accent-yellow: rgb(243, 187, 5);     /* Sunshine Yellow #F3BB05 */
+  --brand-accent-pink: rgb(237, 39, 128);      /* Azalea Pink #ED2780 */
+  
+  /* Background & Surfaces */
+  --brand-bg: hsl(220, 25%, 97%);
+  --brand-surface: rgb(255, 255, 255);
+  --brand-card-border: rgba(0, 19, 68, 0.12);
+  
+  /* Typography & Headers */
+  --brand-text-primary: rgb(0, 19, 68);
+  --brand-text-secondary: hsl(215, 16%, 42%);
+  --brand-header-bg: var(--brand-primary);
+  --brand-header-text: rgb(255, 255, 255);
+  --brand-font-family: 'Merriweather', 'Barlow', 'Inter', system-ui, sans-serif;
+  
+  /* Badges & Accents */
+  --brand-radius: 6px;
+  --brand-shadow: 0 6px 24px rgba(0, 19, 68, 0.14);
+}

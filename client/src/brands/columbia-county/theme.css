@@ -1,0 +1,30 @@
+/* Columbia County School District (https://www.ccboe.net) - Verified Brand Tokens */
+:root[data-brand="columbia-county"],
+.theme-columbia-county {
+  --brand-id: "columbia-county";
+  --brand-name: "Columbia County School District";
+  --brand-location: "Evans, Georgia";
+  
+  /* Primary District Colors (Extracted directly from ccboe.net main stylesheet) */
+  --brand-primary: rgb(0, 2, 93);              /* Deep Navy/Royal Blue #00025D */
+  --brand-primary-hover: rgb(0, 26, 140);      /* Rich Royal Blue Hover #001A8C */
+  --brand-secondary: rgb(217, 35, 46);         /* CCSD Crimson/Red Accent #D9232E */
+  --brand-secondary-hover: rgb(180, 25, 35);
+  --brand-accent: rgb(0, 85, 165);             /* Bright District Blue #0055A5 */
+  
+  /* Background & Surfaces */
+  --brand-bg: hsl(210, 20%, 98%);
+  --brand-surface: rgb(255, 255, 255);
+  --brand-card-border: rgba(0, 2, 93, 0.12);
+  
+  /* Typography & Text */
+  --brand-text-primary: rgb(0, 2, 93);
+  --brand-text-secondary: hsl(215, 16%, 45%);
+  --brand-header-bg: var(--brand-primary);
+  --brand-header-text: rgb(255, 255, 255);
+  --brand-font-family: 'Barlow', 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Badges & Accents */
+  --brand-radius: 6px;
+  --brand-shadow: 0 4px 20px rgba(0, 2, 93, 0.10);
+}

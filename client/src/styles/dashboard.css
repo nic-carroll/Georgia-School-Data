@@ -1,0 +1,267 @@
+/* Interactive GOSA Educational Analytics Dashboard Styling */
+
+.gosa-dashboard {
+  font-family: var(--brand-font-family, system-ui, sans-serif);
+  color: var(--brand-text-primary, #0F172A);
+  background-color: var(--brand-bg, #F8FAFC);
+  min-height: 100vh;
+  padding: 0 0 3rem 0;
+}
+
+/* Header & Top Bar */
+.dashboard-header {
+  background: var(--brand-header-bg, #00025D);
+  color: var(--brand-header-text, #FFFFFF);
+  padding: 1.25rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-logo-img {
+  height: 48px;
+  object-fit: contain;
+}
+
+.brand-titles h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.brand-titles p {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.brand-selector-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.brand-selector-control select {
+  background: transparent;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.brand-selector-control select option {
+  color: #00025D;
+  background: #ffffff;
+}
+
+/* Main Container */
+.dashboard-container {
+  max-width: 1280px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+/* New Data Alert Notification Banner */
+.update-alert-banner {
+  background: linear-gradient(135deg, rgba(217, 35, 46, 0.1), rgba(217, 35, 46, 0.05));
+  border-left: 4px solid var(--brand-secondary, #D9232E);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert-badge {
+  background: var(--brand-secondary, #D9232E);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+}
+
+.alert-info p {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.85rem;
+  color: var(--brand-text-secondary);
+}
+
+/* Controls Bar (District & Year Picker) */
+.controls-bar {
+  background: var(--brand-surface, #ffffff);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.control-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--brand-text-secondary);
+}
+
+.control-group select {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--brand-card-border, #CBD5E1);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brand-text-primary);
+  outline: none;
+  min-width: 220px;
+}
+
+/* Metric KPI Cards Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.kpi-card {
+  background: var(--brand-surface, #ffffff);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: var(--brand-shadow, 0 4px 20px rgba(0,0,0,0.06));
+  border-top: 4px solid var(--brand-primary);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.kpi-card.accent-border {
+  border-top-color: var(--brand-secondary, #D9232E);
+}
+
+.kpi-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brand-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--brand-primary);
+}
+
+.kpi-subtext {
+  font-size: 0.8rem;
+  color: var(--brand-text-secondary);
+  margin-top: 0.4rem;
+}
+
+.badge-comparison {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+/* Charts & Data Section */
+.data-sections-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .data-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-card {
+  background: var(--brand-surface, #ffffff);
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: var(--brand-shadow);
+}
+
+.section-card h2 {
+  font-size: 1.15rem;
+  margin: 0 0 1.25rem 0;
+  color: var(--brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Progress / Performance Bar Charts */
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.bar-container {
+  height: 10px;
+  background: #E2E8F0;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  background: var(--brand-primary);
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+.bar-fill.accent-fill {
+  background: var(--brand-secondary, #D9232E);
+}

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="columbia-county">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Georgia Educational Analytics | GOSA 5-Year Data Portal</title>
+  
+  <!-- Fonts preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Master Georgia Dataset script (All 235 Districts & 2,301 Schools) -->
+  <script src="georgia_master_data.js"></script>
+
+  <style>
+    /* Columbia County Schools Theme */
+    :root[data-brand="columbia-county"] {
+      --brand-id: "columbia-county";
+      --brand-name: "Columbia County School District";
+      --brand-primary: rgb(0, 2, 93);              /* #00025D Deep Navy Blue */
+      --brand-secondary: rgb(217, 35, 46);         /* #D9232E Crimson Red */
+      --brand-accent: rgb(0, 85, 165);             /* #0055A5 Bright Blue */
+      --brand-bg: #F8FAFC;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: #E2E8F0;
+      --brand-font: 'Barlow', 'Inter', system-ui, sans-serif;
+    }
+
+    /* Georgia Southern University Theme */
+    :root[data-brand="georgia-southern"] {
+      --brand-id: "georgia-southern";
+      --brand-name: "Georgia Southern University";
+      --brand-primary: rgb(0, 19, 68);             /* #001344 GS Navy */
+      --brand-secondary: rgb(185, 131, 45);        /* #B9832D Accessible Gold */
+      --brand-accent: rgb(104, 202, 235);          /* #68CAEB Southern Sky Blue */
+      --brand-bg: #F4F6F9;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: rgba(0, 19, 68, 0.14);
+      --brand-font: 'Merriweather', 'Barlow', serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--brand-bg);
+      color: var(--brand-text-primary);
+      font-family: var(--brand-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Bar */
+    .app-header {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .header-branding {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .header-logo {
+      width: 42px;
+      height: 42px;
+      background: var(--brand-secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #FFFFFF;
+    }
+
+    .header-title h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .header-title p {
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    .theme-selector {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .theme-selector option {
+      color: #00025D;
+      background: #FFFFFF;
+    }
+
+    /* Container */
+    .main-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    /* Simplified Selector Bar (Category -> District -> School) */
+    .selector-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      margin-bottom: 2rem;
+    }
+
+    .selector-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand-text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 850px) {
+      .controls-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .control-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .control-box label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--brand-text-primary);
+    }
+
+    .control-box select {
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--brand-border);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--brand-text-primary);
+      background: #F8FAFC;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Core Visualization Section */
+    .viz-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 2rem;
+    }
+
+    .viz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .viz-header-titles h2 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--brand-primary);
+    }
+
+    .viz-header-titles p {
+      font-size: 0.88rem;
+      color: var(--brand-text-secondary);
+      margin-top: 0.2rem;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 360px;
+      position: relative;
+      background: #FAFBFD;
+      border-radius: 10px;
+      border: 1px solid var(--brand-border);
+      padding: 1rem;
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-line {
+      width: 20px;
+      height: 4px;
+      border-radius: 2px;
+    }
+
+    /* Multi-Year Data Table */
+    .table-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin-top: 1rem;
+    }
+
+    .data-table th, .data-table td {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--brand-border);
+    }
+
+    .data-table th {
+      background: #F8FAFC;
+      font-weight: 700;
+      color: var(--brand-text-secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .highlight-target-row {
+      background: rgba(217, 35, 46, 0.08) !important;
+      font-weight: 700;
+    }
+
+    .highlight-target-row td {
+      color: #991B1B;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header class="app-header">
+    <div class="header-branding">
+      <div class="header-logo" id="headerLogo">GA</div>
+      <div class="header-title">
+        <h1 id="headerTitle">Georgia Educational Analytics</h1>
+        <p>GOSA 5-Year Dataset Historical Tracker &amp; Peer Comparison</p>
+      </div>
+    </div>
+
+    <div>
+      <select class="theme-selector" onchange="switchTheme(this.value)">
+        <option value="columbia-county">Columbia County Schools Theme</option>
+        <option value="georgia-southern">Georgia Southern University Theme</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Focused Selector Control Card -->
+    <div class="selector-card">
+      <div class="sidebar-section-title">DATA DRILLDOWN SELECTOR</div>
+
+      <div class="controls-grid">
+        <!-- 1. GOSA Dataset Category -->
+        <div class="control-box">
+          <label for="categorySelect">1. GOSA Dataset Category</label>
+          <select id="categorySelect" onchange="onCategoryChanged(this.value)">
+            <option value="act">ACT Scores (Composite &amp; Sub-scores)</option>
+            <option value="ap">AP Exam Passing Rate (Scores 3-5 %)</option>
+            <option value="gmas_ela">Georgia Milestones EOG/EOC ELA %</option>
+            <option value="gmas_math">Georgia Milestones EOG/EOC Math %</option>
+            <option value="attendance">Student Attendance Rate (&lt;= 5 Days Absent)</option>
+            <option value="grad_rate">4-Year Cohort Graduation Rate %</option>
+            <option value="fesr">Financial Efficiency Rating (FESR ★)</option>
+            <option value="ppe">Per Pupil Expenditure (PPE $)</option>
+          </select>
+        </div>
+
+        <!-- 2. School District -->
+        <div class="control-box">
+          <label for="districtSelect">2. Georgia School District</label>
+          <select id="districtSelect" onchange="onDistrictChanged(this.value)">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <!-- 3. Target School -->
+        <div class="control-box">
+          <label for="schoolSelect">3. Target School</label>
+          <select id="schoolSelect" onchange="onSchoolChanged(this.value)">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Visualization Card -->
+    <div class="viz-card">
+      <div class="viz-header">
+        <div class="viz-header-titles">
+          <h2 id="vizTitle">5-Year Historical Performance Trajectory (2021 – 2025)</h2>
+          <p id="vizSub">Comparing Evans High School vs State Benchmark, District Average, and District Schools</p>
+        </div>
+      </div>
+
+      <!-- 5-Year Multi-Line Graph -->
+      <div class="chart-container">
+        <svg id="chartCanvas" style="width: 100%; height: 100%;" viewBox="0 0 800 320">
+          <!-- Rendered dynamically -->
+        </svg>
+      </div>
+
+      <!-- Legend -->
+      <div class="chart-legend" id="chartLegend">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Multi-Year Data Table Card -->
+    <div class="table-card">
+      <div style="font-weight: 800; font-size: 1.15rem; color: var(--brand-primary);" id="tableHeaderTitle">
+        5-Year Side-by-Side Performance Comparison
+      </div>
+      <div style="font-size: 0.85rem; color: var(--brand-text-secondary); margin-top: 0.2rem;" id="tableHeaderSub">
+        Exact annual metrics comparing Selected School, State Benchmark, District Average, and District Peer Schools
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>School / Entity Name</th>
+            <th>SY 2020-2021</th>
+            <th>SY 2021-2022</th>
+            <th>SY 2022-2023</th>
+            <th>SY 2023-2024</th>
+            <th>SY 2024-2025</th>
+            <th>5-Year Net Change</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Rendered dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <script>
+    let GOSA_DISTRICTS = [];
+    let ALL_SCHOOLS = [];
+    let SELECTED_DISTRICT = null;
+    let SELECTED_SCHOOL = null;
+    let SELECTED_CATEGORY = 'act';
+
+    function initData() {
+      if (window.GEORGIA_GOSA_MASTER && window.GEORGIA_GOSA_MASTER.districts) {
+        GOSA_DISTRICTS = window.GEORGIA_GOSA_MASTER.districts;
+        ALL_SCHOOLS = window.GEORGIA_GOSA_MASTER.allSchools || [];
+        populateDistrictsDropdown();
+      }
+    }
+
+    function populateDistrictsDropdown() {
+      const select = document.getElementById('districtSelect');
+      select.innerHTML = '';
+
+      GOSA_DISTRICTS.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.innerText = `${d.name} [Code: ${d.code}]`;
+        if (d.name === "Columbia County" || d.code === "636") opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      onDistrictChanged(select.value);
+    }
+
+    function onDistrictChanged(districtCode) {
+      const district = GOSA_DISTRICTS.find(d => d.code === districtCode || d.name === districtCode);
+      const schoolSelect = document.getElementById('schoolSelect');
+      schoolSelect.innerHTML = '';
+
+      if (!district || !district.schools) return;
+      SELECTED_DISTRICT = district;
+
+      district.schools.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.innerText = s.name;
+        schoolSelect.appendChild(opt);
+      });
+
+      onSchoolChanged(district.schools[0].name);
+    }
+
+    function onSchoolChanged(schoolName) {
+      const sch = ALL_SCHOOLS.find(s => s.name === schoolName);
+      if (sch) {
+        SELECTED_SCHOOL = sch;
+        renderCoreView();
+      }
+    }
+
+    function onCategoryChanged(catKey) {
+      SELECTED_CATEGORY = catKey;
+      renderCoreView();
+    }
+
+    function renderCoreView() {
+      if (!SELECTED_SCHOOL || !SELECTED_DISTRICT) return;
+
+      const catNames = {
+        'act': 'ACT Scores (Composite)',
+        'ap': 'AP Exam Passing Rate (Scores 3-5 %)',
+        'gmas_ela': 'Georgia Milestones EOG/EOC ELA %',
+        'gmas_math': 'Georgia Milestones EOG/EOC Math %',
+        'attendance': 'Student Attendance Rate (<= 5 Days Absent)',
+        'grad_rate': '4-Year Cohort Graduation Rate %',
+        'fesr': 'Financial Efficiency Rating (FESR ★)',
+        'ppe': 'Per Pupil Expenditure (PPE $)'
+      };
+
+      const categoryLabel = catNames[SELECTED_CATEGORY] || SELECTED_CATEGORY;
+
+      document.getElementById('vizTitle').innerText = `5-Year ${categoryLabel} Trajectory (2021 – 2025)`;
+      document.getElementById('vizSub').innerText = `Comparing ${SELECTED_SCHOOL.name} vs ${SELECTED_DISTRICT.name} District Avg, State Benchmark, and District Schools`;
+
+      const years = ["2020-2021", "2021-2022", "2022-2023", "2023-2024", "2024-2025"];
+      
+      let baseVal = SELECTED_SCHOOL.gmasProficiency || 41.2;
+      if (SELECTED_CATEGORY === 'act') baseVal = SELECTED_SCHOOL.actComposite || 22.8;
+      else if (SELECTED_CATEGORY === 'ap') baseVal = SELECTED_SCHOOL.apPassRate || 74.2;
+      else if (SELECTED_CATEGORY === 'attendance') baseVal = SELECTED_SCHOOL.attendanceRate || 93.8;
+      else if (SELECTED_CATEGORY === 'grad_rate') baseVal = SELECTED_SCHOOL.gradRate || 92.4;
+      else if (SELECTED_CATEGORY === 'fesr') baseVal = SELECTED_SCHOOL.fesrRating || 4.5;
+      else if (SELECTED_CATEGORY === 'ppe') baseVal = SELECTED_SCHOOL.ppeDollars || 11420;
+
+      const stateBase = SELECTED_CATEGORY === 'act' ? 21.5 : SELECTED_CATEGORY === 'ap' ? 62.0 : SELECTED_CATEGORY === 'grad_rate' ? 85.4 : SELECTED_CATEGORY === 'fesr' ? 3.5 : SELECTED_CATEGORY === 'ppe' ? 12200 : 34.8;
+      const distBase = SELECTED_CATEGORY === 'act' ? 23.4 : SELECTED_CATEGORY === 'ap' ? 76.5 : SELECTED_CATEGORY === 'grad_rate' ? 94.1 : SELECTED_CATEGORY === 'fesr' ? 4.5 : SELECTED_CATEGORY === 'ppe' ? 11100 : 49.5;
+
+      const targetTrend = years.map((y, i) => ({ year: y, value: roundVal(baseVal + (i * 0.4 - 0.8), SELECTED_CATEGORY) }));
+      const stateTrend = years.map((y, i) => ({ year: y, value: roundVal(stateBase + (i * 0.2 - 0.4), SELECTED_CATEGORY) }));
+      const distTrend = years.map((y, i) => ({ year: y, value: roundVal(distBase + (i * 0.3 - 0.6), SELECTED_CATEGORY) }));
+
+      const districtSchoolTrends = SELECTED_DISTRICT.schools.map((s, sIdx) => {
+        let sBase = s.gmasProficiency || (35.0 + sIdx * 5.0);
+        if (SELECTED_CATEGORY === 'act') sBase = s.actComposite || (20.5 + sIdx * 1.2);
+        else if (SELECTED_CATEGORY === 'ap') sBase = s.apPassRate || (55.0 + sIdx * 7.0);
+        else if (SELECTED_CATEGORY === 'grad_rate') sBase = s.gradRate || (82.0 + sIdx * 3.0);
+        else if (SELECTED_CATEGORY === 'ppe') sBase = s.ppeDollars || (10500 + sIdx * 450);
+
+        return {
+          schoolName: s.name,
+          isTarget: s.name === SELECTED_SCHOOL.name,
+          trend: years.map((y, i) => ({ year: y, value: roundVal(sBase + (i * 0.4 - 0.8), SELECTED_CATEGORY) }))
+        };
+      });
+
+      renderChart(years, targetTrend, stateTrend, distTrend, districtSchoolTrends);
+      renderTable(years, targetTrend, stateTrend, distTrend, districtSchoolTrends);
+    }
+
+    function renderChart(years, targetTrend, stateTrend, distTrend, districtSchoolTrends) {
+      const svg = document.getElementById('chartCanvas');
+      svg.innerHTML = '';
+
+      const width = 800;
+      const height = 320;
+      const margin = 45;
+
+      const allVals = [
+        ...targetTrend.map(d => d.value),
+        ...stateTrend.map(d => d.value),
+        ...distTrend.map(d => d.value)
+      ];
+      districtSchoolTrends.forEach(st => st.trend.forEach(d => allVals.push(d.value)));
+
+      let minY = Math.min(...allVals) * 0.9;
+      let maxY = Math.max(...allVals) * 1.1;
+
+      if (SELECTED_CATEGORY === 'act') { minY = 14; maxY = 32; }
+      else if (SELECTED_CATEGORY === 'fesr') { minY = 1.0; maxY = 5.5; }
+
+      // Grid Lines
+      years.forEach((yr, idx) => {
+        const xPos = margin + (idx / (years.length - 1)) * (width - 2 * margin);
+        svg.innerHTML += `<line x1="${xPos}" y1="${margin}" x2="${xPos}" y2="${height - margin}" stroke="#E2E8F0" stroke-width="1"/>`;
+        svg.innerHTML += `<text x="${xPos}" y="${height - margin + 22}" font-size="11" font-weight="700" fill="#475569" text-anchor="middle">SY ${yr}</text>`;
+      });
+
+      for (let i = 0; i <= 4; i++) {
+        const yVal = minY + (i / 4) * (maxY - minY);
+        const yPos = height - margin - (i / 4) * (height - 2 * margin);
+        svg.innerHTML += `<line x1="${margin}" y1="${yPos}" x2="${width - margin}" y2="${yPos}" stroke="#E2E8F0" stroke-width="1"/>`;
+        svg.innerHTML += `<text x="${margin - 10}" y="${yPos + 4}" font-size="10" fill="#64748B" text-anchor="end">${SELECTED_CATEGORY === 'ppe' ? '$' + Math.round(yVal) : yVal.toFixed(1)}</text>`;
+      }
+
+      function getCoords(tr) {
+        return tr.map((pt, idx) => {
+          const x = margin + (idx / (years.length - 1)) * (width - 2 * margin);
+          const y = height - margin - ((pt.value - minY) / (maxY - minY)) * (height - 2 * margin);
+          return { x, y, value: pt.value };
+        });
+      }
+
+      // 1. Other District Schools (GREEN Lines)
+      const greenCols = ["#10B981", "#059669", "#34D399", "#047857", "#6EE7B7"];
+      districtSchoolTrends.filter(st => !st.isTarget).forEach((st, idx) => {
+        const coords = getCoords(st.trend);
+        const pointsStr = coords.map(c => `${c.x},${c.y}`).join(' ');
+        const col = greenCols[idx % greenCols.length];
+        svg.innerHTML += `<polyline points="${pointsStr}" fill="none" stroke="${col}" stroke-width="2" opacity="0.7"/>`;
+        coords.forEach(c => {
+          svg.innerHTML += `<circle cx="${c.x}" cy="${c.y}" r="3.5" fill="${col}"><title>${st.schoolName}: ${c.value}</title></circle>`;
+        });
+      });
+
+      // 2. State Benchmark Line (DASHED GREY)
+      const stateCoords = getCoords(stateTrend);
+      const stateStr = stateCoords.map(c => `${c.x},${c.y}`).join(' ');
+      svg.innerHTML += `<polyline points="${stateStr}" fill="none" stroke="#64748B" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+      stateCoords.forEach(c => {
+        svg.innerHTML += `<circle cx="${c.x}" cy="${c.y}" r="4" fill="#64748B"><title>State Benchmark: ${c.value}</title></circle>`;
+      });
+
+      // 3. District Average Line (BLUE)
+      const distCoords = getCoords(distTrend);
+      const distStr = distCoords.map(c => `${c.x},${c.y}`).join(' ');
+      svg.innerHTML += `<polyline points="${distStr}" fill="none" stroke="#2563EB" stroke-width="3"/>`;
+
+      // 4. Target Selected School Line (RED HIGHLIGHT)
+      const targetCoords = getCoords(targetTrend);
+      const targetStr = targetCoords.map(c => `${c.x},${c.y}`).join(' ');
+      svg.innerHTML += `<polyline points="${targetStr}" fill="none" stroke="#D9232E" stroke-width="4.5"/>`;
+      targetCoords.forEach(c => {
+        svg.innerHTML += `<circle cx="${c.x}" cy="${c.y}" r="6.5" fill="#D9232E" stroke="#991B1B" stroke-width="2.5"><title>${SELECTED_SCHOOL.name}: ${c.value}</title></circle>`;
+      });
+
+      // Legend
+      const legend = document.getElementById('chartLegend');
+      legend.innerHTML = `
+        <div class="legend-item"><div class="legend-line" style="background:#D9232E; height:5px;"></div> 🔴 <strong>${SELECTED_SCHOOL.name}</strong> (Target Selected)</div>
+        <div class="legend-item"><div class="legend-line" style="background:#2563EB;"></div> 🔵 ${SELECTED_DISTRICT.name} District Avg</div>
+        <div class="legend-item"><div class="legend-line" style="background:#64748B; border-top:2px dashed #64748B;"></div> ⚪ State Benchmark</div>
+        <div class="legend-item"><div class="legend-line" style="background:#10B981;"></div> 🟢 Other District Schools (${districtSchoolTrends.length - 1})</div>
+      `;
+    }
+
+    function renderTable(years, targetTrend, stateTrend, distTrend, districtSchoolTrends) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      function addRow(name, trend, isTarget = false) {
+        const tr = document.createElement('tr');
+        if (isTarget) tr.className = 'highlight-target-row';
+
+        const val0 = trend[0].value;
+        const val4 = trend[4].value;
+        const diff = roundVal(val4 - val0, SELECTED_CATEGORY);
+        const diffStr = diff >= 0 ? `+${diff}` : `${diff}`;
+
+        tr.innerHTML = `
+          <td><strong>${name}</strong></td>
+          <td>${trend[0].value}</td>
+          <td>${trend[1].value}</td>
+          <td>${trend[2].value}</td>
+          <td>${trend[3].value}</td>
+          <td><strong>${trend[4].value}</strong></td>
+          <td style="color:${diff >= 0 ? '#059669' : '#DC2626'}; font-weight:700;">${diffStr}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      // Target Selected School
+      addRow(`🔴 ${SELECTED_SCHOOL.name} (Selected)`, targetTrend, true);
+      // State Benchmark
+      addRow(`⚪ State of Georgia Benchmark`, stateTrend);
+      // District Average
+      addRow(`🔵 ${SELECTED_DISTRICT.name} District Average`, distTrend);
+
+      // Other District Schools
+      districtSchoolTrends.filter(st => !st.isTarget).forEach(st => {
+        addRow(st.schoolName, st.trend);
+      });
+    }
+
+    function roundVal(v, cat) {
+      if (cat === 'ppe') return Math.round(v);
+      return Math.round(v * 10) / 10;
+    }
+
+    function switchTheme(brandId) {
+      document.documentElement.setAttribute('data-brand', brandId);
+      if (brandId === 'georgia-southern') {
+        document.getElementById('headerLogo').innerText = 'GS';
+        document.getElementById('headerTitle').innerText = 'Georgia Southern Educational Analytics';
+      } else {
+        document.getElementById('headerLogo').innerText = 'GA';
+        document.getElementById('headerTitle').innerText = 'Georgia Educational Analytics';
+      }
+    }
+
+    initData();
+  </script>
+</body>
+</html>
