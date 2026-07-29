@@ -288,6 +288,7 @@
     .legend-item { display: flex; align-items: center; gap: 0.4rem; }
     .legend-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     .legend-line { width: 20px; height: 0; border-top: 2px dashed var(--trend-line); }
+    .legend-line-faint { width: 20px; height: 0; border-top: 1.5px dashed var(--trend-line); opacity: 0.4; }
 
     /* Tooltip */
     #chartTooltip {
@@ -477,6 +478,17 @@
             <option value="">— Select a district first —</option>
           </select>
         </div>
+        <div class="control-box">
+          <label for="regPercentileSelect">8. Show Top % by Relative Performance</label>
+          <select id="regPercentileSelect" onchange="onPercentileFilterChanged()">
+            <option value="">All Schools</option>
+            <option value="20">Top 20%</option>
+            <option value="15">Top 15%</option>
+            <option value="10">Top 10%</option>
+            <option value="5">Top 5%</option>
+            <option value="1">Top 1%</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -492,6 +504,7 @@
     let SELECTED_DISTRICT_CODE = '';
     let SELECTED_LEVEL = '';
     let SELECTED_SCHOOL_CODE = '';
+    let SELECTED_PERCENTILE = ''; // '', '1', '5', '10', '15', '20' -- top N% by residual, within whatever District/Level already filtered
     let LATEST_FETCH_TOKEN = 0;
     const DATA_CACHE = {};
 
@@ -630,6 +643,11 @@
       if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
     }
 
+    function onPercentileFilterChanged() {
+      SELECTED_PERCENTILE = document.getElementById('regPercentileSelect').value;
+      if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
+    }
+
     function slugify(contentArea) {
       return contentArea.toLowerCase().replace(/ /g, '-').replace(/:/g, '').replace(/\//g, '-');
     }
@@ -700,7 +718,7 @@
       const districtName = SELECTED_DISTRICT_CODE
         ? (window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === SELECTED_DISTRICT_CODE) || {}).name
         : '';
-      const visiblePoints = points.filter(p =>
+      let visiblePoints = points.filter(p =>
         (!SELECTED_DISTRICT_CODE || p.districtCode === SELECTED_DISTRICT_CODE) &&
         (!SELECTED_LEVEL || p.level === SELECTED_LEVEL)
       );
@@ -708,7 +726,6 @@
       const filterBits = [];
       if (SELECTED_DISTRICT_CODE) filterBits.push(districtName);
       if (SELECTED_LEVEL) filterBits.push(`${SELECTED_LEVEL} schools`);
-      const filterDescription = filterBits.length ? ` — filtered to ${filterBits.join(', ')}` : '';
 
       if (!visiblePoints.length) {
         document.getElementById('regressionResultsArea').innerHTML = `
@@ -720,6 +737,25 @@
         `;
         return;
       }
+
+      // "Top N% by relative performance" ranks by residual (actual - the
+      // STATEWIDE trend line's prediction) -- "beating the odds" given a
+      // school's own ED%, not just raw achievement -- and narrows WITHIN
+      // whatever District/Level already filtered, per how this is meant to
+      // compose (e.g. District=Columbia County + Top 10% = the top 10% of
+      // Columbia County's own schools, not the statewide top decile).
+      let percentileThresholdResidual = null;
+      if (SELECTED_PERCENTILE) {
+        const pct = parseInt(SELECTED_PERCENTILE, 10) / 100;
+        const withResiduals = visiblePoints
+          .map(p => ({ ...p, _residual: p.y - (ols.slope * p.x + ols.intercept) }))
+          .sort((a, b) => b._residual - a._residual);
+        const keepCount = Math.max(1, Math.ceil(pct * withResiduals.length));
+        visiblePoints = withResiduals.slice(0, keepCount);
+        percentileThresholdResidual = visiblePoints[visiblePoints.length - 1]._residual;
+        filterBits.push(`Top ${SELECTED_PERCENTILE}% by relative performance`);
+      }
+      const filterDescription = filterBits.length ? ` — filtered to ${filterBits.join(', ')}` : '';
 
       const width = 900, height = 520, margin = { top: 20, right: 30, bottom: 50, left: 55 };
       const plotW = width - margin.left - margin.right;
@@ -748,6 +784,17 @@
       const yAt0 = clamp(ols.intercept);
       const yAt100 = clamp(ols.slope * 100 + ols.intercept);
       svg += `<line x1="${toX(0)}" y1="${toY(yAt0)}" x2="${toX(100)}" y2="${toY(yAt100)}" stroke="var(--trend-line)" stroke-width="2" stroke-dasharray="7 5"/>`;
+
+      // Faint threshold line marking the residual cutoff for the selected
+      // percentile band -- a second line parallel to the trend line, offset
+      // by the constant residual value at that cutoff (residual is already
+      // "actual minus the line", so shifting the whole line by a constant
+      // reproduces "the line, moved up by exactly that much").
+      if (percentileThresholdResidual !== null) {
+        const yAt0Thresh = clamp(ols.intercept + percentileThresholdResidual);
+        const yAt100Thresh = clamp(ols.slope * 100 + ols.intercept + percentileThresholdResidual);
+        svg += `<line x1="${toX(0)}" y1="${toY(yAt0Thresh)}" x2="${toX(100)}" y2="${toY(yAt100Thresh)}" stroke="var(--trend-line)" stroke-width="1.5" stroke-dasharray="2 5" stroke-opacity="0.4"/>`;
+      }
 
       // Selected school (if any) draws last so it sits on top of its peers.
       const ordered = SELECTED_SCHOOL_CODE
@@ -787,7 +834,7 @@
             Scatter plot with a downward-sloping linear regression line: ${visibleDisplay} Georgia schools plotted by percent economically
             disadvantaged on the X axis and percent meeting or exceeding expectations on ${contentArea} (${testType}, ${GRADE_LABELS[grade] || grade}, ${year}) on the
             Y axis, out of ${nDisplay} statewide. Correlation r = ${ols.r}, R-squared = ${ols.rSquared} (statewide, unfiltered). Elementary schools are blue,
-            middle schools orange, high schools aqua. A full data table is available below the chart.
+            middle schools orange, high schools aqua.${percentileThresholdResidual !== null ? ` A faint parallel line marks the residual cutoff for the Top ${SELECTED_PERCENTILE}% by relative performance.` : ''} A full data table is available below the chart.
           </p>
           ${selectedSchoolPoint ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${selectedSchoolPoint.name}</strong> (red) — ${selectedSchoolPoint.x}% economically disadvantaged, ${selectedSchoolPoint.y}% met + exceeded.</div>` : ''}
           <div class="chart-legend">
@@ -796,6 +843,7 @@
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-high)"></span> High</div>
             ${selectedSchoolPoint ? '<div class="legend-item"><span class="legend-swatch" style="background:#DC2626"></span> Selected School</div>' : ''}
             <div class="legend-item"><span class="legend-line"></span> Regression Fit (statewide, all schools)</div>
+            ${percentileThresholdResidual !== null ? `<div class="legend-item"><span class="legend-line-faint"></span> Top ${SELECTED_PERCENTILE}% Cutoff (${percentileThresholdResidual >= 0 ? '+' : ''}${percentileThresholdResidual.toFixed(1)} pts vs. predicted)</div>` : ''}
           </div>
         </div>
 
