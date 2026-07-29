@@ -446,7 +446,6 @@
       border-radius: 12px;
       padding: 1.5rem 1.75rem;
       border: 1px solid var(--brand-border);
-      margin-top: 1.5rem;
     }
 
     .legend-card h3 {
@@ -674,7 +673,7 @@
         <div class="control-box">
           <label for="schoolSelect">3. Target School</label>
           <select id="schoolSelect" onchange="onSchoolChanged(this.value)">
-            <!-- Populated dynamically -->
+            <option value="">— Select a district first —</option>
           </select>
         </div>
 
@@ -684,6 +683,7 @@
         <div class="control-box">
           <label for="testTypeSelect">4. Test Type</label>
           <select id="testTypeSelect" onchange="onYearOrTestTypeChanged()">
+            <option value="">— Select —</option>
             <option value="EOC">End of Course (EOC)</option>
             <option value="EOG">End of Grade (EOG)</option>
           </select>
@@ -726,14 +726,6 @@
       <!-- Rendered dynamically -->
     </div>
 
-    <!-- Legend / Glossary -->
-    <div class="legend-card">
-      <h3>What the achievement levels mean</h3>
-      <div class="legend-grid" id="legendGrid">
-        <!-- Rendered dynamically -->
-      </div>
-    </div>
-
   </main>
 
   <script>
@@ -770,8 +762,10 @@
       if (window.GEORGIA_GOSA_MASTER && window.GEORGIA_GOSA_MASTER.districts) {
         GOSA_DISTRICTS = window.GEORGIA_GOSA_MASTER.districts;
         ALL_SCHOOLS = window.GEORGIA_GOSA_MASTER.allSchools || [];
-        populateDistrictsDropdown();
       }
+      // Every dropdown, including this one, starts on a blank "— Select —"
+      // option — see populateDistrictsDropdown() for why.
+      populateDistrictsDropdown();
 
       try {
         const resp = await fetch('data/milestones/_meta.json');
@@ -784,32 +778,42 @@
 
       populateYearDropdown();
       populateSubgroupDropdown();
-      onYearOrTestTypeChanged();
+      resetContentAreaAndGrade();
+      refreshResults();
     }
 
+    // Nothing pre-selected on purpose: an earlier version defaulted to
+    // Columbia County + the first school + EOC, which for most schools
+    // silently landed on "no data" (e.g. an elementary school + EOC) and
+    // looked like the page was broken. Forcing an explicit choice at every
+    // step means results only ever appear once the visitor picked a real,
+    // complete combination — there's no ambiguity about why nothing's showing.
     function populateDistrictsDropdown() {
       const select = document.getElementById('districtSelect');
-      select.innerHTML = '';
+      select.innerHTML = '<option value="">— Select —</option>';
 
       GOSA_DISTRICTS.forEach(d => {
         const opt = document.createElement('option');
         opt.value = d.code;
         opt.innerText = `${d.name} [Code: ${d.code}]`;
-        if (d.name === "Columbia County" || d.code === "636") opt.selected = true;
         select.appendChild(opt);
       });
-
-      onDistrictChanged(select.value);
     }
 
     function onDistrictChanged(districtCode) {
       const district = GOSA_DISTRICTS.find(d => d.code === districtCode || d.name === districtCode);
       const schoolSelect = document.getElementById('schoolSelect');
-      schoolSelect.innerHTML = '';
+      SELECTED_SCHOOL = null;
 
-      if (!district || !district.schools || !district.schools.length) return;
+      if (!district || !district.schools || !district.schools.length) {
+        SELECTED_DISTRICT = null;
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        refreshResults();
+        return;
+      }
+
       SELECTED_DISTRICT = district;
-
+      schoolSelect.innerHTML = '<option value="">— Select —</option>';
       district.schools.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.name;
@@ -817,15 +821,20 @@
         schoolSelect.appendChild(opt);
       });
 
-      onSchoolChanged(district.schools[0].name);
+      refreshResults();
     }
 
     function onSchoolChanged(schoolName) {
-      const sch = ALL_SCHOOLS.find(s => s.name === schoolName);
-      if (sch) {
-        SELECTED_SCHOOL = sch;
-        refreshResults();
-      }
+      SELECTED_SCHOOL = schoolName ? (ALL_SCHOOLS.find(s => s.name === schoolName) || null) : null;
+      refreshResults();
+    }
+
+    function resetContentAreaAndGrade(placeholder) {
+      const contentAreaSelect = document.getElementById('contentAreaSelect');
+      const gradeLevelSelect = document.getElementById('gradeLevelSelect');
+      contentAreaSelect.innerHTML = `<option value="">${placeholder || '— Select —'}</option>`;
+      gradeLevelSelect.innerHTML = '<option value="">— Select —</option>';
+      gradeLevelSelect.disabled = false;
     }
 
     // Year and Test Type both gate which Content Areas / Grades are even
@@ -836,22 +845,27 @@
       if (!META) return;
       const testType = document.getElementById('testTypeSelect').value;
       const year = document.getElementById('yearSelect').value;
+
+      if (!testType || !year) {
+        resetContentAreaAndGrade('— Select year & test type first —');
+        refreshResults();
+        return;
+      }
+
       const tyMeta = META[testType] || { contentAreasByYear: {}, grades: [] };
+      const areas = (tyMeta.contentAreasByYear && tyMeta.contentAreasByYear[year]) || [];
 
       const contentAreaSelect = document.getElementById('contentAreaSelect');
-      const previousContentArea = contentAreaSelect.value;
-      contentAreaSelect.innerHTML = '';
-      const areas = (tyMeta.contentAreasByYear && tyMeta.contentAreasByYear[year]) || [];
+      contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
       areas.forEach(area => {
         const opt = document.createElement('option');
         opt.value = area;
         opt.innerText = area;
         contentAreaSelect.appendChild(opt);
       });
-      if (areas.includes(previousContentArea)) contentAreaSelect.value = previousContentArea;
 
       const gradeLevelSelect = document.getElementById('gradeLevelSelect');
-      gradeLevelSelect.innerHTML = '';
+      gradeLevelSelect.innerHTML = '<option value="">— Select —</option>';
       const allGradesOpt = document.createElement('option');
       allGradesOpt.value = 'ALL';
       allGradesOpt.innerText = testType === 'EOC' ? 'All Grades (course-based)' : 'All Grades (03-08 combined)';
@@ -864,16 +878,10 @@
           gradeLevelSelect.appendChild(opt);
         });
       }
-      // EOC has no real per-grade breakdown (a course spans many grades) —
-      // lock the control rather than showing a dropdown that looks
-      // interactive but only ever has one option.
-      gradeLevelSelect.disabled = testType === 'EOC';
+      gradeLevelSelect.disabled = false;
 
       if (!areas.length) {
-        renderNoData(`GOSA has no ${testType} content areas on record for school year ${year}. Try a different year.`);
-        document.getElementById('selectionSummary').innerHTML =
-          `<span>No ${testType} data exists for ${year}.</span> Choose a different year or test type above.`;
-        return;
+        contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${year}</option>`;
       }
 
       refreshResults();
@@ -881,9 +889,9 @@
 
     function populateYearDropdown() {
       const select = document.getElementById('yearSelect');
-      select.innerHTML = '';
+      select.innerHTML = '<option value="">— Select —</option>';
       const years = new Set([...(META.EOC.years || []), ...(META.EOG.years || [])]);
-      // Most recent first — that's what someone opening the dashboard wants by default.
+      // Most recent first — that's what someone opening the dashboard wants to scan first.
       Array.from(years).sort().reverse().forEach(yr => {
         const opt = document.createElement('option');
         opt.value = yr;
@@ -894,9 +902,10 @@
 
     function populateSubgroupDropdown() {
       const select = document.getElementById('subgroupSelect');
-      select.innerHTML = '';
+      select.innerHTML = '<option value="">— Select —</option>';
       const subgroups = (META.EOC.subgroups && META.EOC.subgroups.length) ? META.EOC.subgroups : GOSA_SUBGROUPS_FALLBACK;
-      // "All Students" always first — every drilldown needs an obvious "everyone" option.
+      // "All Students" sorts first among the real options — still has to be
+      // explicitly clicked, but it's the obvious first thing to reach for.
       const ordered = ['All Students', ...subgroups.filter(s => s !== 'All Students').sort()];
       ordered.forEach(sg => {
         const opt = document.createElement('option');
@@ -912,21 +921,21 @@
 
     function updateSelectionSummary() {
       const summary = document.getElementById('selectionSummary');
-      if (!SELECTED_SCHOOL || !SELECTED_DISTRICT) return;
-
-      const year = document.getElementById('yearSelect').value;
-      const testType = document.getElementById('testTypeSelect').value;
-      const contentArea = document.getElementById('contentAreaSelect').value;
+      const year = document.getElementById('yearSelect').value || '—';
+      const districtName = SELECTED_DISTRICT ? SELECTED_DISTRICT.name : '—';
+      const schoolName = SELECTED_SCHOOL ? SELECTED_SCHOOL.name : '—';
+      const testType = document.getElementById('testTypeSelect').value || '—';
+      const contentArea = document.getElementById('contentAreaSelect').value || '—';
       const gradeLevelSelect = document.getElementById('gradeLevelSelect');
-      const gradeLabel = gradeLevelSelect.options[gradeLevelSelect.selectedIndex]
+      const gradeLabel = (gradeLevelSelect.value && gradeLevelSelect.options[gradeLevelSelect.selectedIndex])
         ? gradeLevelSelect.options[gradeLevelSelect.selectedIndex].innerText
-        : '';
-      const subgroup = document.getElementById('subgroupSelect').value;
+        : '—';
+      const subgroup = document.getElementById('subgroupSelect').value || '—';
 
       summary.innerHTML = `
-        <span>Showing:</span> ${year} → ${SELECTED_DISTRICT.name} →
-        <span>${SELECTED_SCHOOL.name}</span> →
-        ${testType} → <span>${contentArea || '—'}</span> → <span>${gradeLabel}</span> →
+        <span>Showing:</span> ${year} → ${districtName} →
+        <span>${schoolName}</span> →
+        ${testType} → <span>${contentArea}</span> → <span>${gradeLabel}</span> →
         ${subgroup}
       `;
     }
@@ -940,19 +949,37 @@
       `;
     }
 
+    function renderPrompt() {
+      document.getElementById('resultsArea').innerHTML = `
+        <div class="no-data-card">
+          <strong>Make your selections above</strong>
+          Choose a school year, district, school, test type, content area, grade level, and student subgroup to see results.
+        </div>
+      `;
+    }
+
     function round1(v) {
       return Math.round(v * 10) / 10;
     }
 
     async function refreshResults() {
-      if (!SELECTED_SCHOOL || !SELECTED_DISTRICT) return;
+      updateSelectionSummary();
 
       const year = document.getElementById('yearSelect').value;
       const testType = document.getElementById('testTypeSelect').value;
+      const contentArea = document.getElementById('contentAreaSelect').value;
+      const grade = document.getElementById('gradeLevelSelect').value;
+      const subgroup = document.getElementById('subgroupSelect').value;
+
+      // Every one of the 7 selectors must have a real (non-blank) value
+      // before we attempt a lookup — a partial selection shows a neutral
+      // prompt, never a fetch that's guaranteed to miss.
+      if (!SELECTED_DISTRICT || !SELECTED_SCHOOL || !year || !testType || !contentArea || !grade || !subgroup) {
+        renderPrompt();
+        return;
+      }
+
       const districtCode = SELECTED_DISTRICT.code;
-
-      updateSelectionSummary();
-
       const chunkKey = `${districtCode}__${testType}_${year}`;
       const fetchToken = ++LATEST_FETCH_TOKEN;
 
@@ -976,9 +1003,6 @@
         return;
       }
 
-      const contentArea = document.getElementById('contentAreaSelect').value;
-      const grade = document.getElementById('gradeLevelSelect').value;
-      const subgroup = document.getElementById('subgroupSelect').value;
       const instnNumber = (SELECTED_SCHOOL.code || '').split('-')[1];
       const keyFor = entity => `${contentArea}|${grade}|${subgroup}|${entity}`;
 
@@ -1098,38 +1122,58 @@
             <div class="stat-box-sub">${schoolName} vs. ${districtName} vs. Georgia — same content area, grade, and subgroup</div>
             <div class="compare-table">${header}${testedRow}${levelRows}</div>
           </div>
+          ${levelsLegendHTML()}
           <div class="stat-box">
             <h3>Met vs. Did Not Meet Expectations</h3>
             <div class="stat-box-sub">Levels 1 + 2 combined = Did Not Meet · Levels 3 + 4 combined = Met</div>
             <div class="compare-table">${header}${notMetRow}${metRow}</div>
           </div>
+          ${metNotMetLegendHTML()}
         </div>
       `;
     }
 
-    function renderLegend() {
-      const grid = document.getElementById('legendGrid');
-      grid.innerHTML = ACHIEVEMENT_LEVELS.map(lvl => `
-        <div class="legend-item-def">
-          <div class="level-dot" style="background:${lvl.color}"></div>
-          <div>
-            <strong>${lvl.term} (${lvl.short})</strong>
-            <p>${lvl.desc}</p>
+    // Each legend sits directly under the section it explains, rather than
+    // one combined glossary at the bottom of the page — so "what does this
+    // number mean" never requires scrolling away from the number itself.
+    function levelsLegendHTML() {
+      return `
+        <div class="legend-card">
+          <h3>What the achievement levels mean</h3>
+          <div class="legend-grid">
+            ${ACHIEVEMENT_LEVELS.map(lvl => `
+              <div class="legend-item-def">
+                <div class="level-dot" style="background:${lvl.color}"></div>
+                <div>
+                  <strong>${lvl.term} (${lvl.short})</strong>
+                  <p>${lvl.desc}</p>
+                </div>
+              </div>
+            `).join('')}
           </div>
         </div>
-      `).join('') + `
-        <div class="legend-item-def">
-          <div class="level-dot" style="background:#059669"></div>
-          <div>
-            <strong>Met Expectations</strong>
-            <p>Combines Level 3 + Level 4 — the share of students who demonstrated at least proficient understanding.</p>
-          </div>
-        </div>
-        <div class="legend-item-def">
-          <div class="level-dot" style="background:#DC2626"></div>
-          <div>
-            <strong>Did Not Meet Expectations</strong>
-            <p>Combines Level 1 + Level 2 — the share of students who have not yet reached proficiency.</p>
+      `;
+    }
+
+    function metNotMetLegendHTML() {
+      return `
+        <div class="legend-card">
+          <h3>What "Met" and "Did Not Meet" mean</h3>
+          <div class="legend-grid">
+            <div class="legend-item-def">
+              <div class="level-dot" style="background:#059669"></div>
+              <div>
+                <strong>Met Expectations</strong>
+                <p>Combines Level 3 + Level 4 — the share of students who demonstrated at least proficient understanding.</p>
+              </div>
+            </div>
+            <div class="legend-item-def">
+              <div class="level-dot" style="background:#DC2626"></div>
+              <div>
+                <strong>Did Not Meet Expectations</strong>
+                <p>Combines Level 1 + Level 2 — the share of students who have not yet reached proficiency.</p>
+              </div>
+            </div>
           </div>
         </div>
       `;
@@ -1146,7 +1190,6 @@
       }
     }
 
-    renderLegend();
     initData();
   </script>
 </body>
