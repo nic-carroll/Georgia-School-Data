@@ -1,0 +1,164 @@
+{
+  "EOC": {
+    "contentAreasByYear": {
+      "2020-21": [
+        "9th Grade Literature and Composition",
+        "Algebra I",
+        "American Literature and Composition",
+        "Analytic Geometry",
+        "Biology",
+        "Coordinate Algebra",
+        "Economics/Business/Free Enterprise",
+        "Geometry",
+        "Physical Science",
+        "US History"
+      ],
+      "2021-22": [
+        "Algebra I",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "US History"
+      ],
+      "2022-23": [
+        "Algebra I",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "US History"
+      ],
+      "2023-24": [
+        "Algebra I",
+        "Algebra: Concepts and Connections",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "US History"
+      ],
+      "2024-25": [
+        "Algebra: Concepts and Connections",
+        "American Literature and Composition",
+        "Biology",
+        "US History"
+      ]
+    },
+    "grades": [
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12"
+    ],
+    "subgroups": [
+      "Active Duty",
+      "All Students",
+      "American Indian or Alaskan Native",
+      "Asian",
+      "Black or African American",
+      "Economically Disadvantaged",
+      "Female",
+      "Foster Care",
+      "Hispanic",
+      "Homeless",
+      "Limited English Proficient",
+      "Male",
+      "Migrant",
+      "Military Connected",
+      "Native Hawaiian or Other Pacific Islander",
+      "Non-Migrant",
+      "Not Economically Disadvantaged",
+      "Not Limited English Proficient",
+      "Students with Disabilities",
+      "Students without Disabilities",
+      "Two or More Races",
+      "Unknown",
+      "White"
+    ],
+    "years": [
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25"
+    ]
+  },
+  "EOG": {
+    "contentAreasByYear": {
+      "2020-21": [
+        "English Language Arts",
+        "Mathematics",
+        "Science",
+        "Social Studies"
+      ],
+      "2021-22": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ],
+      "2022-23": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ],
+      "2023-24": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ],
+      "2024-25": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ]
+    },
+    "grades": [
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08"
+    ],
+    "subgroups": [
+      "Active Duty",
+      "All Students",
+      "American Indian or Alaskan Native",
+      "Asian",
+      "Black or African American",
+      "Economically Disadvantaged",
+      "Female",
+      "Foster Care",
+      "Hispanic",
+      "Homeless",
+      "Limited English Proficient",
+      "Male",
+      "Migrant",
+      "Military Connected",
+      "Native Hawaiian or Other Pacific Islander",
+      "Non-Migrant",
+      "Not Economically Disadvantaged",
+      "Not Limited English Proficient",
+      "Students with Disabilities",
+      "Students without Disabilities",
+      "Two or More Races",
+      "White"
+    ],
+    "years": [
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25"
+    ]
+  },
+  "generatedAt": "2026-07-28T23:59:11.948955"
+}

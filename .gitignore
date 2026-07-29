@@ -29,3 +29,14 @@ npm-debug.log*
 server/data/gosa/**/*.csv
 server/data/gosa/**/*.xls
 server/data/gosa/**/*.xlsx
+
+# Pre-aggregated Milestones (EOC/EOG) drilldown chunks — regenerate with
+# server/scripts/build_milestones_dashboard_data.py. The server-side copy is
+# kept local only (redundant once client/data/milestones/ is committed — see
+# below). ~450MB scoped to the last 5 school years; see KEEP_YEARS in the
+# build script if that ever needs to change back to the full 10-year range
+# (was ~1GB, too close to GitHub Pages' 1GB published-site limit).
+server/data/gosa/milestones_dashboard/
+
+# client/data/milestones/ is INTENTIONALLY NOT ignored — it's pushed and
+# served via GitHub Pages so the live dashboard has real data to fetch.
