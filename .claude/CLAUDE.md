@@ -20,11 +20,12 @@ python3 server/scripts/parse_gosa_multiyear.py        # → server/data/gosa/gos
 python3 server/scripts/check_gosa_updates.py          # Updates manifest.json & latest_update_report.json
 
 # Regression analysis (OLS: real % Econ. Disadvantaged, from Attendance data, →
-# real Milestones % Met+Exceeded), per Test Type x Content Area x school year,
-# across every real GA school with both figures on record. Powers regression.html.
+# real Milestones % Met+Exceeded), per Test Type x Content Area x school year x
+# Grade (EOG only; EOC is "ALL" only), across every real GA school with both
+# figures on record. Powers regression.html.
 python3 server/scripts/regression_analysis.py
-# → server/data/gosa/regression/<TestType>_<content-area-slug>_<year>.json (gitignored)
-# → client/data/regression/ (same files, copied for the browser to fetch on demand, ~6MB)
+# → server/data/gosa/regression/<TestType>_<content-area-slug>_<year>_<grade>.json (gitignored)
+# → client/data/regression/ (same files, copied for the browser to fetch on demand, ~16MB)
 
 # Build the Milestones (EOC/EOG) drilldown data behind the front page's live stats.
 # Parses ~4.8M rows across 10 school years (2014-15 to 2024-25, skipping the
@@ -48,6 +49,8 @@ python3 server/scripts/build_milestones_dashboard_data.py
 - **Milestones data is scoped to the 5 most recent school years (2020-21 → 2024-25)**, not the full 10 years GOSA publishes (2014-15 →) — a deliberate product decision (`KEEP_YEARS` in `build_milestones_dashboard_data.py`) made to fit GitHub Pages' 1GB published-site limit once `client/data/milestones/` needed to be pushed for the live demo. The full 10-year pipeline logic still exists, just filtered; widen `KEEP_YEARS` if the size constraint ever goes away.
 - **Live demo**: `client/` (including `client/data/milestones/` and `client/data/regression/`) is pushed to GitHub and served via GitHub Pages at `https://nic-carroll.github.io/Georgia-School-Data/client/` (drilldown) and `.../client/regression.html` (regression) — the URL includes `/client/` because Pages serves from the repo root and there's no build step that flattens it. `client/data/milestones/` and `client/data/regression/` are the exceptions to the "raw/derived data stays local" pattern elsewhere in this file — they're committed specifically so Pages has something to serve. After any push, force a rebuild via `POST /repos/nic-carroll/Georgia-School-Data/pages/builds` (GitHub's legacy Pages builder does not reliably auto-trigger on push) and poll `GET .../pages/builds/latest` until `status: "built"` before assuming the live site reflects the new commit.
 - **`regression.html`'s school-level classification (Elementary/Middle/High, used for scatter-plot color) is derived from the real `GRADES_SERVED_DESC` field** in the Attendance CSV, not a lookup table: "High" if the school serves any of grades 09-12, else "Middle" if it serves any of 06-08, else "Elementary" (`classify_level()` in `regression_analysis.py`). A combined school (e.g. K-12) is classified by the highest band it serves — a simplification, consistent with how GOSA/CCRPI commonly bands combined schools.
+- **`regression.html`'s Grade Level, School Level, and County/District controls are hard filters (they remove non-matching dots), not highlights** — picking "High" hides every elementary/middle school outright, and picking a district shows only that district. The one exception is the School control: selecting a school (which cascades from a chosen district) draws it as a distinct red highlight *within* whatever's currently filtered, it doesn't filter down to just that one dot. The regression trend line and the "Regression Model Summary" stats table are always the full statewide fit for that Test Type/Content Area/Year/Grade — they never recompute for the filtered subset, so the filtered dots can be visually compared against a fixed state-level reference. Grade Level only has real options for EOG (03-08, from the `*_by_GRADE` files, computed independently per grade — not derived from the "ALL" rollup); EOC stays "ALL" only, same reasoning as `classify_level()`'s note above.
+- **`regression_analysis.py` output filenames include the grade**: `<test_type>_<content_area_slug>_<year>_<grade>.json` where grade is `ALL` or `03`-`08`. If you're constructing a fetch URL by hand, don't forget the trailing grade segment — `EOG_mathematics_2024-25.json` (no grade) doesn't exist, only `EOG_mathematics_2024-25_ALL.json`, `..._05.json`, etc.
 - **GOSA suppresses small-n cells as the literal string `"TFS"`** (Too Few Students) — sometimes just the total `NUM_TESTED_CNT`, sometimes just one achievement level's count while still publishing that level's percent. The pipeline keeps every real value and only nulls out what's actually suppressed (see `build_milestones_dashboard_data.py` docstring) — never back-compute a suppressed count from other fields, that defeats the suppression.
 
 ## Do Not Refactor

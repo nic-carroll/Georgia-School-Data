@@ -38,6 +38,96 @@
         "US History"
       ]
     },
+    "gradesByContentAreaYear": {
+      "2020-21": {
+        "Algebra I": [
+          "ALL"
+        ],
+        "American Literature and Composition": [
+          "ALL"
+        ],
+        "Biology": [
+          "ALL"
+        ],
+        "Coordinate Algebra": [
+          "ALL"
+        ],
+        "Physical Science": [
+          "ALL"
+        ],
+        "US History": [
+          "ALL"
+        ]
+      },
+      "2021-22": {
+        "Algebra I": [
+          "ALL"
+        ],
+        "American Literature and Composition": [
+          "ALL"
+        ],
+        "Biology": [
+          "ALL"
+        ],
+        "Coordinate Algebra": [
+          "ALL"
+        ],
+        "US History": [
+          "ALL"
+        ]
+      },
+      "2022-23": {
+        "Algebra I": [
+          "ALL"
+        ],
+        "American Literature and Composition": [
+          "ALL"
+        ],
+        "Biology": [
+          "ALL"
+        ],
+        "Coordinate Algebra": [
+          "ALL"
+        ],
+        "US History": [
+          "ALL"
+        ]
+      },
+      "2023-24": {
+        "Algebra I": [
+          "ALL"
+        ],
+        "Algebra: Concepts and Connections": [
+          "ALL"
+        ],
+        "American Literature and Composition": [
+          "ALL"
+        ],
+        "Biology": [
+          "ALL"
+        ],
+        "Coordinate Algebra": [
+          "ALL"
+        ],
+        "US History": [
+          "ALL"
+        ]
+      },
+      "2024-25": {
+        "Algebra: Concepts and Connections": [
+          "ALL"
+        ],
+        "American Literature and Composition": [
+          "ALL"
+        ],
+        "Biology": [
+          "ALL"
+        ],
+        "US History": [
+          "ALL"
+        ]
+      }
+    },
     "years": [
       "2020-21",
       "2021-22",
@@ -82,6 +172,169 @@
         "Science",
         "Social Studies"
       ]
+    },
+    "gradesByContentAreaYear": {
+      "2020-21": {
+        "English Language Arts": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Mathematics": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Science": [
+          "05",
+          "08",
+          "ALL"
+        ],
+        "Social Studies": [
+          "08",
+          "ALL"
+        ]
+      },
+      "2021-22": {
+        "English Language Arts": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Mathematics": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Physical Science": [
+          "08",
+          "ALL"
+        ],
+        "Science": [
+          "05",
+          "08",
+          "ALL"
+        ],
+        "Social Studies": [
+          "08",
+          "ALL"
+        ]
+      },
+      "2022-23": {
+        "English Language Arts": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Mathematics": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Physical Science": [
+          "08",
+          "ALL"
+        ],
+        "Science": [
+          "05",
+          "08",
+          "ALL"
+        ],
+        "Social Studies": [
+          "08",
+          "ALL"
+        ]
+      },
+      "2023-24": {
+        "English Language Arts": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Mathematics": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Physical Science": [
+          "08",
+          "ALL"
+        ],
+        "Science": [
+          "05",
+          "08",
+          "ALL"
+        ],
+        "Social Studies": [
+          "08",
+          "ALL"
+        ]
+      },
+      "2024-25": {
+        "English Language Arts": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Mathematics": [
+          "03",
+          "04",
+          "05",
+          "06",
+          "07",
+          "08",
+          "ALL"
+        ],
+        "Physical Science": [
+          "08",
+          "ALL"
+        ],
+        "Science": [
+          "05",
+          "08",
+          "ALL"
+        ],
+        "Social Studies": [
+          "08",
+          "ALL"
+        ]
+      }
     },
     "years": [
       "2020-21",

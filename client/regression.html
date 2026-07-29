@@ -445,15 +445,36 @@
         </div>
         <div class="control-box">
           <label for="regContentAreaSelect">3. Content Area</label>
-          <select id="regContentAreaSelect" onchange="onCombinationChanged()">
+          <select id="regContentAreaSelect" onchange="onContentAreaChanged()">
             <option value="">— Select year &amp; test type first —</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="regGradeSelect">4. Grade Level</label>
+          <select id="regGradeSelect" onchange="onCombinationChanged()">
+            <option value="">— Select content area first —</option>
           </select>
         </div>
         <hr class="controls-divider" />
         <div class="control-box">
-          <label for="regDistrictSelect">4. Highlight a District (optional)</label>
-          <select id="regDistrictSelect" onchange="onDistrictHighlightChanged()">
-            <option value="">— All schools, no highlight —</option>
+          <label for="regLevelSelect">5. School Level</label>
+          <select id="regLevelSelect" onchange="onFilterChanged()">
+            <option value="">All Levels (Elementary, Middle, High)</option>
+            <option value="Elementary">Elementary only</option>
+            <option value="Middle">Middle only</option>
+            <option value="High">High only</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="regDistrictSelect">6. County / District</label>
+          <select id="regDistrictSelect" onchange="onDistrictFilterChanged()">
+            <option value="">All Districts</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="regSchoolSelect">7. School (highlight)</label>
+          <select id="regSchoolSelect" onchange="onSchoolFilterChanged()" disabled>
+            <option value="">— Select a district first —</option>
           </select>
         </div>
       </div>
@@ -467,12 +488,14 @@
 
   <script>
     let META = null;
-    let CURRENT_COMBO = null; // { testType, contentArea, year, ols, points }
+    let CURRENT_COMBO = null; // { testType, contentArea, year, grade, ols, points }
     let SELECTED_DISTRICT_CODE = '';
+    let SELECTED_LEVEL = '';
+    let SELECTED_SCHOOL_CODE = '';
     let LATEST_FETCH_TOKEN = 0;
     const DATA_CACHE = {};
 
-    const LEVEL_COLORS = { Elementary: 'var(--level-elementary)', Middle: 'var(--level-middle)', High: 'var(--level-high)' };
+    const GRADE_LABELS = { ALL: 'All Grades', '03': 'Grade 3', '04': 'Grade 4', '05': 'Grade 5', '06': 'Grade 6', '07': 'Grade 7', '08': 'Grade 8' };
     const LEVEL_COLORS_HEX = { Elementary: '#2a78d6', Middle: '#eb6834', High: '#1baf7a' };
 
     async function initRegressionPage() {
@@ -481,7 +504,8 @@
         META = await resp.json();
       } catch (e) {
         console.error('Could not load data/regression/_meta.json', e);
-        META = { EOC: { years: [], contentAreasByYear: {} }, EOG: { years: [], contentAreasByYear: {} } };
+        META = { EOC: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} },
+                 EOG: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} } };
       }
       populateYearDropdown();
       populateDistrictDropdown();
@@ -499,9 +523,11 @@
       });
     }
 
+    // District list is independent of the loaded combo -- populated once so
+    // the filter is ready as soon as a combo loads.
     function populateDistrictDropdown() {
       const select = document.getElementById('regDistrictSelect');
-      select.innerHTML = '<option value="">— All schools, no highlight —</option>';
+      select.innerHTML = '<option value="">All Districts</option>';
       if (!window.GEORGIA_GOSA_MASTER || !window.GEORGIA_GOSA_MASTER.districts) return;
       window.GEORGIA_GOSA_MASTER.districts.forEach(d => {
         if (!d.schools || !d.schools.length) return;
@@ -519,6 +545,7 @@
 
       if (!year || !testType) {
         contentAreaSelect.innerHTML = '<option value="">— Select year &amp; test type first —</option>';
+        resetGradeSelect('— Select content area first —');
         renderPrompt();
         return;
       }
@@ -534,11 +561,72 @@
       if (!areas.length) {
         contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${year}</option>`;
       }
+      resetGradeSelect('— Select content area first —');
       renderPrompt();
     }
 
-    function onDistrictHighlightChanged() {
+    function resetGradeSelect(placeholder) {
+      document.getElementById('regGradeSelect').innerHTML = `<option value="">${placeholder}</option>`;
+    }
+
+    function onContentAreaChanged() {
+      const year = document.getElementById('regYearSelect').value;
+      const testType = document.getElementById('regTestTypeSelect').value;
+      const contentArea = document.getElementById('regContentAreaSelect').value;
+      const gradeSelect = document.getElementById('regGradeSelect');
+
+      if (!contentArea) {
+        resetGradeSelect('— Select content area first —');
+        renderPrompt();
+        return;
+      }
+
+      const tyMeta = META[testType] || { gradesByContentAreaYear: {} };
+      const grades = ((tyMeta.gradesByContentAreaYear || {})[year] || {})[contentArea] || [];
+      gradeSelect.innerHTML = '<option value="">— Select —</option>';
+      // "ALL" first (the common case), then real grades in order.
+      [...grades].sort((a, b) => (a === 'ALL' ? -1 : b === 'ALL' ? 1 : a.localeCompare(b))).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.innerText = GRADE_LABELS[g] || g;
+        gradeSelect.appendChild(opt);
+      });
+      if (!grades.length) {
+        gradeSelect.innerHTML = '<option value="">No data for this combination</option>';
+      }
+      renderPrompt();
+    }
+
+    function onDistrictFilterChanged() {
       SELECTED_DISTRICT_CODE = document.getElementById('regDistrictSelect').value;
+      SELECTED_SCHOOL_CODE = '';
+      const schoolSelect = document.getElementById('regSchoolSelect');
+
+      if (!SELECTED_DISTRICT_CODE) {
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        schoolSelect.disabled = true;
+      } else {
+        const district = window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === SELECTED_DISTRICT_CODE);
+        schoolSelect.innerHTML = '<option value="">— All schools in district (highlight) —</option>';
+        schoolSelect.disabled = false;
+        (district && district.schools || []).forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.code;
+          opt.innerText = s.name;
+          schoolSelect.appendChild(opt);
+        });
+      }
+
+      if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
+    }
+
+    function onSchoolFilterChanged() {
+      SELECTED_SCHOOL_CODE = document.getElementById('regSchoolSelect').value;
+      if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
+    }
+
+    function onFilterChanged() {
+      SELECTED_LEVEL = document.getElementById('regLevelSelect').value;
       if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
     }
 
@@ -550,13 +638,14 @@
       const year = document.getElementById('regYearSelect').value;
       const testType = document.getElementById('regTestTypeSelect').value;
       const contentArea = document.getElementById('regContentAreaSelect').value;
+      const grade = document.getElementById('regGradeSelect').value;
 
-      if (!year || !testType || !contentArea) {
+      if (!year || !testType || !contentArea || !grade) {
         renderPrompt();
         return;
       }
 
-      const key = `${testType}_${slugify(contentArea)}_${year}`;
+      const key = `${testType}_${slugify(contentArea)}_${year}_${grade}`;
       const fetchToken = ++LATEST_FETCH_TOKEN;
       document.getElementById('regressionResultsArea').innerHTML = '<div class="no-data-card">Loading…</div>';
 
@@ -574,7 +663,7 @@
       if (fetchToken !== LATEST_FETCH_TOKEN) return;
 
       if (!combo) {
-        renderNoData(`No regression model available for ${testType} ${contentArea} in ${year}.`);
+        renderNoData(`No regression model available for ${testType} ${contentArea}, ${GRADE_LABELS[grade] || grade}, in ${year}.`);
         return;
       }
 
@@ -585,7 +674,7 @@
     function renderPrompt() {
       document.getElementById('regressionResultsArea').innerHTML = `
         <div class="no-data-card">
-          <strong>Choose a school year, test type, and content area above</strong>
+          <strong>Choose a school year, test type, content area, and grade level above</strong>
           The scatter plot, regression line, and statistics will appear once a real combination is selected.
         </div>
       `;
@@ -603,11 +692,34 @@
     function round1(v) { return Math.round(v * 10) / 10; }
 
     function renderChart(combo) {
-      const { testType, contentArea, year, ols, points } = combo;
-      const highlightDistrict = SELECTED_DISTRICT_CODE;
-      const highlightName = highlightDistrict
-        ? (window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === highlightDistrict) || {}).name
+      const { testType, contentArea, year, grade, ols, points } = combo;
+
+      // Filters REMOVE non-matching schools from the chart entirely (not a
+      // dim/highlight) -- e.g. picking "High" hides every elementary and
+      // middle school outright, per how these controls are meant to work.
+      const districtName = SELECTED_DISTRICT_CODE
+        ? (window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === SELECTED_DISTRICT_CODE) || {}).name
         : '';
+      const visiblePoints = points.filter(p =>
+        (!SELECTED_DISTRICT_CODE || p.districtCode === SELECTED_DISTRICT_CODE) &&
+        (!SELECTED_LEVEL || p.level === SELECTED_LEVEL)
+      );
+
+      const filterBits = [];
+      if (SELECTED_DISTRICT_CODE) filterBits.push(districtName);
+      if (SELECTED_LEVEL) filterBits.push(`${SELECTED_LEVEL} schools`);
+      const filterDescription = filterBits.length ? ` — filtered to ${filterBits.join(', ')}` : '';
+
+      if (!visiblePoints.length) {
+        document.getElementById('regressionResultsArea').innerHTML = `
+          <div class="no-data-card">
+            <strong>No schools match these filters</strong>
+            ${filterBits.join(' + ')} has no schools with a reported result for ${testType} ${contentArea} (${GRADE_LABELS[grade] || grade}, ${year}).
+            Try a different district, level, or grade.
+          </div>
+        `;
+        return;
+      }
 
       const width = 900, height = 520, margin = { top: 20, right: 30, bottom: 50, left: 55 };
       const plotW = width - margin.left - margin.right;
@@ -628,42 +740,41 @@
       svg += `<line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
       svg += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
 
-      // Regression trend line, drawn from real slope/intercept across full 0-100 X range (clamped to 0-100 Y)
+      // Regression trend line -- always the FULL statewide fit for this
+      // Test Type/Content Area/Year/Grade, regardless of the district/level
+      // filters above. It's a fixed reference to compare the filtered
+      // subset against, not recomputed for whatever's currently visible.
       const clamp = v => Math.max(0, Math.min(100, v));
       const yAt0 = clamp(ols.intercept);
       const yAt100 = clamp(ols.slope * 100 + ols.intercept);
       svg += `<line x1="${toX(0)}" y1="${toY(yAt0)}" x2="${toX(100)}" y2="${toY(yAt100)}" stroke="var(--trend-line)" stroke-width="2" stroke-dasharray="7 5"/>`;
 
-      // Points -- non-highlighted schools draw first (so highlighted ones sit
-      // on top), each with an invisible larger hit-circle per interaction.md
-      // ("hit target bigger than the mark").
-      const ordered = highlightDistrict
-        ? [...points.filter(p => p.districtCode !== highlightDistrict), ...points.filter(p => p.districtCode === highlightDistrict)]
-        : points;
+      // Selected school (if any) draws last so it sits on top of its peers.
+      const ordered = SELECTED_SCHOOL_CODE
+        ? [...visiblePoints.filter(p => p.code !== SELECTED_SCHOOL_CODE), ...visiblePoints.filter(p => p.code === SELECTED_SCHOOL_CODE)]
+        : visiblePoints;
 
       let pointsSvg = '';
       ordered.forEach((p, i) => {
-        const isHighlighted = !highlightDistrict || p.districtCode === highlightDistrict;
-        const opacity = isHighlighted ? 0.85 : 0.15;
-        const radius = isHighlighted && highlightDistrict ? 6 : 4.5;
-        const color = LEVEL_COLORS_HEX[p.level] || '#94A3B8';
+        const isSelectedSchool = p.code === SELECTED_SCHOOL_CODE;
+        const color = isSelectedSchool ? '#DC2626' : (LEVEL_COLORS_HEX[p.level] || '#94A3B8');
+        const radius = isSelectedSchool ? 7.5 : 4.5;
         const cx = toX(p.x), cy = toY(p.y);
-        pointsSvg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="${opacity}" stroke="#FFFFFF" stroke-width="${isHighlighted && highlightDistrict ? 1.5 : 1}" data-idx="${i}"/>`;
+        pointsSvg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="${isSelectedSchool ? 2 : 1}" data-idx="${i}"/>`;
         pointsSvg += `<circle cx="${cx}" cy="${cy}" r="12" fill="transparent" data-idx="${i}" class="hit-target"/>`;
       });
       svg += pointsSvg;
 
       const nDisplay = ols.n.toLocaleString();
-      const highlightNote = highlightDistrict
-        ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${highlightName}</strong> — its schools are shown at full opacity with a white ring; all others are dimmed.</div>`
-        : '';
+      const visibleDisplay = visiblePoints.length.toLocaleString();
+      const selectedSchoolPoint = SELECTED_SCHOOL_CODE ? visiblePoints.find(p => p.code === SELECTED_SCHOOL_CODE) : null;
 
       document.getElementById('regressionResultsArea').innerHTML = `
         <div class="viz-card">
           <div class="viz-header">
             <div class="viz-header-titles">
-              <h2>${testType} — ${contentArea} (${year})</h2>
-              <p>% Economically Disadvantaged (X) vs. % Met + Exceeded on Georgia Milestones (Y) — ${nDisplay} real Georgia schools</p>
+              <h2>${testType} — ${contentArea}, ${GRADE_LABELS[grade] || grade} (${year})</h2>
+              <p>% Economically Disadvantaged (X) vs. % Met + Exceeded on Georgia Milestones (Y) — showing ${visibleDisplay} of ${nDisplay} real Georgia schools${filterDescription}</p>
             </div>
           </div>
           <div class="chart-container">
@@ -673,25 +784,26 @@
             <div id="chartTooltip"></div>
           </div>
           <p id="regChartDesc" class="visually-hidden">
-            Scatter plot with a downward-sloping linear regression line: ${ols.n} Georgia schools plotted by percent economically
-            disadvantaged on the X axis and percent meeting or exceeding expectations on ${contentArea} (${testType}, ${year}) on the
-            Y axis. Correlation r = ${ols.r}, R-squared = ${ols.rSquared}. Elementary schools are blue, middle schools orange, high
-            schools aqua. A full data table is available below the chart.
+            Scatter plot with a downward-sloping linear regression line: ${visibleDisplay} Georgia schools plotted by percent economically
+            disadvantaged on the X axis and percent meeting or exceeding expectations on ${contentArea} (${testType}, ${GRADE_LABELS[grade] || grade}, ${year}) on the
+            Y axis, out of ${nDisplay} statewide. Correlation r = ${ols.r}, R-squared = ${ols.rSquared} (statewide, unfiltered). Elementary schools are blue,
+            middle schools orange, high schools aqua. A full data table is available below the chart.
           </p>
-          ${highlightNote}
+          ${selectedSchoolPoint ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${selectedSchoolPoint.name}</strong> (red) — ${selectedSchoolPoint.x}% economically disadvantaged, ${selectedSchoolPoint.y}% met + exceeded.</div>` : ''}
           <div class="chart-legend">
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-elementary)"></span> Elementary</div>
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-middle)"></span> Middle</div>
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-high)"></span> High</div>
-            <div class="legend-item"><span class="legend-line"></span> Regression Fit (all schools)</div>
+            ${selectedSchoolPoint ? '<div class="legend-item"><span class="legend-swatch" style="background:#DC2626"></span> Selected School</div>' : ''}
+            <div class="legend-item"><span class="legend-line"></span> Regression Fit (statewide, all schools)</div>
           </div>
         </div>
 
         <div class="stats-table-card">
           <h2>Regression Model Summary</h2>
-          <p>Statistical relationship between economic disadvantage and Milestones achievement for this exact selection</p>
+          <p>Statistical relationship between economic disadvantage and Milestones achievement — statewide model, unaffected by the filters above</p>
           <table class="ols-table" id="olsStatsTable">
-            <caption>OLS linear regression, ${contentArea} (${testType}), ${year} — real GOSA data, ${nDisplay} schools</caption>
+            <caption>OLS linear regression, ${contentArea} (${testType}), ${GRADE_LABELS[grade] || grade}, ${year} — real GOSA data, ${nDisplay} schools statewide</caption>
             <thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead>
             <tbody>
               <tr><th scope="row">Correlation Coefficient (r)</th><td>${ols.r} (${Math.abs(ols.r) >= 0.7 ? 'Strong' : Math.abs(ols.r) >= 0.4 ? 'Moderate' : 'Weak'} ${ols.r < 0 ? 'Negative' : 'Positive'})</td></tr>
@@ -700,10 +812,11 @@
               <tr><th scope="row">Intercept</th><td>${ols.intercept}</td></tr>
               <tr><th scope="row">Equation</th><td>${ols.equation}</td></tr>
               <tr><th scope="row">Schools in Model</th><td>${nDisplay} of Georgia's ~2,301 public schools (every school with both a reported ED% and Milestones result for this combination)</td></tr>
+              <tr><th scope="row">Schools Currently Shown</th><td>${visibleDisplay}${filterDescription || ' (no filters applied)'}</td></tr>
             </tbody>
           </table>
 
-          <button class="data-table-toggle" id="dataTableToggle" onclick="toggleSchoolTable()" aria-expanded="false" aria-controls="schoolTableWrap">Show all ${nDisplay} schools as a table</button>
+          <button class="data-table-toggle" id="dataTableToggle" onclick="toggleSchoolTable()" aria-expanded="false" aria-controls="schoolTableWrap">Show ${visibleDisplay} shown schools as a table</button>
           <div class="school-table-wrap" id="schoolTableWrap">
             <table class="school-table">
               <thead>
@@ -716,7 +829,7 @@
       `;
 
       wireTooltip(ordered);
-      populateSchoolTable(points);
+      populateSchoolTable(visiblePoints);
     }
 
     function populateSchoolTable(points) {
