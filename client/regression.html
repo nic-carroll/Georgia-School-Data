@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="columbia-county">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regression Analysis | Georgia Educational Analytics</title>
+
+  <!-- Fonts preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Master Georgia Dataset script (All 235 Districts & 2,301 Schools) -->
+  <script src="georgia_master_data.js"></script>
+
+  <!--
+    General dataset description for search/AI crawlers, per real methodology
+    below -- deliberately NOT populated with one selection's stats (there are
+    50 different Test Type x Content Area x Year combinations, each with its
+    own r/slope; hardcoding one as "the" number would misrepresent the other
+    49). The real per-combination numbers are in the semantic <table> and the
+    fetched JSON, both visible in page source -- see #olsStatsTable.
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Georgia Milestones Achievement vs. Economic Disadvantage Regression",
+    "description": "Ordinary least squares linear regression, computed per Test Type (EOC/EOG) x Content Area x School Year, between each Georgia public school's % Economically Disadvantaged students (GOSA Attendance dataset) and its % of students Meeting or Exceeding expectations on Georgia Milestones (GOSA Milestones EOC/EOG datasets). Covers every Georgia school with both figures on record for a given combination -- not a sample.",
+    "variableMeasured": [
+      { "@type": "PropertyValue", "name": "Predictor Variable (X)", "description": "% Economically Disadvantaged students (STUDENT_COUNT_ED / STUDENT_COUNT_ALL), school-level, from GOSA's Attendance dataset" },
+      { "@type": "PropertyValue", "name": "Response Variable (Y)", "description": "% of students scoring Proficient Learner or Distinguished Learner (Met + Exceeded expectations) on the selected Georgia Milestones EOC/EOG content area, All Students subgroup, All Grades" }
+    ],
+    "measurementTechnique": "Ordinary Least Squares (OLS) simple linear regression, computed per Test Type x Content Area x School Year combination",
+    "creator": { "@type": "Organization", "name": "Georgia Office of Student Achievement (GOSA)" },
+    "temporalCoverage": "2020-21/2024-25"
+  }
+  </script>
+
+  <style>
+    /* Columbia County Schools Theme */
+    :root[data-brand="columbia-county"] {
+      --brand-id: "columbia-county";
+      --brand-name: "Columbia County School District";
+      --brand-primary: rgb(0, 2, 93);
+      --brand-secondary: rgb(217, 35, 46);
+      --brand-accent: rgb(0, 85, 165);
+      --brand-bg: #F8FAFC;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: #E2E8F0;
+      --brand-font: 'Barlow', 'Inter', system-ui, sans-serif;
+    }
+
+    /* Georgia Southern University Theme */
+    :root[data-brand="georgia-southern"] {
+      --brand-id: "georgia-southern";
+      --brand-name: "Georgia Southern University";
+      --brand-primary: rgb(0, 19, 68);
+      --brand-secondary: rgb(185, 131, 45);
+      --brand-accent: rgb(104, 202, 235);
+      --brand-bg: #F4F6F9;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: rgba(0, 19, 68, 0.14);
+      --brand-font: 'Merriweather', 'Barlow', serif;
+    }
+
+    /* Categorical data colors for school level -- fixed across brands and
+       themes on purpose (chart data identity, not brand chrome). First 3
+       slots of the validated 8-hue categorical palette: the only 3 that
+       clear the all-pairs CVD/contrast floors together, which a scatter
+       plot needs (every category visible at once, not just adjacent). */
+    :root {
+      --level-elementary: #2a78d6;
+      --level-middle: #eb6834;
+      --level-high: #1baf7a;
+      --trend-line: #475569;
+      --grid-line: #e1e0d9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--brand-bg);
+      color: var(--brand-text-primary);
+      font-family: var(--brand-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* DEV-ONLY: brand preview widget. Remove before production launch. */
+    .dev-preview-widget {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .dev-preview-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #FBBF24;
+      white-space: nowrap;
+    }
+    .dev-preview-widget select {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .dev-preview-widget select option { color: #0F172A; background: #FFFFFF; }
+
+    .app-header {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    .header-branding { display: flex; align-items: center; gap: 1rem; }
+    .header-logo {
+      width: 42px; height: 42px;
+      background: var(--brand-secondary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: #FFFFFF;
+    }
+    .header-title h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+    .header-title p { font-size: 0.8rem; opacity: 0.85; }
+
+    /* Page nav tabs -- shared pattern with index.html */
+    .page-nav {
+      background: var(--brand-surface);
+      border-bottom: 1px solid var(--brand-border);
+      display: flex;
+      gap: 0.25rem;
+      padding: 0 2rem;
+    }
+    .page-nav a {
+      display: inline-block;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text-secondary);
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+    }
+    .page-nav a.active {
+      color: var(--brand-primary);
+      border-bottom-color: var(--brand-secondary);
+    }
+    .page-nav a:hover:not(.active) { color: var(--brand-text-primary); }
+
+    .main-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .hero-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      border: 1px solid var(--brand-border);
+      border-top: 4px solid var(--brand-secondary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .hero-card h2 { font-size: 1.35rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.5rem; }
+    .hero-card p { font-size: 0.94rem; color: var(--brand-text-secondary); line-height: 1.55; }
+
+    .selector-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .selector-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand-text-secondary);
+      margin-bottom: 1rem;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+    .control-box { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+    .control-box label { font-size: 0.82rem; font-weight: 700; color: var(--brand-text-primary); }
+    .control-box select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--brand-border);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--brand-text-primary);
+      background: #F8FAFC;
+      outline: none;
+      cursor: pointer;
+      text-overflow: ellipsis;
+    }
+    .controls-divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px dashed var(--brand-border);
+      margin: 0.25rem 0;
+    }
+
+    .no-data-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px dashed var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      color: var(--brand-text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .no-data-card strong { display: block; color: var(--brand-text-primary); font-size: 1.05rem; margin-bottom: 0.4rem; }
+
+    /* Chart card */
+    .viz-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .viz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .viz-header-titles h2 { font-size: 1.25rem; font-weight: 800; color: var(--brand-primary); }
+    .viz-header-titles p { font-size: 0.85rem; color: var(--brand-text-secondary); margin-top: 0.2rem; }
+
+    .chart-container {
+      width: 100%;
+      position: relative;
+      background: #FAFBFD;
+      border-radius: 10px;
+      border: 1px solid var(--brand-border);
+      padding: 1rem;
+    }
+    .chart-container svg { width: 100%; height: 520px; display: block; }
+
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      flex-wrap: wrap;
+      color: var(--brand-text-secondary);
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .legend-line { width: 20px; height: 0; border-top: 2px dashed var(--trend-line); }
+
+    /* Tooltip */
+    #chartTooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.1s ease;
+      z-index: 10;
+      max-width: 240px;
+    }
+    #chartTooltip.visible { opacity: 1; }
+    #chartTooltip strong { display: block; font-size: 0.88rem; }
+    #chartTooltip .tt-district { color: #94A3B8; margin-bottom: 0.3rem; }
+    #chartTooltip .tt-value { color: #FFFFFF; font-weight: 700; }
+
+    /* Semantic stats table */
+    .stats-table-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .stats-table-card h2 { font-size: 1.05rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.25rem; }
+    .stats-table-card > p { font-size: 0.85rem; color: var(--brand-text-secondary); margin-bottom: 1rem; }
+    table.ols-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    table.ols-table caption { text-align: left; font-size: 0.8rem; color: var(--brand-text-secondary); margin-bottom: 0.75rem; }
+    table.ols-table th, table.ols-table td {
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+      border-bottom: 1px solid var(--brand-border);
+    }
+    table.ols-table thead th {
+      background: #F8FAFC;
+      font-weight: 700;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--brand-text-secondary);
+    }
+    table.ols-table tbody th { font-weight: 700; color: var(--brand-text-primary); width: 40%; }
+
+    /* Toggleable full data table */
+    .data-table-toggle {
+      background: var(--brand-surface);
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--brand-primary);
+      cursor: pointer;
+    }
+    .data-table-toggle:hover { background: #F8FAFC; }
+    .school-table-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      display: none;
+    }
+    .school-table-wrap.open { display: block; }
+    table.school-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.school-table thead th {
+      position: sticky; top: 0;
+      background: #F8FAFC;
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--brand-text-secondary);
+      border-bottom: 1px solid var(--brand-border);
+    }
+    table.school-table td {
+      padding: 0.5rem 0.9rem;
+      border-bottom: 1px solid var(--brand-border);
+    }
+    table.school-table .level-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 0.4rem; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DEV-ONLY: brand preview widget. Remove before production launch. -->
+  <div class="dev-preview-widget" id="devPreviewWidget">
+    <span class="dev-preview-label">Preview brand</span>
+    <select onchange="switchTheme(this.value)">
+      <option value="columbia-county">Columbia County Schools</option>
+      <option value="georgia-southern">Georgia Southern University</option>
+    </select>
+  </div>
+
+  <header class="app-header">
+    <div class="header-branding">
+      <div class="header-logo" id="headerLogo">GA</div>
+      <div class="header-title">
+        <h1 id="headerTitle">Georgia Educational Analytics</h1>
+        <p>Publicly Available GOSA Performance Data, Explored &amp; Compared</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="page-nav" aria-label="Site sections">
+    <a href="index.html">Data Drilldown</a>
+    <a href="regression.html" class="active" aria-current="page">Regression Analysis</a>
+  </nav>
+
+  <main class="main-container">
+
+    <div class="hero-card">
+      <h2>Demographic Outcome Modeling</h2>
+      <p>
+        Each dot below is one real Georgia public school. The chart plots that school's percentage of
+        economically disadvantaged students against its Georgia Milestones achievement rate for the
+        content area and year you select, and fits a real linear regression line across every school with
+        both figures on record — not a sample. Source: GOSA Attendance and Milestones EOC/EOG datasets.
+      </p>
+    </div>
+
+    <div class="selector-card">
+      <div class="selector-title">MODEL CONTROLS</div>
+      <div class="controls-grid">
+        <div class="control-box">
+          <label for="regYearSelect">1. School Year</label>
+          <select id="regYearSelect" onchange="onYearOrTestTypeChanged()">
+            <option value="">— Select —</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="regTestTypeSelect">2. Test Type</label>
+          <select id="regTestTypeSelect" onchange="onYearOrTestTypeChanged()">
+            <option value="">— Select —</option>
+            <option value="EOC">End of Course (EOC)</option>
+            <option value="EOG">End of Grade (EOG)</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="regContentAreaSelect">3. Content Area</label>
+          <select id="regContentAreaSelect" onchange="onCombinationChanged()">
+            <option value="">— Select year &amp; test type first —</option>
+          </select>
+        </div>
+        <hr class="controls-divider" />
+        <div class="control-box">
+          <label for="regDistrictSelect">4. Highlight a District (optional)</label>
+          <select id="regDistrictSelect" onchange="onDistrictHighlightChanged()">
+            <option value="">— All schools, no highlight —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="regressionResultsArea">
+      <!-- Rendered dynamically: no-data prompt, or the chart + stats -->
+    </div>
+
+  </main>
+
+  <script>
+    let META = null;
+    let CURRENT_COMBO = null; // { testType, contentArea, year, ols, points }
+    let SELECTED_DISTRICT_CODE = '';
+    let LATEST_FETCH_TOKEN = 0;
+    const DATA_CACHE = {};
+
+    const LEVEL_COLORS = { Elementary: 'var(--level-elementary)', Middle: 'var(--level-middle)', High: 'var(--level-high)' };
+    const LEVEL_COLORS_HEX = { Elementary: '#2a78d6', Middle: '#eb6834', High: '#1baf7a' };
+
+    async function initRegressionPage() {
+      try {
+        const resp = await fetch('data/regression/_meta.json');
+        META = await resp.json();
+      } catch (e) {
+        console.error('Could not load data/regression/_meta.json', e);
+        META = { EOC: { years: [], contentAreasByYear: {} }, EOG: { years: [], contentAreasByYear: {} } };
+      }
+      populateYearDropdown();
+      populateDistrictDropdown();
+      renderPrompt();
+    }
+
+    function populateYearDropdown() {
+      const select = document.getElementById('regYearSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      const years = new Set([...(META.EOC.years || []), ...(META.EOG.years || [])]);
+      Array.from(years).sort().reverse().forEach(yr => {
+        const opt = document.createElement('option');
+        opt.value = yr; opt.innerText = yr;
+        select.appendChild(opt);
+      });
+    }
+
+    function populateDistrictDropdown() {
+      const select = document.getElementById('regDistrictSelect');
+      select.innerHTML = '<option value="">— All schools, no highlight —</option>';
+      if (!window.GEORGIA_GOSA_MASTER || !window.GEORGIA_GOSA_MASTER.districts) return;
+      window.GEORGIA_GOSA_MASTER.districts.forEach(d => {
+        if (!d.schools || !d.schools.length) return;
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.innerText = `${d.name} [Code: ${d.code}]`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onYearOrTestTypeChanged() {
+      const year = document.getElementById('regYearSelect').value;
+      const testType = document.getElementById('regTestTypeSelect').value;
+      const contentAreaSelect = document.getElementById('regContentAreaSelect');
+
+      if (!year || !testType) {
+        contentAreaSelect.innerHTML = '<option value="">— Select year &amp; test type first —</option>';
+        renderPrompt();
+        return;
+      }
+
+      const tyMeta = META[testType] || { contentAreasByYear: {} };
+      const areas = (tyMeta.contentAreasByYear && tyMeta.contentAreasByYear[year]) || [];
+      contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
+      areas.forEach(area => {
+        const opt = document.createElement('option');
+        opt.value = area; opt.innerText = area;
+        contentAreaSelect.appendChild(opt);
+      });
+      if (!areas.length) {
+        contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${year}</option>`;
+      }
+      renderPrompt();
+    }
+
+    function onDistrictHighlightChanged() {
+      SELECTED_DISTRICT_CODE = document.getElementById('regDistrictSelect').value;
+      if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
+    }
+
+    function slugify(contentArea) {
+      return contentArea.toLowerCase().replace(/ /g, '-').replace(/:/g, '').replace(/\//g, '-');
+    }
+
+    async function onCombinationChanged() {
+      const year = document.getElementById('regYearSelect').value;
+      const testType = document.getElementById('regTestTypeSelect').value;
+      const contentArea = document.getElementById('regContentAreaSelect').value;
+
+      if (!year || !testType || !contentArea) {
+        renderPrompt();
+        return;
+      }
+
+      const key = `${testType}_${slugify(contentArea)}_${year}`;
+      const fetchToken = ++LATEST_FETCH_TOKEN;
+      document.getElementById('regressionResultsArea').innerHTML = '<div class="no-data-card">Loading…</div>';
+
+      let combo = DATA_CACHE[key];
+      if (combo === undefined) {
+        try {
+          const resp = await fetch(`data/regression/${key}.json`);
+          combo = resp.ok ? await resp.json() : null;
+        } catch (e) {
+          combo = null;
+        }
+        DATA_CACHE[key] = combo;
+      }
+
+      if (fetchToken !== LATEST_FETCH_TOKEN) return;
+
+      if (!combo) {
+        renderNoData(`No regression model available for ${testType} ${contentArea} in ${year}.`);
+        return;
+      }
+
+      CURRENT_COMBO = combo;
+      renderChart(combo);
+    }
+
+    function renderPrompt() {
+      document.getElementById('regressionResultsArea').innerHTML = `
+        <div class="no-data-card">
+          <strong>Choose a school year, test type, and content area above</strong>
+          The scatter plot, regression line, and statistics will appear once a real combination is selected.
+        </div>
+      `;
+    }
+
+    function renderNoData(message) {
+      document.getElementById('regressionResultsArea').innerHTML = `
+        <div class="no-data-card">
+          <strong>No model available</strong>
+          ${message}
+        </div>
+      `;
+    }
+
+    function round1(v) { return Math.round(v * 10) / 10; }
+
+    function renderChart(combo) {
+      const { testType, contentArea, year, ols, points } = combo;
+      const highlightDistrict = SELECTED_DISTRICT_CODE;
+      const highlightName = highlightDistrict
+        ? (window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === highlightDistrict) || {}).name
+        : '';
+
+      const width = 900, height = 520, margin = { top: 20, right: 30, bottom: 50, left: 55 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const toX = x => margin.left + (x / 100) * plotW;
+      const toY = y => margin.top + plotH - (y / 100) * plotH;
+
+      let svg = '';
+
+      // Gridlines + axis ticks (0/25/50/75/100 on both axes)
+      for (let v = 0; v <= 100; v += 25) {
+        const gx = toX(v), gy = toY(v);
+        svg += `<line x1="${gx}" y1="${margin.top}" x2="${gx}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1"/>`;
+        svg += `<line x1="${margin.left}" y1="${gy}" x2="${margin.left + plotW}" y2="${gy}" stroke="var(--grid-line)" stroke-width="1"/>`;
+        svg += `<text x="${gx}" y="${margin.top + plotH + 20}" font-size="11" fill="var(--brand-text-secondary,#64748B)" text-anchor="middle">${v}%</text>`;
+        svg += `<text x="${margin.left - 10}" y="${gy + 4}" font-size="11" fill="var(--brand-text-secondary,#64748B)" text-anchor="end">${v}%</text>`;
+      }
+      svg += `<line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
+      svg += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
+
+      // Regression trend line, drawn from real slope/intercept across full 0-100 X range (clamped to 0-100 Y)
+      const clamp = v => Math.max(0, Math.min(100, v));
+      const yAt0 = clamp(ols.intercept);
+      const yAt100 = clamp(ols.slope * 100 + ols.intercept);
+      svg += `<line x1="${toX(0)}" y1="${toY(yAt0)}" x2="${toX(100)}" y2="${toY(yAt100)}" stroke="var(--trend-line)" stroke-width="2" stroke-dasharray="7 5"/>`;
+
+      // Points -- non-highlighted schools draw first (so highlighted ones sit
+      // on top), each with an invisible larger hit-circle per interaction.md
+      // ("hit target bigger than the mark").
+      const ordered = highlightDistrict
+        ? [...points.filter(p => p.districtCode !== highlightDistrict), ...points.filter(p => p.districtCode === highlightDistrict)]
+        : points;
+
+      let pointsSvg = '';
+      ordered.forEach((p, i) => {
+        const isHighlighted = !highlightDistrict || p.districtCode === highlightDistrict;
+        const opacity = isHighlighted ? 0.85 : 0.15;
+        const radius = isHighlighted && highlightDistrict ? 6 : 4.5;
+        const color = LEVEL_COLORS_HEX[p.level] || '#94A3B8';
+        const cx = toX(p.x), cy = toY(p.y);
+        pointsSvg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="${opacity}" stroke="#FFFFFF" stroke-width="${isHighlighted && highlightDistrict ? 1.5 : 1}" data-idx="${i}"/>`;
+        pointsSvg += `<circle cx="${cx}" cy="${cy}" r="12" fill="transparent" data-idx="${i}" class="hit-target"/>`;
+      });
+      svg += pointsSvg;
+
+      const nDisplay = ols.n.toLocaleString();
+      const highlightNote = highlightDistrict
+        ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${highlightName}</strong> — its schools are shown at full opacity with a white ring; all others are dimmed.</div>`
+        : '';
+
+      document.getElementById('regressionResultsArea').innerHTML = `
+        <div class="viz-card">
+          <div class="viz-header">
+            <div class="viz-header-titles">
+              <h2>${testType} — ${contentArea} (${year})</h2>
+              <p>% Economically Disadvantaged (X) vs. % Met + Exceeded on Georgia Milestones (Y) — ${nDisplay} real Georgia schools</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <svg viewBox="0 0 ${width} ${height}" role="img" aria-describedby="regChartDesc">
+              ${svg}
+            </svg>
+            <div id="chartTooltip"></div>
+          </div>
+          <p id="regChartDesc" class="visually-hidden">
+            Scatter plot with a downward-sloping linear regression line: ${ols.n} Georgia schools plotted by percent economically
+            disadvantaged on the X axis and percent meeting or exceeding expectations on ${contentArea} (${testType}, ${year}) on the
+            Y axis. Correlation r = ${ols.r}, R-squared = ${ols.rSquared}. Elementary schools are blue, middle schools orange, high
+            schools aqua. A full data table is available below the chart.
+          </p>
+          ${highlightNote}
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--level-elementary)"></span> Elementary</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--level-middle)"></span> Middle</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--level-high)"></span> High</div>
+            <div class="legend-item"><span class="legend-line"></span> Regression Fit (all schools)</div>
+          </div>
+        </div>
+
+        <div class="stats-table-card">
+          <h2>Regression Model Summary</h2>
+          <p>Statistical relationship between economic disadvantage and Milestones achievement for this exact selection</p>
+          <table class="ols-table" id="olsStatsTable">
+            <caption>OLS linear regression, ${contentArea} (${testType}), ${year} — real GOSA data, ${nDisplay} schools</caption>
+            <thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Correlation Coefficient (r)</th><td>${ols.r} (${Math.abs(ols.r) >= 0.7 ? 'Strong' : Math.abs(ols.r) >= 0.4 ? 'Moderate' : 'Weak'} ${ols.r < 0 ? 'Negative' : 'Positive'})</td></tr>
+              <tr><th scope="row">R² (Variance Explained)</th><td>${ols.rSquared}</td></tr>
+              <tr><th scope="row">Slope (β)</th><td>${ols.slope} percentage points of achievement per 1% increase in economic disadvantage</td></tr>
+              <tr><th scope="row">Intercept</th><td>${ols.intercept}</td></tr>
+              <tr><th scope="row">Equation</th><td>${ols.equation}</td></tr>
+              <tr><th scope="row">Schools in Model</th><td>${nDisplay} of Georgia's ~2,301 public schools (every school with both a reported ED% and Milestones result for this combination)</td></tr>
+            </tbody>
+          </table>
+
+          <button class="data-table-toggle" id="dataTableToggle" onclick="toggleSchoolTable()" aria-expanded="false" aria-controls="schoolTableWrap">Show all ${nDisplay} schools as a table</button>
+          <div class="school-table-wrap" id="schoolTableWrap">
+            <table class="school-table">
+              <thead>
+                <tr><th scope="col">School</th><th scope="col">District</th><th scope="col">Level</th><th scope="col">% Econ. Disadv.</th><th scope="col">% Met + Exceeded</th></tr>
+              </thead>
+              <tbody id="schoolTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      wireTooltip(ordered);
+      populateSchoolTable(points);
+    }
+
+    function populateSchoolTable(points) {
+      const sorted = [...points].sort((a, b) => a.name.localeCompare(b.name));
+      const tbody = document.getElementById('schoolTableBody');
+      const frag = document.createDocumentFragment();
+      sorted.forEach(p => {
+        const tr = document.createElement('tr');
+        const nameTd = document.createElement('td');
+        nameTd.textContent = p.name;
+        const distTd = document.createElement('td');
+        distTd.textContent = p.districtName;
+        const levelTd = document.createElement('td');
+        const dot = document.createElement('span');
+        dot.className = 'level-dot';
+        dot.style.background = LEVEL_COLORS_HEX[p.level] || '#94A3B8';
+        levelTd.appendChild(dot);
+        levelTd.appendChild(document.createTextNode(p.level));
+        const xTd = document.createElement('td');
+        xTd.textContent = p.x + '%';
+        const yTd = document.createElement('td');
+        yTd.textContent = p.y + '%';
+        tr.append(nameTd, distTd, levelTd, xTd, yTd);
+        frag.appendChild(tr);
+      });
+      tbody.innerHTML = '';
+      tbody.appendChild(frag);
+    }
+
+    function toggleSchoolTable() {
+      const wrap = document.getElementById('schoolTableWrap');
+      const btn = document.getElementById('dataTableToggle');
+      const open = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function wireTooltip(orderedPoints) {
+      const container = document.querySelector('.chart-container');
+      const svgEl = container.querySelector('svg');
+      const tooltip = document.getElementById('chartTooltip');
+
+      svgEl.addEventListener('pointermove', (e) => {
+        const target = e.target.closest('[data-idx]');
+        if (!target) { tooltip.classList.remove('visible'); return; }
+        const p = orderedPoints[parseInt(target.getAttribute('data-idx'), 10)];
+        if (!p) return;
+
+        tooltip.innerHTML = '';
+        const nameEl = document.createElement('strong');
+        nameEl.textContent = p.name;
+        const distEl = document.createElement('div');
+        distEl.className = 'tt-district';
+        distEl.textContent = `${p.districtName} · ${p.level}`;
+        const xEl = document.createElement('div');
+        xEl.innerHTML = `% Econ. Disadvantaged: <span class="tt-value">${p.x}%</span>`;
+        const yEl = document.createElement('div');
+        yEl.innerHTML = `% Met + Exceeded: <span class="tt-value">${p.y}%</span>`;
+        tooltip.append(nameEl, distEl, xEl, yEl);
+
+        const containerRect = container.getBoundingClientRect();
+        const left = e.clientX - containerRect.left + 14;
+        const top = e.clientY - containerRect.top + 14;
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.classList.add('visible');
+      });
+
+      svgEl.addEventListener('pointerleave', () => tooltip.classList.remove('visible'));
+    }
+
+    function switchTheme(brandId) {
+      document.documentElement.setAttribute('data-brand', brandId);
+      if (brandId === 'georgia-southern') {
+        document.getElementById('headerLogo').innerText = 'GS';
+        document.getElementById('headerTitle').innerText = 'Georgia Southern Educational Analytics';
+      } else {
+        document.getElementById('headerLogo').innerText = 'GA';
+        document.getElementById('headerTitle').innerText = 'Georgia Educational Analytics';
+      }
+    }
+
+    initRegressionPage();
+  </script>
+</body>
+</html>

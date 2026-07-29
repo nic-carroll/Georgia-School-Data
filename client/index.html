@@ -100,6 +100,29 @@
       opacity: 0.85;
     }
 
+    /* Page nav tabs -- shared pattern with regression.html */
+    .page-nav {
+      background: var(--brand-surface);
+      border-bottom: 1px solid var(--brand-border);
+      display: flex;
+      gap: 0.25rem;
+      padding: 0 2rem;
+    }
+    .page-nav a {
+      display: inline-block;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text-secondary);
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+    }
+    .page-nav a.active {
+      color: var(--brand-primary);
+      border-bottom-color: var(--brand-secondary);
+    }
+    .page-nav a:hover:not(.active) { color: var(--brand-text-primary); }
+
     /* ===================================================================
        DEV-ONLY: brand preview widget. Not part of the production site —
        a real deployment ships pre-branded for one district/institution,
@@ -614,6 +637,11 @@
       </div>
     </div>
   </header>
+
+  <nav class="page-nav" aria-label="Site sections">
+    <a href="index.html" class="active" aria-current="page">Data Drilldown</a>
+    <a href="regression.html">Regression Analysis</a>
+  </nav>
 
   <!-- Main Container -->
   <main class="main-container">

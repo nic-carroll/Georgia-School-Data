@@ -40,3 +40,11 @@ server/data/gosa/milestones_dashboard/
 
 # client/data/milestones/ is INTENTIONALLY NOT ignored — it's pushed and
 # served via GitHub Pages so the live dashboard has real data to fetch.
+
+# Same pattern for the regression model data (regenerate with
+# server/scripts/regression_analysis.py) -- only ~6MB, so size isn't the
+# issue here, just avoiding tracking the redundant server-side copy.
+server/data/gosa/regression/
+
+# client/data/regression/ is INTENTIONALLY NOT ignored -- same reason as
+# client/data/milestones/ above.

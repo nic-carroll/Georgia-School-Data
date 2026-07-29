@@ -1,0 +1,95 @@
+{
+  "EOC": {
+    "contentAreasByYear": {
+      "2020-21": [
+        "Algebra I",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "Physical Science",
+        "US History"
+      ],
+      "2021-22": [
+        "Algebra I",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "US History"
+      ],
+      "2022-23": [
+        "Algebra I",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "US History"
+      ],
+      "2023-24": [
+        "Algebra I",
+        "Algebra: Concepts and Connections",
+        "American Literature and Composition",
+        "Biology",
+        "Coordinate Algebra",
+        "US History"
+      ],
+      "2024-25": [
+        "Algebra: Concepts and Connections",
+        "American Literature and Composition",
+        "Biology",
+        "US History"
+      ]
+    },
+    "years": [
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25"
+    ]
+  },
+  "EOG": {
+    "contentAreasByYear": {
+      "2020-21": [
+        "English Language Arts",
+        "Mathematics",
+        "Science",
+        "Social Studies"
+      ],
+      "2021-22": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ],
+      "2022-23": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ],
+      "2023-24": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ],
+      "2024-25": [
+        "English Language Arts",
+        "Mathematics",
+        "Physical Science",
+        "Science",
+        "Social Studies"
+      ]
+    },
+    "years": [
+      "2020-21",
+      "2021-22",
+      "2022-23",
+      "2023-24",
+      "2024-25"
+    ]
+  },
+  "generatedAt": "generated-by-regression_analysis.py"
+}
