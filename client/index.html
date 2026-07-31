@@ -641,6 +641,8 @@
   <nav class="page-nav" aria-label="Site sections">
     <a href="index.html" class="active" aria-current="page">Data Drilldown</a>
     <a href="regression.html">Regression Analysis</a>
+    <a href="schoolprofile.html">School Profile</a>
+    <a href="slides.html">Slide Deck Builder</a>
   </nav>
 
   <!-- Main Container -->
@@ -720,16 +722,16 @@
         <!-- 5. Content Area -->
         <div class="control-box">
           <label for="contentAreaSelect">5. Content Area</label>
-          <select id="contentAreaSelect" onchange="onSelectionChanged()">
-            <!-- Populated dynamically — only areas that actually existed that year -->
+          <select id="contentAreaSelect" onchange="onContentAreaChanged()">
+            <!-- Populated dynamically — only areas this district actually has real data for -->
           </select>
         </div>
 
         <!-- 6. Grade Level -->
         <div class="control-box">
           <label for="gradeLevelSelect">6. Grade Level</label>
-          <select id="gradeLevelSelect" onchange="onSelectionChanged()">
-            <!-- Populated dynamically based on Test Type; includes an All Grades option -->
+          <select id="gradeLevelSelect" onchange="onGradeLevelChanged()">
+            <!-- Populated dynamically — only grades this district/content area actually has real data for -->
           </select>
         </div>
 
@@ -761,18 +763,11 @@
     let ALL_SCHOOLS = [];
     let SELECTED_DISTRICT = null;
     let SELECTED_SCHOOL = null;
-    let META = null; // loaded from data/milestones/_meta.json — real years/content-areas/grades/subgroups
+    let META = null; // loaded from data/milestones/_meta.json — real years (Content Area/Grade/Subgroup now come from real per-district coverage instead, see COVERAGE_CACHE)
     const DATA_CACHE = {}; // "<districtCode>__<testType>_<year>" -> parsed chunk JSON, or null if fetch failed
-    let LATEST_FETCH_TOKEN = 0; // guards against an in-flight fetch resolving after a newer selection
-
-    const GOSA_SUBGROUPS_FALLBACK = [
-      'All Students', 'Economically Disadvantaged', 'Not Economically Disadvantaged',
-      'Students with Disabilities', 'Students without Disabilities',
-      'Limited English Proficient', 'Not Limited English Proficient',
-      'Male', 'Female', 'Foster Care', 'Homeless', 'Migrant', 'Non-Migrant', 'Military Connected',
-      'American Indian or Alaskan Native', 'Asian', 'Black or African American',
-      'Hispanic', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'White'
-    ];
+    const COVERAGE_CACHE = {}; // same keys as DATA_CACHE -> parseChunkCoverage(chunk) result, or null
+    let LATEST_FETCH_TOKEN = 0; // guards against an in-flight results fetch resolving after a newer selection
+    let LATEST_COVERAGE_TOKEN = 0; // same guard, for the dropdown-narrowing fetch (separate from the results fetch)
 
     // Georgia Milestones' four achievement levels (standard GaDOE descriptors).
     const ACHIEVEMENT_LEVELS = [
@@ -800,13 +795,13 @@
         META = await resp.json();
       } catch (e) {
         console.error('Could not load data/milestones/_meta.json — drilldown will be unable to show real availability.', e);
-        META = { EOC: { years: [], grades: [], subgroups: GOSA_SUBGROUPS_FALLBACK, contentAreasByYear: {} },
-                 EOG: { years: [], grades: [], subgroups: GOSA_SUBGROUPS_FALLBACK, contentAreasByYear: {} } };
+        META = { EOC: { years: [] }, EOG: { years: [] } };
       }
 
       populateYearDropdown();
-      populateSubgroupDropdown();
-      resetContentAreaAndGrade();
+      document.getElementById('contentAreaSelect').innerHTML = '<option value="">— Select district, test type & year first —</option>';
+      resetGradeToPlaceholder('— Select content area first —');
+      resetSubgroupToPlaceholder('— Select content area & grade first —');
       refreshResults();
     }
 
@@ -828,27 +823,16 @@
       });
     }
 
-    function onDistrictChanged(districtCode) {
+    // District no longer just populates the School list — it also drives
+    // real per-district Content Area/Grade/Subgroup coverage (see
+    // refreshContentAreaGradeSubgroupOptions), since neither can be derived
+    // without knowing which district's data chunk to inspect.
+    async function onDistrictChanged(districtCode) {
       const district = GOSA_DISTRICTS.find(d => d.code === districtCode || d.name === districtCode);
-      const schoolSelect = document.getElementById('schoolSelect');
       SELECTED_SCHOOL = null;
+      SELECTED_DISTRICT = (district && district.schools && district.schools.length) ? district : null;
 
-      if (!district || !district.schools || !district.schools.length) {
-        SELECTED_DISTRICT = null;
-        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
-        refreshResults();
-        return;
-      }
-
-      SELECTED_DISTRICT = district;
-      schoolSelect.innerHTML = '<option value="">— Select —</option>';
-      district.schools.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s.name;
-        opt.innerText = s.name;
-        schoolSelect.appendChild(opt);
-      });
-
+      await refreshContentAreaGradeSubgroupOptions();
       refreshResults();
     }
 
@@ -857,33 +841,97 @@
       refreshResults();
     }
 
-    function resetContentAreaAndGrade(placeholder) {
-      const contentAreaSelect = document.getElementById('contentAreaSelect');
+    function resetGradeToPlaceholder(placeholder) {
       const gradeLevelSelect = document.getElementById('gradeLevelSelect');
-      contentAreaSelect.innerHTML = `<option value="">${placeholder || '— Select —'}</option>`;
-      gradeLevelSelect.innerHTML = '<option value="">— Select —</option>';
+      gradeLevelSelect.innerHTML = `<option value="">${placeholder}</option>`;
       gradeLevelSelect.disabled = false;
     }
 
-    // Year and Test Type both gate which Content Areas / Grades are even
-    // real options (curricula changed across the 10 available years — e.g.
-    // "Algebra I" became "Algebra: Concepts and Connections" in 2023-24) —
-    // and both require fetching a different data chunk.
-    function onYearOrTestTypeChanged() {
-      if (!META) return;
+    function resetSubgroupToPlaceholder(placeholder) {
+      document.getElementById('subgroupSelect').innerHTML = `<option value="">${placeholder}</option>`;
+    }
+
+    // Real per-district coverage derived from an already-fetched chunk's
+    // real keys — "<CONTENT_AREA>|<GRADE>|<SUBGROUP>|<ENTITY>". A STATE-only
+    // row doesn't count as "this district has it" (Georgia overall could
+    // have data for a course this district's schools never took), so STATE
+    // rows are skipped; DISTRICT and real school INSTN_NUMBER entities both
+    // count as real coverage.
+    function parseChunkCoverage(chunk) {
+      const coverage = {};
+      Object.keys(chunk).forEach(key => {
+        const parts = key.split('|');
+        if (parts.length !== 4) return;
+        const [contentArea, grade, subgroup, entity] = parts;
+        if (entity === 'STATE') return;
+        if (!coverage[contentArea]) coverage[contentArea] = {};
+        if (!coverage[contentArea][grade]) coverage[contentArea][grade] = { subgroups: new Set(), schools: new Set() };
+        coverage[contentArea][grade].subgroups.add(subgroup);
+        if (entity !== 'DISTRICT') coverage[contentArea][grade].schools.add(entity);
+      });
+      return coverage;
+    }
+
+    // Fetches+caches a district/testType/year chunk, and derives+caches its
+    // real coverage alongside it. Shared by the dropdown-narrowing flow
+    // below (called as soon as District+TestType+Year are known, well
+    // before School/Content Area/Grade/Subgroup are picked) and by
+    // refreshResults() (which almost always hits the cache by the time it
+    // runs).
+    async function ensureChunkLoaded(districtCode, testType, year) {
+      const chunkKey = `${districtCode}__${testType}_${year}`;
+      let chunk = DATA_CACHE[chunkKey];
+      if (chunk === undefined) {
+        try {
+          const resp = await fetch(`data/milestones/${chunkKey}.json`);
+          chunk = resp.ok ? await resp.json() : null;
+        } catch (e) {
+          chunk = null;
+        }
+        DATA_CACHE[chunkKey] = chunk;
+        COVERAGE_CACHE[chunkKey] = chunk ? parseChunkCoverage(chunk) : null;
+      }
+      return { chunk, coverage: COVERAGE_CACHE[chunkKey] };
+    }
+
+    // Content Area options (and, once one's picked, Grade — see
+    // onContentAreaChanged — and Subgroup — see onGradeLevelChanged) are
+    // derived from this district's REAL per-chunk coverage, never a
+    // statewide list, so a visitor can never land on a combination this
+    // district has zero real data for. Requires District+TestType+Year all
+    // known first (a course's real offering varies district to district —
+    // there's no honest "district-agnostic" Content Area list to fall back
+    // to), so this shows a clear "pick these first" placeholder until then.
+    async function refreshContentAreaGradeSubgroupOptions() {
       const testType = document.getElementById('testTypeSelect').value;
       const year = document.getElementById('yearSelect').value;
+      const contentAreaSelect = document.getElementById('contentAreaSelect');
+      const coverageToken = ++LATEST_COVERAGE_TOKEN;
 
-      if (!testType || !year) {
-        resetContentAreaAndGrade('— Select year & test type first —');
-        refreshResults();
+      resetGradeToPlaceholder('— Select content area first —');
+      resetSubgroupToPlaceholder('— Select content area & grade first —');
+
+      if (!SELECTED_DISTRICT || !testType || !year) {
+        contentAreaSelect.innerHTML = '<option value="">— Select district, test type & year first —</option>';
+        refreshSchoolOptions(null);
         return;
       }
 
-      const tyMeta = META[testType] || { contentAreasByYear: {}, grades: [] };
-      const areas = (tyMeta.contentAreasByYear && tyMeta.contentAreasByYear[year]) || [];
+      contentAreaSelect.innerHTML = '<option value="">Checking available data…</option>';
+      contentAreaSelect.disabled = true;
 
-      const contentAreaSelect = document.getElementById('contentAreaSelect');
+      const { coverage } = await ensureChunkLoaded(SELECTED_DISTRICT.code, testType, year);
+      if (coverageToken !== LATEST_COVERAGE_TOKEN) return; // superseded by a newer selection
+
+      contentAreaSelect.disabled = false;
+
+      const areas = coverage ? Object.keys(coverage).sort() : [];
+      if (!areas.length) {
+        contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${SELECTED_DISTRICT.name} in ${year}</option>`;
+        refreshSchoolOptions(null);
+        return;
+      }
+
       contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
       areas.forEach(area => {
         const opt = document.createElement('option');
@@ -892,26 +940,135 @@
         contentAreaSelect.appendChild(opt);
       });
 
+      // District+TestType+Year known, no Content Area/Grade chosen yet —
+      // any school with a real record anywhere in this chunk qualifies.
+      refreshSchoolOptions(coverage);
+    }
+
+    function onContentAreaChanged() {
+      const testType = document.getElementById('testTypeSelect').value;
+      const year = document.getElementById('yearSelect').value;
+      const contentArea = document.getElementById('contentAreaSelect').value;
       const gradeLevelSelect = document.getElementById('gradeLevelSelect');
+      const coverage = SELECTED_DISTRICT ? COVERAGE_CACHE[`${SELECTED_DISTRICT.code}__${testType}_${year}`] : null;
+
+      resetSubgroupToPlaceholder('— Select content area & grade first —');
+
+      if (!contentArea || !coverage) {
+        resetGradeToPlaceholder('— Select content area first —');
+        refreshSchoolOptions(coverage);
+        refreshResults();
+        return;
+      }
+
+      const grades = coverage[contentArea] ? Object.keys(coverage[contentArea]) : [];
       gradeLevelSelect.innerHTML = '<option value="">— Select —</option>';
-      const allGradesOpt = document.createElement('option');
-      allGradesOpt.value = 'ALL';
-      allGradesOpt.innerText = testType === 'EOC' ? 'All Grades (course-based)' : 'All Grades (03-08 combined)';
-      gradeLevelSelect.appendChild(allGradesOpt);
-      if (testType === 'EOG') {
-        ['03', '04', '05', '06', '07', '08'].forEach(g => {
-          const opt = document.createElement('option');
-          opt.value = g;
-          opt.innerText = `Grade ${parseInt(g, 10)}`;
-          gradeLevelSelect.appendChild(opt);
-        });
-      }
+      // "ALL" first (the common case) if present, then real grades in order.
+      [...grades].sort((a, b) => (a === 'ALL' ? -1 : b === 'ALL' ? 1 : a.localeCompare(b))).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g;
+        opt.innerText = g === 'ALL' ? (testType === 'EOC' ? 'All Grades (course-based)' : 'All Grades (03-08 combined)') : `Grade ${parseInt(g, 10)}`;
+        gradeLevelSelect.appendChild(opt);
+      });
       gradeLevelSelect.disabled = false;
+      if (!grades.length) gradeLevelSelect.innerHTML = '<option value="">No grade data for this content area</option>';
 
-      if (!areas.length) {
-        contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${year}</option>`;
+      refreshSchoolOptions(coverage, contentArea);
+      refreshResults();
+    }
+
+    function onGradeLevelChanged() {
+      const testType = document.getElementById('testTypeSelect').value;
+      const year = document.getElementById('yearSelect').value;
+      const contentArea = document.getElementById('contentAreaSelect').value;
+      const grade = document.getElementById('gradeLevelSelect').value;
+      const subgroupSelect = document.getElementById('subgroupSelect');
+      const coverage = SELECTED_DISTRICT ? COVERAGE_CACHE[`${SELECTED_DISTRICT.code}__${testType}_${year}`] : null;
+
+      if (!grade || !contentArea || !coverage) {
+        resetSubgroupToPlaceholder('— Select content area & grade first —');
+        refreshSchoolOptions(coverage, contentArea);
+        refreshResults();
+        return;
       }
 
+      const entry = coverage[contentArea] && coverage[contentArea][grade];
+      const subgroups = entry ? Array.from(entry.subgroups) : [];
+
+      subgroupSelect.innerHTML = '<option value="">— Select —</option>';
+      // "All Students" sorts first among the real options — still has to be
+      // explicitly clicked, but it's the obvious first thing to reach for.
+      const ordered = subgroups.includes('All Students')
+        ? ['All Students', ...subgroups.filter(s => s !== 'All Students').sort()]
+        : subgroups.sort();
+      ordered.forEach(sg => {
+        const opt = document.createElement('option');
+        opt.value = sg;
+        opt.innerText = sg;
+        subgroupSelect.appendChild(opt);
+      });
+      if (!ordered.length) subgroupSelect.innerHTML = '<option value="">No subgroup data for this grade</option>';
+
+      refreshSchoolOptions(coverage, contentArea, grade);
+      refreshResults();
+    }
+
+    // Filters the School dropdown down to schools with a real record for
+    // however much of Content Area/Grade has been chosen so far — "any real
+    // entity in this district's chunk" once just District+TestType+Year are
+    // known, narrowing further as Content Area then Grade are picked. If
+    // the currently-selected school no longer has data for a stricter
+    // selection, it's cleared rather than left silently stale — same
+    // "require explicit selection on every dropdown" rule this page already
+    // follows elsewhere.
+    function refreshSchoolOptions(coverage, contentArea, grade) {
+      const schoolSelect = document.getElementById('schoolSelect');
+
+      if (!SELECTED_DISTRICT) {
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        return;
+      }
+
+      let validSchools;
+      if (!coverage) {
+        // Chunk not loaded yet (Test Type/Year not both set) — unfiltered.
+        validSchools = SELECTED_DISTRICT.schools;
+      } else {
+        const validInstnNumbers = new Set();
+        Object.entries(coverage).forEach(([area, byGrade]) => {
+          if (contentArea && area !== contentArea) return;
+          Object.entries(byGrade).forEach(([g, entry]) => {
+            if (grade && g !== grade) return;
+            entry.schools.forEach(s => validInstnNumbers.add(s));
+          });
+        });
+        validSchools = SELECTED_DISTRICT.schools.filter(s => validInstnNumbers.has((s.code || '').split('-')[1]));
+      }
+
+      const stillValid = !SELECTED_SCHOOL || validSchools.some(s => s.code === SELECTED_SCHOOL.code);
+      populateSchoolOptionsFrom(validSchools, stillValid ? null : '— Select — (previous school has no data for this selection)');
+      if (!stillValid) SELECTED_SCHOOL = null;
+    }
+
+    function populateSchoolOptionsFrom(schools, placeholderNote) {
+      const schoolSelect = document.getElementById('schoolSelect');
+      schoolSelect.innerHTML = `<option value="">${placeholderNote || '— Select —'}</option>`;
+      schools.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.innerText = s.name;
+        schoolSelect.appendChild(opt);
+      });
+      if (SELECTED_SCHOOL && schools.some(s => s.code === SELECTED_SCHOOL.code)) {
+        schoolSelect.value = SELECTED_SCHOOL.name;
+      }
+    }
+
+    // Year and Test Type both gate which real Content Areas exist — see
+    // refreshContentAreaGradeSubgroupOptions(), which does the actual work
+    // (derived from this district's real coverage, not a static list).
+    async function onYearOrTestTypeChanged() {
+      await refreshContentAreaGradeSubgroupOptions();
       refreshResults();
     }
 
@@ -924,21 +1081,6 @@
         const opt = document.createElement('option');
         opt.value = yr;
         opt.innerText = yr;
-        select.appendChild(opt);
-      });
-    }
-
-    function populateSubgroupDropdown() {
-      const select = document.getElementById('subgroupSelect');
-      select.innerHTML = '<option value="">— Select —</option>';
-      const subgroups = (META.EOC.subgroups && META.EOC.subgroups.length) ? META.EOC.subgroups : GOSA_SUBGROUPS_FALLBACK;
-      // "All Students" sorts first among the real options — still has to be
-      // explicitly clicked, but it's the obvious first thing to reach for.
-      const ordered = ['All Students', ...subgroups.filter(s => s !== 'All Students').sort()];
-      ordered.forEach(sg => {
-        const opt = document.createElement('option');
-        opt.value = sg;
-        opt.innerText = sg;
         select.appendChild(opt);
       });
     }
@@ -1007,22 +1149,11 @@
         return;
       }
 
-      const districtCode = SELECTED_DISTRICT.code;
-      const chunkKey = `${districtCode}__${testType}_${year}`;
       const fetchToken = ++LATEST_FETCH_TOKEN;
 
       document.getElementById('resultsArea').innerHTML = '<div class="no-data-card">Loading…</div>';
 
-      let chunk = DATA_CACHE[chunkKey];
-      if (chunk === undefined) {
-        try {
-          const resp = await fetch(`data/milestones/${chunkKey}.json`);
-          chunk = resp.ok ? await resp.json() : null;
-        } catch (e) {
-          chunk = null;
-        }
-        DATA_CACHE[chunkKey] = chunk;
-      }
+      const { chunk } = await ensureChunkLoaded(SELECTED_DISTRICT.code, testType, year);
 
       if (fetchToken !== LATEST_FETCH_TOKEN) return; // superseded by a newer selection
 

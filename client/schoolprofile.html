@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="columbia-county">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Profile | Georgia Educational Analytics</title>
+
+  <!-- Fonts preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Master Georgia Dataset script (All 235 Districts & 2,301 Schools) -->
+  <script src="georgia_master_data.js"></script>
+
+  <style>
+    /* Columbia County Schools Theme */
+    :root[data-brand="columbia-county"] {
+      --brand-id: "columbia-county";
+      --brand-name: "Columbia County School District";
+      --brand-primary: rgb(0, 2, 93);
+      --brand-secondary: rgb(217, 35, 46);
+      --brand-accent: rgb(0, 85, 165);
+      --brand-bg: #F8FAFC;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: #E2E8F0;
+      --brand-font: 'Barlow', 'Inter', system-ui, sans-serif;
+    }
+
+    /* Georgia Southern University Theme */
+    :root[data-brand="georgia-southern"] {
+      --brand-id: "georgia-southern";
+      --brand-name: "Georgia Southern University";
+      --brand-primary: rgb(0, 19, 68);
+      --brand-secondary: rgb(185, 131, 45);
+      --brand-accent: rgb(104, 202, 235);
+      --brand-bg: #F4F6F9;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: rgba(0, 19, 68, 0.14);
+      --brand-font: 'Merriweather', 'Barlow', serif;
+    }
+
+    /* Categorical data colors -- fixed across brands and themes on purpose
+       (chart data identity, not brand chrome). Same --level-* trio as
+       regression.html (slots 1-3 of the validated 8-hue categorical
+       palette), plus the next 3 slots for the ethnicity breakdown and
+       --score-bar (slot 1, reused) for the single-series score chart. */
+    :root {
+      --level-elementary: #2a78d6;
+      --level-middle: #eb6834;
+      --level-high: #1baf7a;
+      --score-bar: #2a78d6;
+      --scope-school: #2a78d6;  /* slot 1, same as --score-bar */
+      --scope-district: #eb6834; /* slot 2 */
+      --scope-state: #1baf7a;    /* slot 3 */
+      --trend-line: #475569;
+      --grid-line: #e1e0d9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--brand-bg);
+      color: var(--brand-text-primary);
+      font-family: var(--brand-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* DEV-ONLY: brand preview widget. Remove before production launch. */
+    .dev-preview-widget {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .dev-preview-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #FBBF24;
+      white-space: nowrap;
+    }
+    .dev-preview-widget select {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .dev-preview-widget select option { color: #0F172A; background: #FFFFFF; }
+
+    .app-header {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    .header-branding { display: flex; align-items: center; gap: 1rem; }
+    .header-logo {
+      width: 42px; height: 42px;
+      background: var(--brand-secondary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: #FFFFFF;
+    }
+    .header-title h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+    .header-title p { font-size: 0.8rem; opacity: 0.85; }
+
+    /* Page nav tabs -- shared pattern with index.html / regression.html */
+    .page-nav {
+      background: var(--brand-surface);
+      border-bottom: 1px solid var(--brand-border);
+      display: flex;
+      gap: 0.25rem;
+      padding: 0 2rem;
+    }
+    .page-nav a {
+      display: inline-block;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text-secondary);
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+    }
+    .page-nav a.active {
+      color: var(--brand-primary);
+      border-bottom-color: var(--brand-secondary);
+    }
+    .page-nav a:hover:not(.active) { color: var(--brand-text-primary); }
+
+    .main-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .hero-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      border: 1px solid var(--brand-border);
+      border-top: 4px solid var(--brand-secondary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .hero-card h2 { font-size: 1.35rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.5rem; }
+    .hero-card p { font-size: 0.94rem; color: var(--brand-text-secondary); line-height: 1.55; }
+
+    .selector-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .selector-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand-text-secondary);
+      margin-bottom: 1rem;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+    .control-box { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+    .control-box label { font-size: 0.82rem; font-weight: 700; color: var(--brand-text-primary); }
+    .control-box select {
+      width: 100%;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--brand-border);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--brand-text-primary);
+      background: #F8FAFC;
+      outline: none;
+      cursor: pointer;
+      text-overflow: ellipsis;
+    }
+    .control-box select:disabled { opacity: 0.5; cursor: not-allowed; }
+    .controls-divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px dashed var(--brand-border);
+      margin: 0.25rem 0;
+    }
+
+    .no-data-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px dashed var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      color: var(--brand-text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .no-data-card strong { display: block; color: var(--brand-text-primary); font-size: 1.05rem; margin-bottom: 0.4rem; }
+
+    /* School header */
+    .school-header {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      border: 1px solid var(--brand-border);
+      border-top: 4px solid var(--brand-secondary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .school-header h2 { font-size: 1.3rem; font-weight: 800; color: var(--brand-primary); }
+    .school-header p { font-size: 0.88rem; color: var(--brand-text-secondary); margin-top: 0.2rem; }
+    .level-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      background: #F8FAFC;
+      border: 1px solid var(--brand-border);
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--brand-text-primary);
+    }
+    .level-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Stat boxes (enrollment) -- matches index.html's .stats-grid/.stat-box */
+    .stats-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-box {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    }
+    .stat-box h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--brand-primary);
+      margin-bottom: 0.25rem;
+    }
+    .stat-box .stat-box-sub {
+      font-size: 0.82rem;
+      color: var(--brand-text-secondary);
+      margin-bottom: 1.1rem;
+    }
+    .suppressed-note {
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--brand-text-secondary);
+    }
+
+    /* Demographics table -- one row per category, one column per year (same
+       3-year-trend idea as the score chart, just as a table instead of a
+       chart since this is compared-across-years categorical data, not a
+       single trending number). */
+    table.demo-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    table.demo-table th, table.demo-table td {
+      padding: 0.55rem 0.75rem;
+      text-align: right;
+      border-bottom: 1px solid var(--brand-border);
+      white-space: nowrap;
+    }
+    table.demo-table th:first-child, table.demo-table td:first-child {
+      text-align: left;
+      font-weight: 700;
+      color: var(--brand-text-primary);
+      white-space: normal;
+    }
+    table.demo-table thead th {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--brand-text-secondary);
+      font-weight: 800;
+    }
+    table.demo-table .demo-total-row td { font-weight: 800; border-bottom-width: 2px; }
+    table.demo-table .demo-section-row th {
+      padding-top: 1rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand-text-secondary);
+      border-bottom: none;
+    }
+    table.demo-table .demo-no-data { color: var(--brand-text-secondary); opacity: 0.6; }
+
+    /* Chart card (test scores) */
+    .viz-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .viz-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .viz-header-titles h2 { font-size: 1.25rem; font-weight: 800; color: var(--brand-primary); }
+    .viz-header-titles p { font-size: 0.85rem; color: var(--brand-text-secondary); margin-top: 0.2rem; }
+
+    .chart-container {
+      width: 100%;
+      position: relative;
+      background: #FAFBFD;
+      border-radius: 10px;
+      border: 1px solid var(--brand-border);
+      padding: 1rem;
+    }
+    .chart-container svg { width: 100%; height: 420px; display: block; }
+
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      margin-top: 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      flex-wrap: wrap;
+      color: var(--brand-text-secondary);
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+    .legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+    .legend-line { width: 20px; height: 0; border-top: 2px dashed var(--trend-line); }
+
+    #chartTooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.5;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.1s ease;
+      z-index: 10;
+      max-width: 240px;
+    }
+    #chartTooltip.visible { opacity: 1; }
+    #chartTooltip strong { display: block; font-size: 0.88rem; }
+    #chartTooltip .tt-district { color: #94A3B8; margin-bottom: 0.3rem; }
+    #chartTooltip .tt-value { color: #FFFFFF; font-weight: 700; }
+
+    /* Peer table */
+    .stats-table-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .stats-table-card h2 { font-size: 1.05rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.25rem; }
+    .stats-table-card > p { font-size: 0.85rem; color: var(--brand-text-secondary); margin-bottom: 1rem; }
+    .data-table-toggle {
+      background: var(--brand-surface);
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--brand-primary);
+      cursor: pointer;
+    }
+    .data-table-toggle:hover { background: #F8FAFC; }
+    .school-table-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      display: none;
+    }
+    .school-table-wrap.open { display: block; }
+    table.school-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.school-table thead th {
+      position: sticky; top: 0;
+      background: #F8FAFC;
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--brand-text-secondary);
+      border-bottom: 1px solid var(--brand-border);
+    }
+    table.school-table td {
+      padding: 0.5rem 0.9rem;
+      border-bottom: 1px solid var(--brand-border);
+    }
+    table.school-table .this-school-row { background: #FEF2F2; }
+
+    .visually-hidden {
+      position: absolute; width: 1px; height: 1px;
+      padding: 0; margin: -1px; overflow: hidden;
+      clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DEV-ONLY: brand preview widget. Remove before production launch. -->
+  <div class="dev-preview-widget" id="devPreviewWidget">
+    <span class="dev-preview-label">Preview brand</span>
+    <select onchange="switchTheme(this.value)">
+      <option value="columbia-county">Columbia County Schools</option>
+      <option value="georgia-southern">Georgia Southern University</option>
+    </select>
+  </div>
+
+  <header class="app-header">
+    <div class="header-branding">
+      <div class="header-logo" id="headerLogo">GA</div>
+      <div class="header-title">
+        <h1 id="headerTitle">Georgia Educational Analytics</h1>
+        <p>Publicly Available GOSA Performance Data, Explored &amp; Compared</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="page-nav" aria-label="Site sections">
+    <a href="index.html">Data Drilldown</a>
+    <a href="regression.html">Regression Analysis</a>
+    <a href="schoolprofile.html" class="active" aria-current="page">School Profile</a>
+    <a href="slides.html">Slide Deck Builder</a>
+  </nav>
+
+  <main class="main-container">
+
+    <div class="hero-card">
+      <h2>School Profile</h2>
+      <p>
+        Look up one real Georgia public school: its total enrollment, ethnicity and gender breakdown (GOSA
+        Enrollment dataset), and a 3-year trend of Georgia Milestones achievement by subject (GOSA Milestones
+        EOC/EOG datasets), compared against other schools at the same level (Elementary, Middle, or High).
+      </p>
+    </div>
+
+    <div class="selector-card">
+      <div class="selector-title">SELECT A SCHOOL</div>
+      <div class="controls-grid">
+        <div class="control-box">
+          <label for="profileDistrictSelect">1. County / District</label>
+          <select id="profileDistrictSelect" onchange="onDistrictChanged()">
+            <option value="">— Select —</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="profileSchoolSelect">2. School</label>
+          <select id="profileSchoolSelect" onchange="onSchoolChanged()" disabled>
+            <option value="">— Select a district first —</option>
+          </select>
+        </div>
+        <hr class="controls-divider" />
+        <div class="control-box">
+          <label for="profileTestTypeSelect">3. Test Type</label>
+          <select id="profileTestTypeSelect" onchange="onTestTypeChanged()" disabled>
+            <option value="">— Select a school first —</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="profileContentAreaSelect">4. Subject</label>
+          <select id="profileContentAreaSelect" onchange="onContentAreaChanged()" disabled>
+            <option value="">— Select test type first —</option>
+          </select>
+        </div>
+        <div class="control-box" id="profileGradeBox" style="display:none;">
+          <label for="profileGradeSelect">5. Grade</label>
+          <select id="profileGradeSelect" onchange="onGradeChanged()" disabled>
+            <option value="">— Select —</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="profilePeerScopeSelect">Peer Schools Table Scope</label>
+          <select id="profilePeerScopeSelect" onchange="onPeerScopeChanged()">
+            <option value="statewide">Statewide (all same-level schools)</option>
+            <option value="district">This district only</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="profileResultsArea">
+      <!-- Rendered dynamically: no-data prompt, or the school header + demographics + score chart -->
+    </div>
+
+  </main>
+
+  <script>
+    let REG_META = null;
+    let ENROLLMENT_DATA = null;
+    let MILESTONES_META = null; // loaded from data/milestones/_meta.json -- real per-test-type year list, used only to know which chunk years to check for school coverage
+    let SELECTED_SCHOOL = null; // { code, name, districtCode, districtName, grades, level }
+    let SELECTED_TEST_TYPE = '';
+    let SELECTED_CONTENT_AREA = '';
+    let SELECTED_GRADE = '';
+    let PEER_SCOPE = 'statewide';
+    let LATEST_FETCH_TOKEN = 0;
+    let LATEST_COVERAGE_FETCH_TOKEN = 0; // separate guard for the school-coverage fetch (below), independent of the score-chart fetch token above
+    const DATA_CACHE = {};
+    const MILESTONES_CHUNK_CACHE = {}; // "<districtCode>__<testType>_<year>" -> parsed milestones chunk JSON, or null
+    const SCHOOL_COVERAGE_CACHE = {}; // schoolCode -> { EOC: {contentArea: Set<grade>}, EOG: {...} }, real "All Students" coverage only
+
+    const GRADE_LABELS = { ALL: 'All Grades', '03': 'Grade 3', '04': 'Grade 4', '05': 'Grade 5', '06': 'Grade 6', '07': 'Grade 7', '08': 'Grade 8' };
+    const LEVEL_COLORS_HEX = { Elementary: '#2a78d6', Middle: '#eb6834', High: '#1baf7a' };
+    const EOG_GRADES = ['03', '04', '05', '06', '07', '08'];
+
+    // Same classification rule as regression_analysis.py's classify_level():
+    // High if it serves any of 09-12, else Middle if it serves any of 06-08,
+    // else Elementary. Ported so the client can classify a school's real
+    // `grades` field (verbatim GRADES_SERVED_DESC) without a server round-trip.
+    function classifyLevel(gradesServed) {
+      const grades = new Set((gradesServed || '').split(',').map(g => g.trim()));
+      if (['09', '10', '11', '12'].some(g => grades.has(g))) return 'High';
+      if (['06', '07', '08'].some(g => grades.has(g))) return 'Middle';
+      return 'Elementary';
+    }
+
+    async function initProfilePage() {
+      try {
+        const [regResp, enrollResp, milestonesResp] = await Promise.all([
+          fetch('data/regression/_meta.json'),
+          fetch('data/enrollment/enrollment_profile.json'),
+          fetch('data/milestones/_meta.json'),
+        ]);
+        REG_META = await regResp.json();
+        ENROLLMENT_DATA = await enrollResp.json();
+        MILESTONES_META = await milestonesResp.json();
+      } catch (e) {
+        console.error('Could not load profile data', e);
+        REG_META = { EOC: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} },
+                     EOG: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} } };
+        ENROLLMENT_DATA = {};
+        MILESTONES_META = { EOC: { years: [] }, EOG: { years: [] } };
+      }
+      populateDistrictDropdown();
+      renderPrompt();
+    }
+
+    function populateDistrictDropdown() {
+      const select = document.getElementById('profileDistrictSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      if (!window.GEORGIA_GOSA_MASTER || !window.GEORGIA_GOSA_MASTER.districts) return;
+      window.GEORGIA_GOSA_MASTER.districts.forEach(d => {
+        if (!d.schools || !d.schools.length) return;
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.innerText = `${d.name} [Code: ${d.code}]`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onDistrictChanged() {
+      const districtCode = document.getElementById('profileDistrictSelect').value;
+      const schoolSelect = document.getElementById('profileSchoolSelect');
+      SELECTED_SCHOOL = null;
+      resetTestScoreControls();
+
+      if (!districtCode) {
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        schoolSelect.disabled = true;
+        renderPrompt();
+        return;
+      }
+
+      const district = window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === districtCode);
+      schoolSelect.innerHTML = '<option value="">— Select —</option>';
+      schoolSelect.disabled = false;
+      (district && district.schools || []).slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.code;
+        opt.innerText = s.name;
+        schoolSelect.appendChild(opt);
+      });
+      renderPrompt();
+    }
+
+    async function onSchoolChanged() {
+      const schoolCode = document.getElementById('profileSchoolSelect').value;
+      resetTestScoreControls();
+
+      if (!schoolCode) {
+        SELECTED_SCHOOL = null;
+        renderPrompt();
+        return;
+      }
+
+      const districtCode = document.getElementById('profileDistrictSelect').value;
+      const district = window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === districtCode);
+      const school = (district && district.schools || []).find(s => s.code === schoolCode);
+      if (!school) { renderPrompt(); return; }
+
+      SELECTED_SCHOOL = { ...school, level: classifyLevel(school.grades) };
+      renderSchoolProfile(); // header + demographics render immediately; Test Type stays "checking" until coverage resolves
+
+      const testTypeSelect = document.getElementById('profileTestTypeSelect');
+      testTypeSelect.innerHTML = '<option value="">Checking available data…</option>';
+      testTypeSelect.disabled = true;
+
+      const fetchToken = ++LATEST_COVERAGE_FETCH_TOKEN;
+      const coverage = await loadSchoolCoverage(SELECTED_SCHOOL);
+      if (fetchToken !== LATEST_COVERAGE_FETCH_TOKEN) return; // superseded by a newer school selection
+
+      populateTestTypeDropdown(coverage);
+    }
+
+    // Fetches every real Milestones chunk for this school's district (up to
+    // 2 test types x 5 years) and records exactly which (testType,
+    // contentArea, grade) combos THIS school (by INSTN_NUMBER) has a real
+    // "All Students" value for -- "All Students" specifically, since that's
+    // the only subgroup the 3-year score chart below ever reads (it's
+    // sourced from regression_analysis.py's output, which is All-Students-only).
+    // Cached per school code so revisiting a school doesn't re-fetch.
+    async function loadSchoolCoverage(school) {
+      if (SCHOOL_COVERAGE_CACHE[school.code]) return SCHOOL_COVERAGE_CACHE[school.code];
+
+      const instnNumber = (school.code || '').split('-')[1];
+      const coverage = { EOC: {}, EOG: {} };
+
+      const fetchOne = async (testType, year) => {
+        const chunkKey = `${school.districtCode}__${testType}_${year}`;
+        let chunk = MILESTONES_CHUNK_CACHE[chunkKey];
+        if (chunk === undefined) {
+          try {
+            const resp = await fetch(`data/milestones/${chunkKey}.json`);
+            chunk = resp.ok ? await resp.json() : null;
+          } catch (e) {
+            chunk = null;
+          }
+          MILESTONES_CHUNK_CACHE[chunkKey] = chunk;
+        }
+        if (!chunk) return;
+        Object.keys(chunk).forEach(key => {
+          const parts = key.split('|');
+          if (parts.length !== 4) return;
+          const [contentArea, grade, subgroup, entity] = parts;
+          if (entity !== instnNumber || subgroup !== 'All Students') return;
+          if (!coverage[testType][contentArea]) coverage[testType][contentArea] = new Set();
+          coverage[testType][contentArea].add(grade);
+        });
+      };
+
+      const tasks = [];
+      ['EOC', 'EOG'].forEach(testType => {
+        ((MILESTONES_META[testType] && MILESTONES_META[testType].years) || []).forEach(year => {
+          tasks.push(fetchOne(testType, year));
+        });
+      });
+      await Promise.all(tasks);
+
+      SCHOOL_COVERAGE_CACHE[school.code] = coverage;
+      return coverage;
+    }
+
+    function resetTestScoreControls() {
+      SELECTED_TEST_TYPE = '';
+      SELECTED_CONTENT_AREA = '';
+      SELECTED_GRADE = '';
+      const testTypeSelect = document.getElementById('profileTestTypeSelect');
+      testTypeSelect.innerHTML = '<option value="">— Select a school first —</option>';
+      testTypeSelect.disabled = true;
+      resetContentAreaSelect('— Select test type first —');
+      resetGradeSelect();
+    }
+
+    function resetContentAreaSelect(placeholder) {
+      const select = document.getElementById('profileContentAreaSelect');
+      select.innerHTML = `<option value="">${placeholder}</option>`;
+      select.disabled = true;
+    }
+
+    function resetGradeSelect() {
+      const box = document.getElementById('profileGradeBox');
+      const select = document.getElementById('profileGradeSelect');
+      box.style.display = 'none';
+      select.innerHTML = '<option value="">— Select —</option>';
+      select.disabled = true;
+    }
+
+    // Only offers a Test Type if this school has at least one real
+    // "All Students" Milestones record for it, per loadSchoolCoverage()
+    // above -- e.g. a pure elementary school won't even show EOC.
+    function populateTestTypeDropdown(coverage) {
+      const select = document.getElementById('profileTestTypeSelect');
+      const options = ['<option value="">— Select —</option>'];
+      if (coverage.EOC && Object.keys(coverage.EOC).length) options.push('<option value="EOC">End of Course (EOC)</option>');
+      if (coverage.EOG && Object.keys(coverage.EOG).length) options.push('<option value="EOG">End of Grade (EOG)</option>');
+
+      if (options.length === 1) {
+        select.innerHTML = '<option value="">No real Milestones data on record for this school</option>';
+        select.disabled = true;
+        return;
+      }
+      select.innerHTML = options.join('');
+      select.disabled = false;
+    }
+
+    function onTestTypeChanged() {
+      SELECTED_TEST_TYPE = document.getElementById('profileTestTypeSelect').value;
+      SELECTED_CONTENT_AREA = '';
+      resetGradeSelect();
+
+      const contentAreaSelect = document.getElementById('profileContentAreaSelect');
+      if (!SELECTED_TEST_TYPE) {
+        resetContentAreaSelect('— Select test type first —');
+        renderPrompt();
+        return;
+      }
+
+      // Real coverage for THIS school (from loadSchoolCoverage), not a
+      // statewide list -- a subject never appears here unless the school
+      // itself has a real reported "All Students" score for it.
+      const coverage = SCHOOL_COVERAGE_CACHE[SELECTED_SCHOOL.code];
+      const areas = (coverage && coverage[SELECTED_TEST_TYPE]) ? Object.keys(coverage[SELECTED_TEST_TYPE]).sort() : [];
+      contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
+      areas.forEach(area => {
+        const opt = document.createElement('option');
+        opt.value = area; opt.innerText = area;
+        contentAreaSelect.appendChild(opt);
+      });
+      contentAreaSelect.disabled = false;
+      if (!areas.length) contentAreaSelect.innerHTML = `<option value="">No real ${SELECTED_TEST_TYPE} data for this school</option>`;
+      renderPrompt();
+    }
+
+    function onContentAreaChanged() {
+      SELECTED_CONTENT_AREA = document.getElementById('profileContentAreaSelect').value;
+      SELECTED_GRADE = '';
+
+      if (!SELECTED_CONTENT_AREA) {
+        resetGradeSelect();
+        renderPrompt();
+        return;
+      }
+
+      if (SELECTED_TEST_TYPE !== 'EOG') {
+        // EOC stays "ALL" only -- same convention as regression.html/regression_analysis.py.
+        resetGradeSelect();
+        SELECTED_GRADE = 'ALL';
+        loadScoreData();
+        return;
+      }
+
+      const box = document.getElementById('profileGradeBox');
+      const select = document.getElementById('profileGradeSelect');
+      // Real grades THIS school has an "All Students" EOG record for, not
+      // an approximation from which grades the school merely serves.
+      const coverage = SCHOOL_COVERAGE_CACHE[SELECTED_SCHOOL.code];
+      const realGrades = (coverage && coverage.EOG[SELECTED_CONTENT_AREA]) || new Set();
+      const available = EOG_GRADES.filter(g => realGrades.has(g));
+
+      box.style.display = '';
+      select.disabled = false;
+      if (!available.length) {
+        select.innerHTML = '<option value="">No matching grade for this school</option>';
+        renderPrompt();
+        return;
+      }
+      select.innerHTML = '<option value="">— Select —</option>' +
+        available.map(g => `<option value="${g}">${GRADE_LABELS[g]}</option>`).join('');
+      renderPrompt();
+    }
+
+    function onGradeChanged() {
+      SELECTED_GRADE = document.getElementById('profileGradeSelect').value;
+      if (!SELECTED_GRADE) { renderPrompt(); return; }
+      loadScoreData();
+    }
+
+    function onPeerScopeChanged() {
+      PEER_SCOPE = document.getElementById('profilePeerScopeSelect').value;
+      if (SELECTED_SCHOOL && SELECTED_TEST_TYPE && SELECTED_CONTENT_AREA && SELECTED_GRADE) loadScoreData();
+    }
+
+    function slugify(contentArea) {
+      return contentArea.toLowerCase().replace(/ /g, '-').replace(/:/g, '').replace(/\//g, '-');
+    }
+
+    function renderPrompt() {
+      if (!SELECTED_SCHOOL) {
+        document.getElementById('profileResultsArea').innerHTML = `
+          <div class="no-data-card">
+            <strong>Choose a district and school above</strong>
+            Enrollment, demographics, and Milestones achievement will appear once a real Georgia school is selected.
+          </div>
+        `;
+        return;
+      }
+      renderSchoolProfile();
+    }
+
+    async function renderSchoolProfile() {
+      const s = SELECTED_SCHOOL;
+      const color = LEVEL_COLORS_HEX[s.level] || '#94A3B8';
+      let html = `
+        <div class="school-header">
+          <div>
+            <h2>${s.name}</h2>
+            <p>${s.districtName} · School Code ${s.code}</p>
+          </div>
+          <div class="level-pill"><span class="level-dot" style="background:${color}"></span>${s.level} School</div>
+        </div>
+      `;
+      html += renderDemographicsCard(s.code);
+      document.getElementById('profileResultsArea').innerHTML = html;
+
+      const needsScores = SELECTED_TEST_TYPE && SELECTED_CONTENT_AREA && SELECTED_GRADE;
+      if (needsScores) {
+        await loadScoreData();
+      } else {
+        renderScorePrompt();
+      }
+    }
+
+    // Score chart and its "not ready yet" prompt always render into the same
+    // #scoreChartArea container (created on first use, reused after) so a
+    // stale prompt never sits stacked above the real chart once enough
+    // selectors are filled in -- every render into this section fully
+    // replaces its contents rather than appending.
+    function ensureScoreChartArea() {
+      let container = document.getElementById('scoreChartArea');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'scoreChartArea';
+        document.getElementById('profileResultsArea').appendChild(container);
+      }
+      return container;
+    }
+
+    function renderScorePrompt() {
+      ensureScoreChartArea().innerHTML = `
+        <div class="no-data-card">
+          <strong>Choose a test type and subject above</strong>
+          A 3-year bar chart of Georgia Milestones achievement will appear once selected.
+        </div>
+      `;
+    }
+
+    // Matches YEAR_FILES in build_school_profile_enrollment.py -- update
+    // both together if that script's 3-year window ever shifts.
+    const ENROLLMENT_YEARS = ['2022-23', '2023-24', '2024-25'];
+
+    // GOSA publishes only percentages for race/gender breakdowns, never raw
+    // counts -- the "~N" figure here is computed client-side (real % x real
+    // total enrollment) and always shown with a "~" and the source percentage
+    // alongside it, so it reads as an estimate, never as a GOSA-published exact count.
+    function demoTableRow(label, key, yearsData) {
+      const cells = yearsData.map(rec => {
+        if (!rec) return '<td class="demo-no-data">No data</td>';
+        const pct = rec[key];
+        if (pct === null || pct === undefined) return '<td class="demo-no-data">Suppressed</td>';
+        const total = rec.totalEnrollment;
+        if (total === null || total === undefined) return `<td>${pct}%</td>`;
+        const estCount = Math.round((pct / 100) * total);
+        return `<td>~${estCount.toLocaleString()} (${pct}%)</td>`;
+      }).join('');
+      return `<tr><td>${label}</td>${cells}</tr>`;
+    }
+
+    function demoTotalRow(yearsData) {
+      const cells = yearsData.map(rec => {
+        if (!rec || rec.totalEnrollment === null || rec.totalEnrollment === undefined) {
+          return '<td class="demo-no-data">No data</td>';
+        }
+        return `<td>${rec.totalEnrollment.toLocaleString()}${rec.enrollmentPartial ? ' *' : ''}</td>`;
+      }).join('');
+      return `<tr class="demo-total-row"><td>Total Enrollment</td>${cells}</tr>`;
+    }
+
+    function renderDemographicsCard(schoolCode) {
+      const byYear = ENROLLMENT_DATA[schoolCode];
+      const yearsData = ENROLLMENT_YEARS.map(y => (byYear && byYear[y]) || null);
+
+      if (!byYear || !yearsData.some(rec => rec)) {
+        return `
+          <div class="no-data-card">
+            <strong>No enrollment record available</strong>
+            This school has no real enrollment/demographic data on record.
+          </div>
+        `;
+      }
+
+      const anyPartial = yearsData.some(rec => rec && rec.enrollmentPartial);
+      const headerCells = ENROLLMENT_YEARS.map(y => `<th scope="col">${y}</th>`).join('');
+      const colspan = ENROLLMENT_YEARS.length + 1;
+
+      return `
+        <div class="stats-grid">
+          <div class="stat-box">
+            <h3>Enrollment &amp; Demographics</h3>
+            <div class="stat-box-sub">Real GOSA Enrollment dataset — total enrollment is exact; race/gender figures are "~estimated count (real GOSA %)", since GOSA publishes percentages only, not raw counts</div>
+
+            <table class="demo-table">
+              <thead><tr><th scope="col"></th>${headerCells}</tr></thead>
+              <tbody>
+                ${demoTotalRow(yearsData)}
+                <tr class="demo-section-row"><th scope="rowgroup" colspan="${colspan}">Race / Ethnicity</th></tr>
+                ${demoTableRow('Asian', 'pctAsian', yearsData)}
+                ${demoTableRow('Amer. Indian/Native', 'pctNative', yearsData)}
+                ${demoTableRow('Black', 'pctBlack', yearsData)}
+                ${demoTableRow('Hispanic', 'pctHispanic', yearsData)}
+                ${demoTableRow('Multiracial', 'pctMultiracial', yearsData)}
+                ${demoTableRow('White', 'pctWhite', yearsData)}
+                <tr class="demo-section-row"><th scope="rowgroup" colspan="${colspan}">Gender</th></tr>
+                ${demoTableRow('Male', 'pctMale', yearsData)}
+                ${demoTableRow('Female', 'pctFemale', yearsData)}
+              </tbody>
+            </table>
+            ${anyPartial ? '<p class="suppressed-note" style="margin-top:0.75rem;">* Total enrollment that year is a real but partial sum — some grade-level counts were suppressed by GOSA for privacy.</p>' : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    async function loadScoreData() {
+      const s = SELECTED_SCHOOL;
+      const testType = SELECTED_TEST_TYPE, contentArea = SELECTED_CONTENT_AREA, grade = SELECTED_GRADE;
+      const fetchToken = ++LATEST_FETCH_TOKEN;
+
+      ensureScoreChartArea().innerHTML = '<div class="no-data-card">Loading…</div>';
+
+      const years = (REG_META[testType].years || []).slice().sort().reverse();
+      const anchorIdx = years.findIndex(y => (REG_META[testType].contentAreasByYear[y] || []).includes(contentArea));
+      const yearsToTry = anchorIdx === -1 ? [] : years.slice(anchorIdx, anchorIdx + 3);
+
+      const combos = await Promise.all(yearsToTry.map(async year => {
+        const key = `${testType}_${slugify(contentArea)}_${year}_${grade}`;
+        if (DATA_CACHE[key] !== undefined) return { year, combo: DATA_CACHE[key] };
+        try {
+          const resp = await fetch(`data/regression/${key}.json`);
+          const combo = resp.ok ? await resp.json() : null;
+          DATA_CACHE[key] = combo;
+          return { year, combo };
+        } catch (e) {
+          DATA_CACHE[key] = null;
+          return { year, combo: null };
+        }
+      }));
+
+      if (fetchToken !== LATEST_FETCH_TOKEN) return;
+
+      const avg = points => points.length
+        ? Math.round((points.reduce((sum, p) => sum + p.y, 0) / points.length) * 10) / 10
+        : null;
+
+      const chartData = combos.slice().reverse().map(({ year, combo }) => {
+        if (!combo) return { year, schoolY: null, districtAvg: null, districtCount: 0, stateAvg: null, stateCount: 0, peerPoints: [] };
+        const schoolPoint = combo.points.find(p => p.code === s.code);
+        const sameLevelPeers = combo.points.filter(p => p.level === s.level && p.code !== s.code);
+        const districtPeers = sameLevelPeers.filter(p => p.districtCode === s.districtCode);
+        // "State" here means every real GA school at this level with a reported
+        // result, i.e. the same statewide population regression.html plots --
+        // not a sample.
+        const peerPoints = PEER_SCOPE === 'statewide' ? sameLevelPeers : districtPeers;
+        return {
+          year,
+          schoolY: schoolPoint ? schoolPoint.y : null,
+          districtAvg: avg(districtPeers), districtCount: districtPeers.length,
+          stateAvg: avg(sameLevelPeers), stateCount: sameLevelPeers.length,
+          peerPoints,
+        };
+      });
+
+      renderScoreSection(chartData);
+    }
+
+    function renderScoreSection(chartData) {
+      const s = SELECTED_SCHOOL;
+      const container = ensureScoreChartArea();
+
+      if (!chartData.length) {
+        container.innerHTML = `
+          <div class="no-data-card">
+            <strong>No model available</strong>
+            No regression data found for ${SELECTED_TEST_TYPE} ${SELECTED_CONTENT_AREA}, ${GRADE_LABELS[SELECTED_GRADE] || SELECTED_GRADE}.
+          </div>
+        `;
+        return;
+      }
+
+      // Grouped bar: for each year, 3 bars side by side -- this school, its
+      // district's same-level average, and the statewide same-level average
+      // -- so the school's standing against both comparison groups is
+      // visible for every year at once, not just one scope at a time.
+      const width = 700, height = 380, margin = { top: 20, right: 20, bottom: 40, left: 45 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const n = chartData.length;
+      const colW = plotW / n;
+      const barW = 24; // mark spec: bars ≤24px thick
+      const barGap = 4; // surface-gap between bars in the same year's group
+      const groupW = barW * 3 + barGap * 2;
+      const toY = y => margin.top + plotH - (y / 100) * plotH;
+
+      let svg = '';
+      for (let v = 0; v <= 100; v += 25) {
+        const gy = toY(v);
+        svg += `<line x1="${margin.left}" y1="${gy}" x2="${margin.left + plotW}" y2="${gy}" stroke="var(--grid-line)" stroke-width="1"/>`;
+        svg += `<text x="${margin.left - 10}" y="${gy + 4}" font-size="11" fill="var(--brand-text-secondary,#64748B)" text-anchor="end">${v}%</text>`;
+      }
+      svg += `<line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
+
+      const series = [
+        { key: 'schoolY', color: 'var(--scope-school)' },
+        { key: 'districtAvg', color: 'var(--scope-district)' },
+        { key: 'stateAvg', color: 'var(--scope-state)' },
+      ];
+
+      let hasAnyDistrictAvg = false, hasAnyStateAvg = false;
+      chartData.forEach((d, i) => {
+        const groupCx = margin.left + colW * i + colW / 2;
+        const groupLeft = groupCx - groupW / 2;
+        svg += `<text x="${groupCx}" y="${margin.top + plotH + 24}" font-size="12" font-weight="700" fill="var(--brand-text-primary,#0F172A)" text-anchor="middle">${d.year}</text>`;
+
+        if (d.districtAvg !== null) hasAnyDistrictAvg = true;
+        if (d.stateAvg !== null) hasAnyStateAvg = true;
+
+        series.forEach((ser, j) => {
+          const value = d[ser.key];
+          const barX = groupLeft + j * (barW + barGap);
+          const barCx = barX + barW / 2;
+          if (value === null) {
+            const emptyH = 24;
+            svg += `<rect x="${barX}" y="${margin.top + plotH - emptyH}" width="${barW}" height="${emptyH}" fill="none" stroke="var(--grid-line)" stroke-width="1.5" stroke-dasharray="3 3" rx="4"/>`;
+          } else {
+            const barY = toY(value);
+            const barH = margin.top + plotH - barY;
+            svg += `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" fill="${ser.color}" rx="4"/>`;
+            svg += `<text x="${barCx}" y="${barY - 6}" font-size="10.5" font-weight="800" fill="var(--brand-text-primary,#0F172A)" text-anchor="middle">${value}%</text>`;
+          }
+        });
+      });
+
+      container.innerHTML = `
+        <div class="viz-card">
+          <div class="viz-header">
+            <div class="viz-header-titles">
+              <h2>${SELECTED_TEST_TYPE} — ${SELECTED_CONTENT_AREA}, ${GRADE_LABELS[SELECTED_GRADE] || SELECTED_GRADE}</h2>
+              <p>% Met + Exceeded on Georgia Milestones, most recent ${chartData.length} year${chartData.length === 1 ? '' : 's'} on record for ${s.name}</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <svg viewBox="0 0 ${width} ${height}" role="img" aria-describedby="scoreChartDesc">
+              ${svg}
+            </svg>
+          </div>
+          <p id="scoreChartDesc" class="visually-hidden">
+            Grouped bar chart of percent meeting or exceeding expectations on ${SELECTED_CONTENT_AREA} (${SELECTED_TEST_TYPE}, ${GRADE_LABELS[SELECTED_GRADE] || SELECTED_GRADE}) across ${chartData.map(d => d.year).join(', ')}.
+            Each year shows three bars: ${s.name}, the ${s.districtName} ${s.level.toLowerCase()}-school average, and the statewide ${s.level.toLowerCase()}-school average.
+          </p>
+          <div class="chart-legend">
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--scope-school)"></span> ${s.name}</div>
+            ${hasAnyDistrictAvg ? `<div class="legend-item"><span class="legend-swatch" style="background:var(--scope-district)"></span> ${s.districtName} ${s.level} average</div>` : ''}
+            ${hasAnyStateAvg ? `<div class="legend-item"><span class="legend-swatch" style="background:var(--scope-state)"></span> Statewide ${s.level} average</div>` : ''}
+          </div>
+        </div>
+        ${renderPeerTable(chartData)}
+      `;
+    }
+
+    function renderPeerTable(chartData) {
+      const latest = chartData[chartData.length - 1];
+      if (!latest || !latest.peerPoints.length) return '';
+
+      const s = SELECTED_SCHOOL;
+      const scopeLabel = PEER_SCOPE === 'statewide' ? 'statewide' : `within ${s.districtName}`;
+      const rows = latest.peerPoints.slice().sort((a, b) => a.name.localeCompare(b.name));
+
+      const bodyRows = rows.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.districtName}</td>
+          <td>${p.y}%</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="stats-table-card">
+          <h2>Peer Schools — ${s.level} Level (${latest.year})</h2>
+          <p>Every real ${s.level.toLowerCase()} school ${scopeLabel} with a reported ${SELECTED_TEST_TYPE} ${SELECTED_CONTENT_AREA} (${GRADE_LABELS[SELECTED_GRADE] || SELECTED_GRADE}) result for ${latest.year}, excluding ${s.name} itself.</p>
+          <button class="data-table-toggle" id="peerTableToggle" onclick="togglePeerTable()" aria-expanded="false" aria-controls="peerTableWrap">Show ${rows.length} peer schools as a table</button>
+          <div class="school-table-wrap" id="peerTableWrap">
+            <table class="school-table">
+              <thead><tr><th scope="col">School</th><th scope="col">District</th><th scope="col">% Met + Exceeded</th></tr></thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function togglePeerTable() {
+      const wrap = document.getElementById('peerTableWrap');
+      const btn = document.getElementById('peerTableToggle');
+      const open = wrap.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function switchTheme(brandId) {
+      document.documentElement.setAttribute('data-brand', brandId);
+      if (brandId === 'georgia-southern') {
+        document.getElementById('headerLogo').innerText = 'GS';
+        document.getElementById('headerTitle').innerText = 'Georgia Southern Educational Analytics';
+      } else {
+        document.getElementById('headerLogo').innerText = 'GA';
+        document.getElementById('headerTitle').innerText = 'Georgia Educational Analytics';
+      }
+    }
+
+    initProfilePage();
+  </script>
+</body>
+</html>

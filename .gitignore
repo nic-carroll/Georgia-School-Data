@@ -48,3 +48,11 @@ server/data/gosa/regression/
 
 # client/data/regression/ is INTENTIONALLY NOT ignored -- same reason as
 # client/data/milestones/ above.
+
+# Same pattern again for the School Profile enrollment/demographics snapshot
+# (regenerate with server/scripts/build_school_profile_enrollment.py) --
+# under 1MB, just avoiding the redundant server-side copy.
+server/data/gosa/enrollment_profile/
+
+# client/data/enrollment/ is INTENTIONALLY NOT ignored -- same reason as
+# client/data/milestones/ above.

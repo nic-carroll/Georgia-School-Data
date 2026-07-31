@@ -1,0 +1,2853 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="columbia-county">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slide Deck Builder | Georgia Educational Analytics</title>
+
+  <!-- Fonts preloads -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Master Georgia Dataset script (All 235 Districts & 2,301 Schools) -->
+  <script src="georgia_master_data.js"></script>
+
+  <!-- Vendored PowerPoint export library -- NOT an npm dependency, see
+       CLAUDE.md "Do Not Refactor". Manually downloaded browser UMD bundle,
+       loaded via a plain <script> tag (no CDN, no build step), exposes the
+       global `PptxGenJS`. -->
+  <script src="vendor/pptxgen.bundle.js"></script>
+
+  <style>
+    /* Columbia County Schools Theme */
+    :root[data-brand="columbia-county"] {
+      --brand-id: "columbia-county";
+      --brand-name: "Columbia County School District";
+      --brand-primary: rgb(0, 2, 93);
+      --brand-secondary: rgb(217, 35, 46);
+      --brand-accent: rgb(0, 85, 165);
+      --brand-bg: #F8FAFC;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: #E2E8F0;
+      --brand-font: 'Barlow', 'Inter', system-ui, sans-serif;
+    }
+
+    /* Georgia Southern University Theme */
+    :root[data-brand="georgia-southern"] {
+      --brand-id: "georgia-southern";
+      --brand-name: "Georgia Southern University";
+      --brand-primary: rgb(0, 19, 68);
+      --brand-secondary: rgb(185, 131, 45);
+      --brand-accent: rgb(104, 202, 235);
+      --brand-bg: #F4F6F9;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: rgba(0, 19, 68, 0.14);
+      --brand-font: 'Merriweather', 'Barlow', serif;
+    }
+
+    /* Categorical data colors -- fixed across brands/themes on purpose (chart
+       data identity, not brand chrome). Same tokens as regression.html /
+       schoolprofile.html, duplicated here per this app's no-shared-CSS-file
+       convention. */
+    :root {
+      --level-elementary: #2a78d6;
+      --level-middle: #eb6834;
+      --level-high: #1baf7a;
+      --score-bar: #2a78d6;
+      --scope-school: #2a78d6;  /* slot 1, same as --score-bar */
+      --scope-district: #eb6834; /* slot 2 */
+      --scope-state: #1baf7a;    /* slot 3 */
+      --trend-line: #475569;
+      --grid-line: #e1e0d9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--brand-bg);
+      color: var(--brand-text-primary);
+      font-family: var(--brand-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* DEV-ONLY: brand preview widget. Remove before production launch. */
+    .dev-preview-widget {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 999;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .dev-preview-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #FBBF24;
+      white-space: nowrap;
+    }
+    .dev-preview-widget select {
+      background: rgba(255, 255, 255, 0.12);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .dev-preview-widget select option { color: #0F172A; background: #FFFFFF; }
+
+    .app-header {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    .header-branding { display: flex; align-items: center; gap: 1rem; }
+    .header-logo {
+      width: 42px; height: 42px;
+      background: var(--brand-secondary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: #FFFFFF;
+    }
+    .header-title h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+    .header-title p { font-size: 0.8rem; opacity: 0.85; }
+
+    /* Page nav tabs -- shared pattern with index.html / regression.html / schoolprofile.html */
+    .page-nav {
+      background: var(--brand-surface);
+      border-bottom: 1px solid var(--brand-border);
+      display: flex;
+      gap: 0.25rem;
+      padding: 0 2rem;
+    }
+    .page-nav a {
+      display: inline-block;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text-secondary);
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+    }
+    .page-nav a.active {
+      color: var(--brand-primary);
+      border-bottom-color: var(--brand-secondary);
+    }
+    .page-nav a:hover:not(.active) { color: var(--brand-text-primary); }
+
+    /* This page needs more horizontal room than the other three (a 3-column
+       builder layout), so its .main-container deliberately uses a wider max
+       width than the 1200px shared elsewhere -- a one-off, documented divergence. */
+    .main-container {
+      max-width: 1600px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .hero-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      border: 1px solid var(--brand-border);
+      border-top: 4px solid var(--brand-secondary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .hero-card h2 { font-size: 1.35rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.5rem; }
+    .hero-card p { font-size: 0.94rem; color: var(--brand-text-secondary); line-height: 1.55; }
+
+    .selector-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    .selector-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--brand-text-secondary);
+      margin-bottom: 1rem;
+    }
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1.1rem;
+    }
+    .control-box { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+    .control-box label { font-size: 0.8rem; font-weight: 700; color: var(--brand-text-primary); }
+    .control-box select, .control-box input, .control-box textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--brand-border);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text-primary);
+      background: #F8FAFC;
+      outline: none;
+      font-family: inherit;
+    }
+    .control-box select { cursor: pointer; text-overflow: ellipsis; }
+    .control-box select:disabled { opacity: 0.5; cursor: not-allowed; }
+    .control-box textarea { font-weight: 500; resize: vertical; min-height: 110px; }
+    .controls-divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px dashed var(--brand-border);
+      margin: 0.25rem 0;
+    }
+    .control-box-note {
+      grid-column: 1 / -1;
+      font-size: 0.78rem;
+      color: var(--brand-text-secondary);
+      font-style: italic;
+    }
+
+    .no-data-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px dashed var(--brand-border);
+      color: var(--brand-text-secondary);
+      font-size: 0.88rem;
+    }
+    .no-data-card strong { display: block; color: var(--brand-text-primary); font-size: 1rem; margin-bottom: 0.35rem; }
+
+    .stats-grid { display: flex; flex-direction: column; gap: 1.1rem; }
+    .stat-box {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.25rem 1.4rem;
+      border: 1px solid var(--brand-border);
+    }
+    .stat-box h3 { font-size: 1rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.2rem; }
+    .stat-box .stat-box-sub { font-size: 0.78rem; color: var(--brand-text-secondary); margin-bottom: 0.9rem; }
+    .level-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+    .level-term { font-weight: 800; font-size: 0.88rem; color: var(--brand-text-primary); }
+    .level-label { font-size: 0.74rem; color: var(--brand-text-secondary); }
+    .suppressed-note { font-size: 0.72rem; font-style: italic; color: var(--brand-text-secondary); }
+
+    .compare-table { display: grid; grid-template-columns: 1.7fr 1fr 1fr 1fr; column-gap: 0.9rem; }
+    .compare-table > div { padding: 0.55rem 0; border-bottom: 1px solid var(--brand-border); display: flex; align-items: center; }
+    .compare-table > div:nth-last-child(-n+4) { border-bottom: none; }
+    .compare-head { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--brand-text-secondary); align-items: flex-end !important; }
+    .compare-row-label { gap: 0.6rem; }
+    .compare-cell { flex-direction: column; align-items: flex-start !important; }
+    .compare-cell .cell-pct { font-weight: 800; font-size: 0.98rem; color: var(--brand-text-primary); }
+    .compare-cell .cell-count { font-size: 0.72rem; color: var(--brand-text-secondary); }
+    .compare-cell .cell-empty { color: var(--brand-text-secondary); opacity: 0.5; }
+
+    .viz-card { background: var(--brand-surface); border-radius: 12px; padding: 1.4rem; border: 1px solid var(--brand-border); }
+    .viz-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.9rem; flex-wrap: wrap; gap: 0.75rem; }
+    .viz-header-titles h2 { font-size: 1.1rem; font-weight: 800; color: var(--brand-primary); }
+    .viz-header-titles p { font-size: 0.8rem; color: var(--brand-text-secondary); margin-top: 0.2rem; }
+    .chart-container { width: 100%; position: relative; background: #FAFBFD; border-radius: 10px; border: 1px solid var(--brand-border); padding: 0.75rem; }
+    .chart-container svg { width: 100%; height: auto; display: block; }
+    .chart-legend { display: flex; gap: 1.2rem; justify-content: center; margin-top: 1rem; font-size: 0.8rem; font-weight: 600; flex-wrap: wrap; color: var(--brand-text-secondary); }
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+    .legend-swatch { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+    .legend-line { width: 18px; height: 0; border-top: 2px dashed var(--trend-line); }
+
+    .stats-table-card { background: var(--brand-surface); border-radius: 12px; padding: 1.25rem 1.4rem; border: 1px solid var(--brand-border); }
+    .stats-table-card h2 { font-size: 1rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.2rem; }
+    .stats-table-card > p { font-size: 0.8rem; color: var(--brand-text-secondary); margin-bottom: 0.85rem; }
+    table.ols-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.ols-table th, table.ols-table td { padding: 0.5rem 0.8rem; text-align: left; border-bottom: 1px solid var(--brand-border); }
+    table.ols-table thead th { background: #F8FAFC; font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-text-secondary); }
+    table.ols-table tbody th { font-weight: 700; color: var(--brand-text-primary); width: 40%; }
+
+    .school-table-wrap { max-height: 340px; overflow-y: auto; border: 1px solid var(--brand-border); border-radius: 8px; }
+    table.school-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    table.school-table thead th { position: sticky; top: 0; background: #F8FAFC; padding: 0.5rem 0.8rem; text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-text-secondary); border-bottom: 1px solid var(--brand-border); }
+    table.school-table td { padding: 0.42rem 0.8rem; border-bottom: 1px solid var(--brand-border); }
+
+    /* Demographics table -- matches schoolprofile.html's table.demo-table:
+       one row per category, one column per year (3-year trend, same idea as
+       the score chart), not a bar chart. */
+    table.demo-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    table.demo-table th, table.demo-table td { padding: 0.45rem 0.65rem; text-align: right; border-bottom: 1px solid var(--brand-border); white-space: nowrap; }
+    table.demo-table th:first-child, table.demo-table td:first-child { text-align: left; font-weight: 700; color: var(--brand-text-primary); white-space: normal; }
+    table.demo-table thead th { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-text-secondary); font-weight: 800; }
+    table.demo-table .demo-total-row td { font-weight: 800; border-bottom-width: 2px; }
+    table.demo-table .demo-section-row th { padding-top: 0.85rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand-text-secondary); border-bottom: none; }
+    table.demo-table .demo-no-data { color: var(--brand-text-secondary); opacity: 0.6; }
+
+    .breadcrumb-note { font-size: 0.74rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-text-secondary); margin-bottom: 0.75rem; }
+    .slide-content-title { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; }
+    .slide-title-heading { font-size: 2.4rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.75rem; }
+    .slide-title-sub { font-size: 1.15rem; color: var(--brand-text-secondary); }
+    .slide-section-heading { font-size: 1.6rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 1.1rem; }
+    .slide-bullets-list { list-style: disc; padding-left: 1.6rem; font-size: 1.1rem; color: var(--brand-text-primary); line-height: 1.85; }
+
+    /* =================================================================
+       Slide Deck Builder layout -- new to this page.
+       ================================================================= */
+    .builder-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr 400px;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 1150px) {
+      .builder-layout { grid-template-columns: 1fr; }
+    }
+
+    .btn-primary {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      font-weight: 700;
+      font-size: 0.84rem;
+      cursor: pointer;
+      width: 100%;
+      font-family: inherit;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* .btn-secondary matches the existing outline-button visual language
+       already established by .data-table-toggle on regression.html /
+       schoolprofile.html -- same family, different weight, not a new one. */
+    .btn-secondary {
+      background: var(--brand-surface);
+      border: 1px solid var(--brand-border);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--brand-primary);
+      cursor: pointer;
+      width: 100%;
+      font-family: inherit;
+    }
+    .btn-secondary:hover { background: #F8FAFC; }
+
+    .sidebar-block { background: var(--brand-surface); border-radius: 12px; padding: 1.1rem; border: 1px solid var(--brand-border); margin-bottom: 1rem; }
+    .sidebar-block-label { display: block; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--brand-text-secondary); margin-bottom: 0.5rem; }
+    .deck-name-input { margin-top: 0.5rem; }
+    .brand-note { margin-top: 0.5rem; font-size: 0.74rem; color: var(--brand-text-secondary); font-style: italic; }
+    .sidebar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
+
+    .slide-list { max-height: 46vh; overflow-y: auto; margin-top: 0.25rem; }
+    .slide-list-item { border: 1px solid var(--brand-border); border-radius: 8px; padding: 0.55rem 0.7rem; margin-bottom: 0.5rem; cursor: pointer; background: #F8FAFC; }
+    .slide-list-item.active { border-color: var(--brand-primary); background: var(--brand-surface); box-shadow: 0 0 0 2px rgba(0,0,0,0.04); }
+    .slide-list-item-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+    .slide-list-item-type { font-size: 0.66rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-text-secondary); }
+    .slide-list-item-caption { font-size: 0.83rem; font-weight: 700; color: var(--brand-text-primary); margin-top: 0.15rem; }
+    .slide-list-item-actions { display: flex; gap: 0.25rem; flex-shrink: 0; }
+    .icon-btn { background: none; border: 1px solid var(--brand-border); border-radius: 6px; width: 22px; height: 22px; font-size: 0.65rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--brand-text-secondary); font-family: inherit; }
+    .icon-btn:hover:not(:disabled) { background: #EEF2F7; }
+    .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .storage-warning { background: #FEF2F2; border: 1px solid #FCA5A5; color: #991B1B; border-radius: 8px; padding: 0.75rem; font-size: 0.78rem; margin-top: 0.75rem; }
+
+    .type-picker { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+    .type-pill { background: var(--brand-surface); border: 1px solid var(--brand-border); border-radius: 999px; padding: 0.45rem 0.9rem; font-size: 0.78rem; font-weight: 700; color: var(--brand-text-secondary); cursor: pointer; font-family: inherit; }
+    .type-pill.active { background: var(--brand-primary); border-color: var(--brand-primary); color: #FFFFFF; }
+
+    .editor-panel { display: none; }
+    .editor-panel.active { display: block; }
+    .editor-footer { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+    .editor-footer .btn-primary, .editor-footer .btn-secondary { width: auto; padding-left: 1.5rem; padding-right: 1.5rem; }
+
+    .slide-preview-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--brand-text-secondary); margin-bottom: 0.5rem; }
+    .slide-preview-card {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      background: var(--brand-surface);
+      border: 1px solid var(--brand-border);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+    .slide-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1280px;
+      height: 720px;
+      box-sizing: border-box;
+      padding: 2.5rem;
+      transform-origin: top left;
+      background: var(--brand-surface);
+      overflow: hidden;
+    }
+
+    .present-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand-bg);
+    }
+    .present-overlay.active { display: flex; }
+    .present-slide-frame {
+      position: relative;
+      overflow: hidden;
+      width: min(92vw, 163.5vh);
+      aspect-ratio: 16 / 9;
+      background: var(--brand-surface);
+      border-radius: 12px;
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    }
+    .present-exit-btn {
+      position: fixed;
+      top: 1.25rem; right: 1.25rem;
+      z-index: 2001;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--brand-border);
+      background: var(--brand-surface);
+      color: var(--brand-text-primary);
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .present-counter {
+      position: fixed;
+      bottom: 1.25rem; right: 1.5rem;
+      z-index: 2001;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--brand-text-secondary);
+      background: var(--brand-surface);
+      border: 1px solid var(--brand-border);
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+    }
+
+    /* =================================================================
+       PDF export -- built at export time as real print content (not a
+       generated file), then handed to the browser's own print dialog,
+       where "Save as PDF" is a built-in destination. Kept laid out
+       off-screen (not display:none) so fitSlideCanvas() can measure real
+       widths before window.print() is called; @media print repositions it
+       in place and hides everything else in the app.
+       ================================================================= */
+    #pdfPrintArea {
+      position: fixed;
+      top: 0;
+      left: -20000px;
+      width: 7.7in; /* Letter 8.5in minus the 0.4in @page margin on each side */
+    }
+    .pdf-page {
+      display: grid;
+      gap: 0.25in;
+      break-after: page;
+    }
+    .pdf-page:last-child { break-after: auto; }
+    .pdf-page.pdf-layout-1 { grid-template-columns: 1fr; }
+    .pdf-page.pdf-layout-2 { grid-template-columns: 1fr; }
+    .pdf-page.pdf-layout-3 { grid-template-columns: 1fr; }
+    .pdf-page.pdf-layout-4 { grid-template-columns: 1fr 1fr; }
+    .pdf-slide-frame {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 1px solid var(--brand-border);
+      border-radius: 4px;
+    }
+    .pdf-slide-frame .slide-canvas { transform-origin: top left; }
+
+    /* No display:none for #pdfPrintArea on screen -- it must stay genuinely
+       laid out (just positioned off-screen via left:-20000px above) so
+       fitSlideCanvas() can read real clientWidth values before print()
+       is called; display:none would make every measurement 0. */
+    @media print {
+      @page { size: letter portrait; margin: 0.4in; }
+      body > *:not(#pdfPrintArea) { display: none !important; }
+      #pdfPrintArea {
+        position: static;
+        left: 0;
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- DEV-ONLY: brand preview widget. Remove before production launch. -->
+  <div class="dev-preview-widget" id="devPreviewWidget">
+    <span class="dev-preview-label">Preview brand</span>
+    <select onchange="switchTheme(this.value)">
+      <option value="columbia-county">Columbia County Schools</option>
+      <option value="georgia-southern">Georgia Southern University</option>
+    </select>
+  </div>
+
+  <header class="app-header">
+    <div class="header-branding">
+      <div class="header-logo" id="headerLogo">GA</div>
+      <div class="header-title">
+        <h1 id="headerTitle">Georgia Educational Analytics</h1>
+        <p>Publicly Available GOSA Performance Data, Explored &amp; Compared</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="page-nav" aria-label="Site sections">
+    <a href="index.html">Data Drilldown</a>
+    <a href="regression.html">Regression Analysis</a>
+    <a href="schoolprofile.html">School Profile</a>
+    <a href="slides.html" class="active" aria-current="page">Slide Deck Builder</a>
+  </nav>
+
+  <main class="main-container">
+
+    <div class="hero-card">
+      <h2>Slide Deck Builder</h2>
+      <p>
+        Assemble a branded, presentation-ready deck straight from the real data already in this dashboard —
+        achievement tables, regression models, and school profiles — alongside your own title and narrative slides.
+        Present it full-screen from the browser, or export a real, editable PowerPoint file styled with your brand.
+      </p>
+    </div>
+
+    <div class="builder-layout">
+
+      <!-- ============================== Left: deck sidebar ============================== -->
+      <aside id="deckSidebar">
+        <div class="sidebar-block">
+          <label class="sidebar-block-label" for="deckSwitcherSelect">Deck</label>
+          <select id="deckSwitcherSelect" onchange="onDeckSwitcherChanged()"></select>
+          <input type="text" id="deckNameInput" class="deck-name-input" placeholder="Deck name" onchange="onDeckNameChanged()" />
+          <div class="brand-note" id="deckBrandNote"></div>
+        </div>
+
+        <div class="sidebar-actions">
+          <button class="btn-secondary" onclick="createNewDeck()">New Deck</button>
+          <button class="btn-secondary" onclick="triggerImport()">Import JSON</button>
+        </div>
+        <div class="sidebar-actions">
+          <button class="btn-secondary" onclick="exportDeckJSON()">Export JSON</button>
+          <button class="btn-secondary" onclick="deleteActiveDeck()">Delete Deck</button>
+        </div>
+        <div class="sidebar-actions">
+          <button class="btn-primary" onclick="exportDeckPptx()">Export PPTX</button>
+          <button class="btn-primary" onclick="enterPresentMode()">Present</button>
+        </div>
+        <div class="sidebar-actions">
+          <select id="pdfLayoutSelect" title="Slides per page">
+            <option value="1">1 slide / page</option>
+            <option value="2">2 slides / page</option>
+            <option value="3">3 slides / page</option>
+            <option value="4">4 slides / page</option>
+          </select>
+          <button class="btn-primary" onclick="exportDeckPdf()">Export PDF</button>
+        </div>
+        <div class="sidebar-actions">
+          <button class="btn-secondary" onclick="openGoogleDrive()">Open Google Drive ↗</button>
+        </div>
+
+        <div class="storage-warning" id="storageWarning" style="display:none;"></div>
+
+        <div class="sidebar-block">
+          <label class="sidebar-block-label">Slides (<span id="slideCount">0</span>)</label>
+          <div class="slide-list" id="slideList"></div>
+        </div>
+      </aside>
+
+      <!-- ============================== Center: slide editor ============================== -->
+      <section class="selector-card" id="slideEditor">
+        <div class="selector-title">ADD / EDIT SLIDE</div>
+
+        <div class="type-picker" id="typePicker">
+          <button class="type-pill" data-type="title" onclick="switchEditorType('title')">Title</button>
+          <button class="type-pill" data-type="bullets" onclick="switchEditorType('bullets')">Bullets</button>
+          <button class="type-pill" data-type="drilldown" onclick="switchEditorType('drilldown')">Achievement Table</button>
+          <button class="type-pill" data-type="regression" onclick="switchEditorType('regression')">Regression Chart</button>
+          <button class="type-pill" data-type="profile-demo" onclick="switchEditorType('profile-demo')">Demographics</button>
+          <button class="type-pill" data-type="profile-score" onclick="switchEditorType('profile-score')">Score Trend</button>
+          <button class="type-pill" data-type="profile-peers" onclick="switchEditorType('profile-peers')">Peer Comparison</button>
+        </div>
+
+        <!-- Title -->
+        <div class="editor-panel" id="editorTitle">
+          <div class="controls-grid">
+            <div class="control-box">
+              <label for="titleHeadingInput">Heading</label>
+              <input type="text" id="titleHeadingInput" placeholder="FY26 Milestones Review" oninput="onManualInputChanged('title')" />
+            </div>
+            <div class="control-box">
+              <label for="titleSubInput">Subheading (optional)</label>
+              <input type="text" id="titleSubInput" placeholder="Columbia County School District" oninput="onManualInputChanged('title')" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Bullets -->
+        <div class="editor-panel" id="editorBullets">
+          <div class="controls-grid">
+            <div class="control-box">
+              <label for="bulletsHeadingInput">Heading</label>
+              <input type="text" id="bulletsHeadingInput" placeholder="Key Takeaways" oninput="onManualInputChanged('bullets')" />
+            </div>
+            <div class="control-box" style="grid-column:1 / -1;">
+              <label for="bulletsTextarea">Bullets (one per line)</label>
+              <textarea id="bulletsTextarea" placeholder="Achievement rose 4 points district-wide&#10;Elementary math remains the strongest content area" oninput="onManualInputChanged('bullets')"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Drilldown funnel -->
+        <div class="editor-panel" id="editorDrilldown">
+          <div class="controls-grid">
+            <div class="control-box">
+              <label for="ddYearSelect">School Year</label>
+              <select id="ddYearSelect" onchange="onDdYearOrTestTypeChanged()"><option value="">— Select —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="ddDistrictSelect">Georgia School District</label>
+              <select id="ddDistrictSelect" onchange="onDdDistrictChanged(this.value)"><option value="">— Select —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="ddSchoolSelect">Target School</label>
+              <select id="ddSchoolSelect" onchange="onDdSchoolChanged(this.value)"><option value="">— Select a district first —</option></select>
+            </div>
+            <hr class="controls-divider" />
+            <div class="control-box">
+              <label for="ddTestTypeSelect">Test Type</label>
+              <select id="ddTestTypeSelect" onchange="onDdYearOrTestTypeChanged()">
+                <option value="">— Select —</option>
+                <option value="EOC">End of Course (EOC)</option>
+                <option value="EOG">End of Grade (EOG)</option>
+              </select>
+            </div>
+            <div class="control-box">
+              <label for="ddContentAreaSelect">Content Area</label>
+              <select id="ddContentAreaSelect" onchange="onDdSelectionChanged()"><option value="">— Select year &amp; test type first —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="ddGradeLevelSelect">Grade Level</label>
+              <select id="ddGradeLevelSelect" onchange="onDdSelectionChanged()"><option value="">— Select —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="ddSubgroupSelect">Student Subgroup</label>
+              <select id="ddSubgroupSelect" onchange="onDdSelectionChanged()"><option value="">— Select —</option></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regression funnel -->
+        <div class="editor-panel" id="editorRegression">
+          <div class="controls-grid">
+            <div class="control-box">
+              <label for="regYearSelect">School Year</label>
+              <select id="regYearSelect" onchange="onRegYearOrTestTypeChanged()"><option value="">— Select —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="regTestTypeSelect">Test Type</label>
+              <select id="regTestTypeSelect" onchange="onRegYearOrTestTypeChanged()">
+                <option value="">— Select —</option>
+                <option value="EOC">End of Course (EOC)</option>
+                <option value="EOG">End of Grade (EOG)</option>
+              </select>
+            </div>
+            <div class="control-box">
+              <label for="regContentAreaSelect">Content Area</label>
+              <select id="regContentAreaSelect" onchange="onRegContentAreaChanged()"><option value="">— Select year &amp; test type first —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="regGradeSelect">Grade Level</label>
+              <select id="regGradeSelect" onchange="onRegCombinationChanged()"><option value="">— Select content area first —</option></select>
+            </div>
+            <hr class="controls-divider" />
+            <div class="control-box">
+              <label for="regLevelSelect">School Level</label>
+              <select id="regLevelSelect" onchange="onRegFilterChanged()">
+                <option value="">All Levels</option>
+                <option value="Elementary">Elementary only</option>
+                <option value="Middle">Middle only</option>
+                <option value="High">High only</option>
+              </select>
+            </div>
+            <div class="control-box">
+              <label for="regDistrictSelect">County / District</label>
+              <select id="regDistrictSelect" onchange="onRegDistrictFilterChanged()"><option value="">All Districts</option></select>
+            </div>
+            <div class="control-box">
+              <label for="regSchoolSelect">School (highlight)</label>
+              <select id="regSchoolSelect" onchange="onRegSchoolFilterChanged()" disabled><option value="">— Select a district first —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="regPercentileSelect">Highlight Top &amp; Bottom %</label>
+              <select id="regPercentileSelect" onchange="onRegPercentileFilterChanged()">
+                <option value="">None</option>
+                <option value="20">Top &amp; Bottom 20%</option>
+                <option value="15">Top &amp; Bottom 15%</option>
+                <option value="10">Top &amp; Bottom 10%</option>
+                <option value="5">Top &amp; Bottom 5%</option>
+                <option value="1">Top &amp; Bottom 1%</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- School Profile funnel -- shared by Demographics / Score Trend / Peer Comparison -->
+        <div class="editor-panel" id="editorProfile">
+          <div class="controls-grid">
+            <div class="control-box">
+              <label for="profDistrictSelect">County / District</label>
+              <select id="profDistrictSelect" onchange="onProfDistrictChanged()"><option value="">— Select —</option></select>
+            </div>
+            <div class="control-box">
+              <label for="profSchoolSelect">School</label>
+              <select id="profSchoolSelect" onchange="onProfSchoolChanged()" disabled><option value="">— Select a district first —</option></select>
+            </div>
+            <div class="control-box-note" id="profDemoOnlyNote">Demographics only needs a school selected above.</div>
+            <hr class="controls-divider" id="profScoreDivider" />
+            <div class="control-box" id="profTestTypeBox">
+              <label for="profTestTypeSelect">Test Type</label>
+              <select id="profTestTypeSelect" onchange="onProfTestTypeChanged()" disabled><option value="">— Select a school first —</option></select>
+            </div>
+            <div class="control-box" id="profContentAreaBox">
+              <label for="profContentAreaSelect">Subject</label>
+              <select id="profContentAreaSelect" onchange="onProfContentAreaChanged()" disabled><option value="">— Select test type first —</option></select>
+            </div>
+            <div class="control-box" id="profGradeBox" style="display:none;">
+              <label for="profGradeSelect">Grade</label>
+              <select id="profGradeSelect" onchange="onProfGradeChanged()" disabled><option value="">— Select —</option></select>
+            </div>
+            <div class="control-box" id="profPeerScopeBox">
+              <label for="profPeerScopeSelect">Peer Schools Table Scope</label>
+              <select id="profPeerScopeSelect" onchange="onProfPeerScopeChanged()">
+                <option value="statewide">Statewide (all same-level schools)</option>
+                <option value="district">This district only</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-footer">
+          <button class="btn-primary" id="addSlideBtn" onclick="handleAddOrUpdateSlide()" disabled>Add to Deck</button>
+          <button class="btn-secondary" id="cancelEditBtn" onclick="cancelSlideEdit()" style="display:none;">Cancel</button>
+        </div>
+      </section>
+
+      <!-- ============================== Right: live preview ============================== -->
+      <aside>
+        <div class="slide-preview-label">Live Preview</div>
+        <div class="slide-preview-card" id="slidePreview"></div>
+      </aside>
+
+    </div>
+  </main>
+
+  <div id="presentOverlay" class="present-overlay" onclick="handlePresentClick(event)">
+    <button class="present-exit-btn" id="presentExitBtn" onclick="event.stopPropagation(); exitPresentMode()" aria-label="Exit presentation">✕</button>
+    <div class="present-slide-frame" id="presentSlideFrame"></div>
+    <div class="present-counter" id="presentCounter"></div>
+  </div>
+
+  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)" />
+
+  <script>
+    /* =================================================================
+       Shared constants/utilities (used by more than one ported funnel or
+       by the slide renderers/PPTX export).
+       ================================================================= */
+    const GRADE_LABELS = { ALL: 'All Grades', '03': 'Grade 3', '04': 'Grade 4', '05': 'Grade 5', '06': 'Grade 6', '07': 'Grade 7', '08': 'Grade 8' };
+    const LEVEL_COLORS_HEX = { Elementary: '#2a78d6', Middle: '#eb6834', High: '#1baf7a' };
+    const EOG_GRADES = ['03', '04', '05', '06', '07', '08'];
+    const SDB_SUBGROUPS_FALLBACK = [
+      'All Students', 'Economically Disadvantaged', 'Not Economically Disadvantaged',
+      'Students with Disabilities', 'Students without Disabilities',
+      'Limited English Proficient', 'Not Limited English Proficient',
+      'Male', 'Female', 'Foster Care', 'Homeless', 'Migrant', 'Non-Migrant', 'Military Connected',
+      'American Indian or Alaskan Native', 'Asian', 'Black or African American',
+      'Hispanic', 'Native Hawaiian or Other Pacific Islander', 'Two or More Races', 'White'
+    ];
+    const ACHIEVEMENT_LEVELS = [
+      { key: 'l1', pctKey: 'l1p', term: 'Beginning Learner', short: 'Level 1', color: '#DC2626',
+        desc: 'Does not yet demonstrate proficiency in the knowledge and skills necessary at this grade level/course.' },
+      { key: 'l2', pctKey: 'l2p', term: 'Developing Learner', short: 'Level 2', color: '#F59E0B',
+        desc: 'Demonstrates partial proficiency in the knowledge and skills necessary at this grade level/course.' },
+      { key: 'l3', pctKey: 'l3p', term: 'Proficient Learner', short: 'Level 3', color: '#059669',
+        desc: 'Demonstrates proficiency in the knowledge and skills necessary at this grade level/course.' },
+      { key: 'l4', pctKey: 'l4p', term: 'Distinguished Learner', short: 'Level 4', color: '#2563EB',
+        desc: 'Demonstrates advanced proficiency in the knowledge and skills necessary at this grade level/course.' }
+    ];
+    const BRAND_NAMES = { 'columbia-county': 'Columbia County School District', 'georgia-southern': 'Georgia Southern University' };
+    const SLIDE_TYPE_LABELS = {
+      title: 'Title', bullets: 'Bullets', drilldown: 'Achievement Table',
+      regression: 'Regression Chart', 'profile-demo': 'Demographics',
+      'profile-score': 'Score Trend', 'profile-peers': 'Peer Comparison',
+    };
+
+    function slugify(contentArea) {
+      return contentArea.toLowerCase().replace(/ /g, '-').replace(/:/g, '').replace(/\//g, '-');
+    }
+
+    // Same rule as regression_analysis.py's classify_level() / schoolprofile.html's
+    // classifyLevel() -- ported so this page can classify a school's real `grades`
+    // field without a server round-trip.
+    function classifyLevel(gradesServed) {
+      const grades = new Set((gradesServed || '').split(',').map(g => g.trim()));
+      if (['09', '10', '11', '12'].some(g => grades.has(g))) return 'High';
+      if (['06', '07', '08'].some(g => grades.has(g))) return 'Middle';
+      return 'Elementary';
+    }
+
+    function round1(v) { return Math.round(v * 10) / 10; }
+
+    function uid(prefix) { return prefix + '_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+
+    function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+
+    function safeFileName(name) {
+      return (name || 'deck').replace(/[^a-z0-9\-_ ]/gi, '').trim() || 'deck';
+    }
+
+    /* =================================================================
+       Deck persistence (localStorage) -- no backend, matches this app's
+       offline-first philosophy. Decks are frozen snapshots: every slide's
+       `data` was captured at "Add to Deck" time, never a live reference,
+       so a deck keeps rendering identically even after the data pipeline
+       (regression_analysis.py etc.) reruns and regenerates the JSON files.
+       ================================================================= */
+    const SDB_DECKS_KEY = 'slideDeckBuilder.decks.v1';
+    const SDB_ACTIVE_KEY = 'slideDeckBuilder.activeDeckId.v1';
+
+    let DECKS = [];
+    let ACTIVE_DECK_ID = null;
+    let EDITING_SLIDE_ID = null; // non-null while "Update Slide" is in progress
+    let SELECTED_SLIDE_ID_FOR_PREVIEW = null;
+    let CURRENT_EDITOR_TYPE = 'title';
+
+    function loadDecks() {
+      try {
+        const raw = localStorage.getItem(SDB_DECKS_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error('Could not read saved decks', e);
+        return [];
+      }
+    }
+
+    function saveDecks(decks) {
+      const warn = document.getElementById('storageWarning');
+      try {
+        localStorage.setItem(SDB_DECKS_KEY, JSON.stringify(decks));
+        warn.style.display = 'none';
+        return true;
+      } catch (e) {
+        console.error('Could not save decks', e);
+        warn.style.display = 'block';
+        warn.innerHTML = '<strong>Could not save this deck</strong> -- it may be too large for browser storage. Export it to a JSON file now so you do not lose your work.';
+        return false;
+      }
+    }
+
+    function getActiveDeck() { return DECKS.find(d => d.deckId === ACTIVE_DECK_ID) || null; }
+
+    function persistAndRerender() {
+      saveDecks(DECKS);
+      if (ACTIVE_DECK_ID) localStorage.setItem(SDB_ACTIVE_KEY, ACTIVE_DECK_ID);
+      renderAll();
+    }
+
+    function createNewDeck() {
+      const name = prompt('Name this deck', 'New Slide Deck');
+      if (name === null) return;
+      const brandId = document.documentElement.getAttribute('data-brand') || 'columbia-county';
+      const deck = {
+        version: 1,
+        deckId: uid('deck'),
+        name: name.trim() || 'Untitled Deck',
+        brandId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        slides: [],
+      };
+      DECKS.push(deck);
+      ACTIVE_DECK_ID = deck.deckId;
+      SELECTED_SLIDE_ID_FOR_PREVIEW = null;
+      EDITING_SLIDE_ID = null;
+      persistAndRerender();
+    }
+
+    function deleteActiveDeck() {
+      const deck = getActiveDeck();
+      if (!deck) return;
+      if (!confirm(`Delete the deck "${deck.name}"? This cannot be undone.`)) return;
+      DECKS = DECKS.filter(d => d.deckId !== deck.deckId);
+      ACTIVE_DECK_ID = DECKS.length ? DECKS[0].deckId : null;
+      SELECTED_SLIDE_ID_FOR_PREVIEW = null;
+      persistAndRerender();
+    }
+
+    function renderDeckSwitcher() {
+      const sel = document.getElementById('deckSwitcherSelect');
+      sel.innerHTML = '';
+      if (!DECKS.length) {
+        sel.innerHTML = '<option value="">No decks yet</option>';
+        return;
+      }
+      DECKS.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.deckId;
+        opt.innerText = d.name;
+        if (d.deckId === ACTIVE_DECK_ID) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function onDeckSwitcherChanged() {
+      ACTIVE_DECK_ID = document.getElementById('deckSwitcherSelect').value;
+      localStorage.setItem(SDB_ACTIVE_KEY, ACTIVE_DECK_ID);
+      EDITING_SLIDE_ID = null;
+      SELECTED_SLIDE_ID_FOR_PREVIEW = null;
+      renderAll();
+    }
+
+    function onDeckNameChanged() {
+      const deck = getActiveDeck();
+      if (!deck) return;
+      const val = document.getElementById('deckNameInput').value.trim();
+      deck.name = val || deck.name;
+      deck.updatedAt = new Date().toISOString();
+      persistAndRerender();
+    }
+
+    /* =================================================================
+       Slide CRUD
+       ================================================================= */
+    function addOrUpdateSlideInDeck(type, data) {
+      const deck = getActiveDeck();
+      if (!deck) { alert('Create or select a deck first.'); return; }
+      if (EDITING_SLIDE_ID) {
+        const slide = deck.slides.find(s => s.id === EDITING_SLIDE_ID);
+        if (slide) { slide.type = type; slide.data = data; }
+        SELECTED_SLIDE_ID_FOR_PREVIEW = EDITING_SLIDE_ID;
+        EDITING_SLIDE_ID = null;
+      } else {
+        const slide = { id: uid('slide'), type, data, createdAt: new Date().toISOString() };
+        deck.slides.push(slide);
+        SELECTED_SLIDE_ID_FOR_PREVIEW = slide.id;
+      }
+      deck.updatedAt = new Date().toISOString();
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      persistAndRerender();
+    }
+
+    function deleteSlide(slideId) {
+      const deck = getActiveDeck();
+      if (!deck) return;
+      if (!confirm('Delete this slide?')) return;
+      deck.slides = deck.slides.filter(s => s.id !== slideId);
+      if (EDITING_SLIDE_ID === slideId) { EDITING_SLIDE_ID = null; document.getElementById('cancelEditBtn').style.display = 'none'; }
+      if (SELECTED_SLIDE_ID_FOR_PREVIEW === slideId) SELECTED_SLIDE_ID_FOR_PREVIEW = null;
+      deck.updatedAt = new Date().toISOString();
+      persistAndRerender();
+    }
+
+    function moveSlide(slideId, dir) {
+      const deck = getActiveDeck();
+      if (!deck) return;
+      const idx = deck.slides.findIndex(s => s.id === slideId);
+      const newIdx = idx + dir;
+      if (idx === -1 || newIdx < 0 || newIdx >= deck.slides.length) return;
+      const [item] = deck.slides.splice(idx, 1);
+      deck.slides.splice(newIdx, 0, item);
+      deck.updatedAt = new Date().toISOString();
+      persistAndRerender();
+    }
+
+    function selectSlideForPreview(slideId) {
+      SELECTED_SLIDE_ID_FOR_PREVIEW = slideId;
+      EDITING_SLIDE_ID = null;
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      renderAll();
+    }
+
+    async function editSlide(slideId) {
+      const deck = getActiveDeck();
+      const slide = deck && deck.slides.find(s => s.id === slideId);
+      if (!slide) return;
+      EDITING_SLIDE_ID = slideId;
+      SELECTED_SLIDE_ID_FOR_PREVIEW = slideId;
+      await loadSlideIntoEditor(slide);
+      renderSlideList();
+    }
+
+    function cancelSlideEdit() {
+      EDITING_SLIDE_ID = null;
+      document.getElementById('cancelEditBtn').style.display = 'none';
+      refreshAddButtonState();
+      renderSlideList();
+    }
+
+    /* =================================================================
+       Editor type-picker
+       ================================================================= */
+    function switchEditorType(type) {
+      CURRENT_EDITOR_TYPE = type;
+      document.querySelectorAll('.type-pill').forEach(p => p.classList.toggle('active', p.dataset.type === type));
+      document.querySelectorAll('.editor-panel').forEach(p => p.classList.remove('active'));
+      const panelId = { title: 'editorTitle', bullets: 'editorBullets', drilldown: 'editorDrilldown', regression: 'editorRegression', 'profile-demo': 'editorProfile', 'profile-score': 'editorProfile', 'profile-peers': 'editorProfile' }[type];
+      document.getElementById(panelId).classList.add('active');
+
+      const isDemoOnly = type === 'profile-demo';
+      if (panelId === 'editorProfile') {
+        document.getElementById('profDemoOnlyNote').style.display = isDemoOnly ? 'block' : 'none';
+        document.getElementById('profScoreDivider').style.display = isDemoOnly ? 'none' : 'block';
+        document.getElementById('profTestTypeBox').style.display = isDemoOnly ? 'none' : 'flex';
+        document.getElementById('profContentAreaBox').style.display = isDemoOnly ? 'none' : 'flex';
+        document.getElementById('profPeerScopeBox').style.display = isDemoOnly ? 'none' : 'flex';
+        if (document.getElementById('profGradeBox').dataset.wantsShow !== '1') document.getElementById('profGradeBox').style.display = 'none';
+      }
+
+      if (type === 'drilldown') {
+        if (DD_PENDING) renderSlidePreview({ type: 'drilldown', data: DD_PENDING }, document.getElementById('slidePreview'));
+        else renderPreviewPrompt('Choose a school year, district, school, test type, content area, grade, and subgroup.');
+      } else if (type === 'regression') {
+        if (REG_PENDING) renderSlidePreview({ type: 'regression', data: REG_PENDING }, document.getElementById('slidePreview'));
+        else renderPreviewPrompt('Choose a school year, test type, content area, and grade to load a model.');
+      } else if (type.startsWith('profile')) {
+        profRenderPreview();
+      } else if (type === 'title') {
+        renderSlidePreview({ type: 'title', data: { heading: document.getElementById('titleHeadingInput').value, subheading: document.getElementById('titleSubInput').value } }, document.getElementById('slidePreview'));
+      } else if (type === 'bullets') {
+        renderSlidePreview({ type: 'bullets', data: { heading: document.getElementById('bulletsHeadingInput').value, bullets: (document.getElementById('bulletsTextarea').value || '').split('\n').map(s => s.trim()).filter(Boolean) } }, document.getElementById('slidePreview'));
+      }
+      refreshAddButtonState();
+    }
+
+    function onManualInputChanged(type) {
+      if (CURRENT_EDITOR_TYPE !== type) return;
+      switchEditorType(type);
+    }
+
+    function refreshAddButtonState() {
+      const btn = document.getElementById('addSlideBtn');
+      const type = CURRENT_EDITOR_TYPE;
+      let ready = false;
+      if (type === 'title') ready = !!document.getElementById('titleHeadingInput').value.trim();
+      else if (type === 'bullets') ready = !!document.getElementById('bulletsHeadingInput').value.trim();
+      else if (type === 'drilldown') ready = !!DD_PENDING;
+      else if (type === 'regression') ready = !!REG_PENDING;
+      else if (type === 'profile-demo') ready = !!PROF_SELECTED_SCHOOL;
+      else if (type === 'profile-score' || type === 'profile-peers') ready = !!(PROF_LAST_CHART_DATA && PROF_LAST_CHART_DATA.length);
+      btn.disabled = !ready;
+      btn.textContent = EDITING_SLIDE_ID ? 'Update Slide' : 'Add to Deck';
+    }
+
+    function handleAddOrUpdateSlide() {
+      const type = CURRENT_EDITOR_TYPE;
+      let data = null;
+      if (type === 'title') {
+        data = { heading: document.getElementById('titleHeadingInput').value.trim(), subheading: document.getElementById('titleSubInput').value.trim() };
+        if (!data.heading) return;
+      } else if (type === 'bullets') {
+        const heading = document.getElementById('bulletsHeadingInput').value.trim();
+        if (!heading) return;
+        data = { heading, bullets: (document.getElementById('bulletsTextarea').value || '').split('\n').map(s => s.trim()).filter(Boolean) };
+      } else if (type === 'drilldown') {
+        if (!DD_PENDING) return;
+        data = deepClone(DD_PENDING);
+      } else if (type === 'regression') {
+        if (!REG_PENDING) return;
+        data = deepClone(REG_PENDING);
+      } else if (type === 'profile-demo') {
+        if (!PROF_SELECTED_SCHOOL) return;
+        data = buildProfileDemoCapture();
+      } else if (type === 'profile-score') {
+        if (!PROF_LAST_CHART_DATA || !PROF_LAST_CHART_DATA.length) return;
+        data = buildProfileScoreCapture();
+      } else if (type === 'profile-peers') {
+        if (!PROF_LAST_CHART_DATA || !PROF_LAST_CHART_DATA.length) return;
+        data = buildProfilePeersCapture();
+      }
+      if (!data) return;
+      addOrUpdateSlideInDeck(type, data);
+      if (type === 'title') { document.getElementById('titleHeadingInput').value = ''; document.getElementById('titleSubInput').value = ''; }
+      if (type === 'bullets') { document.getElementById('bulletsHeadingInput').value = ''; document.getElementById('bulletsTextarea').value = ''; }
+    }
+
+    /* =================================================================
+       Restoring a saved slide back into the editor ("Update Slide") --
+       replays the same onchange chain a user driving the funnel by hand
+       would trigger, so dependent dropdowns repopulate correctly.
+       ================================================================= */
+    async function loadSlideIntoEditor(slide) {
+      switchEditorType(slide.type);
+      document.getElementById('cancelEditBtn').style.display = 'inline-block';
+      const d = slide.data;
+
+      if (slide.type === 'title') {
+        document.getElementById('titleHeadingInput').value = d.heading || '';
+        document.getElementById('titleSubInput').value = d.subheading || '';
+      } else if (slide.type === 'bullets') {
+        document.getElementById('bulletsHeadingInput').value = d.heading || '';
+        document.getElementById('bulletsTextarea').value = (d.bullets || []).join('\n');
+      } else if (slide.type === 'drilldown') {
+        await restoreDrilldownEditor(d);
+      } else if (slide.type === 'regression') {
+        await restoreRegressionEditor(d);
+      } else if (slide.type.startsWith('profile')) {
+        await restoreProfileEditor(d);
+      }
+      renderSlidePreview(slide, document.getElementById('slidePreview'));
+      refreshAddButtonState();
+    }
+
+    /* =================================================================
+       Slide list rendering
+       ================================================================= */
+    function slideCaption(slide) {
+      const d = slide.data;
+      switch (slide.type) {
+        case 'title': return d.heading || 'Untitled';
+        case 'bullets': return d.heading || 'Untitled';
+        case 'drilldown': return `${d.schoolName} — ${d.contentArea}, ${d.gradeLabel} (${d.year})`;
+        case 'regression': return `${d.combo.testType} ${d.combo.contentArea}, ${d.combo.year}`;
+        case 'profile-demo': return `${d.schoolName} — Demographics`;
+        case 'profile-score': return `${d.schoolName} — ${d.contentArea} Trend`;
+        case 'profile-peers': return `${d.schoolName} — Peer Comparison`;
+        default: return 'Slide';
+      }
+    }
+
+    function renderSlideList() {
+      const deck = getActiveDeck();
+      const list = document.getElementById('slideList');
+      document.getElementById('slideCount').textContent = deck ? deck.slides.length : 0;
+      if (!deck || !deck.slides.length) {
+        list.innerHTML = '<div class="no-data-card" style="padding:1rem;">No slides yet. Use the editor to add your first slide.</div>';
+        return;
+      }
+      list.innerHTML = deck.slides.map((s, i) => `
+        <div class="slide-list-item ${s.id === SELECTED_SLIDE_ID_FOR_PREVIEW ? 'active' : ''}" onclick="selectSlideForPreview('${s.id}')">
+          <div class="slide-list-item-top">
+            <span class="slide-list-item-type">${i + 1}. ${SLIDE_TYPE_LABELS[s.type] || s.type}</span>
+            <div class="slide-list-item-actions">
+              <button class="icon-btn" title="Move up" onclick="event.stopPropagation(); moveSlide('${s.id}', -1)" ${i === 0 ? 'disabled' : ''}>&#9650;</button>
+              <button class="icon-btn" title="Move down" onclick="event.stopPropagation(); moveSlide('${s.id}', 1)" ${i === deck.slides.length - 1 ? 'disabled' : ''}>&#9660;</button>
+              <button class="icon-btn" title="Edit" onclick="event.stopPropagation(); editSlide('${s.id}')">&#9998;</button>
+              <button class="icon-btn" title="Delete" onclick="event.stopPropagation(); deleteSlide('${s.id}')">&#10005;</button>
+            </div>
+          </div>
+          <div class="slide-list-item-caption">${escapeHTML(slideCaption(s))}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAll() {
+      renderDeckSwitcher();
+      const deck = getActiveDeck();
+      document.getElementById('deckNameInput').value = deck ? deck.name : '';
+      document.getElementById('deckNameInput').disabled = !deck;
+      document.getElementById('deckBrandNote').textContent = deck ? `Brand: ${BRAND_NAMES[deck.brandId] || deck.brandId} (locked to this deck)` : 'Create a deck to get started.';
+      renderSlideList();
+
+      if (!EDITING_SLIDE_ID && SELECTED_SLIDE_ID_FOR_PREVIEW && deck) {
+        const slide = deck.slides.find(s => s.id === SELECTED_SLIDE_ID_FOR_PREVIEW);
+        if (slide) renderSlidePreview(slide, document.getElementById('slidePreview'));
+      } else if (!EDITING_SLIDE_ID && !SELECTED_SLIDE_ID_FOR_PREVIEW) {
+        renderPreviewPrompt('Add a slide, or select one from the list, to preview it here.');
+      }
+      refreshAddButtonState();
+    }
+
+    /* =================================================================
+       Slide canvas scaling -- every rendered slide is laid out at a fixed
+       1280x720 design size (matching the PPTX export's 13.333in x 7.5in
+       16:9 layout) and then CSS-scaled to fit whatever box it's shown in
+       (the small editor preview, or the large present-mode frame) -- so
+       "what you see in the preview is what you present and export" holds
+       structurally, not just by convention.
+       ================================================================= */
+    function fitSlideCanvas(containerEl) {
+      const canvas = containerEl.querySelector('.slide-canvas');
+      if (!canvas) return;
+      const scale = containerEl.clientWidth / 1280;
+      canvas.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener('resize', () => {
+      fitSlideCanvas(document.getElementById('slidePreview'));
+      if (document.getElementById('presentOverlay').classList.contains('active')) {
+        fitSlideCanvas(document.getElementById('presentSlideFrame'));
+      }
+    });
+
+    function renderPreviewPrompt(msg) {
+      document.getElementById('slidePreview').innerHTML = `<div class="slide-canvas"><div class="no-data-card"><strong>Live preview</strong>${msg}</div></div>`;
+      fitSlideCanvas(document.getElementById('slidePreview'));
+    }
+    function renderPreviewLoading() {
+      document.getElementById('slidePreview').innerHTML = `<div class="slide-canvas"><div class="no-data-card">Loading…</div></div>`;
+      fitSlideCanvas(document.getElementById('slidePreview'));
+    }
+    function renderPreviewNoData(msg) {
+      document.getElementById('slidePreview').innerHTML = `<div class="slide-canvas"><div class="no-data-card"><strong>No data available</strong>${msg}</div></div>`;
+      fitSlideCanvas(document.getElementById('slidePreview'));
+    }
+
+    /* =================================================================
+       Slide renderer dispatcher -- shared by the editor's live preview and
+       present mode. Reads only the slide's frozen `data`, never any of the
+       ported funnels' live SELECTED_ or CURRENT_ globals below -- keeping
+       that boundary intact is what makes a slide a true snapshot.
+       ================================================================= */
+    function renderSlidePreview(slide, container) {
+      let inner;
+      if (!slide) {
+        inner = '<div class="no-data-card"><strong>Nothing to preview</strong>Add a slide, or select one from the list.</div>';
+      } else {
+        switch (slide.type) {
+          case 'title': inner = renderTitleSlideHTML(slide.data); break;
+          case 'bullets': inner = renderBulletsSlideHTML(slide.data); break;
+          case 'drilldown': inner = renderDrilldownSlideHTML(slide.data); break;
+          case 'regression': inner = renderRegressionSlideHTML(slide.data); break;
+          case 'profile-demo': inner = renderProfileDemoSlideHTML(slide.data); break;
+          case 'profile-score': inner = renderProfileScoreSlideHTML(slide.data); break;
+          case 'profile-peers': inner = renderProfilePeersSlideHTML(slide.data); break;
+          default: inner = '<div class="no-data-card">Unknown slide type</div>';
+        }
+      }
+      container.innerHTML = `<div class="slide-canvas">${inner}</div>`;
+      fitSlideCanvas(container);
+    }
+
+    /* ---------------- Title / Bullets ---------------- */
+    function renderTitleSlideHTML(data) {
+      return `
+        <div class="slide-content-title">
+          <h1 class="slide-title-heading">${escapeHTML(data.heading || 'Untitled')}</h1>
+          ${data.subheading ? `<p class="slide-title-sub">${escapeHTML(data.subheading)}</p>` : ''}
+        </div>
+      `;
+    }
+    function renderBulletsSlideHTML(data) {
+      const items = (data.bullets || []).map(b => `<li>${escapeHTML(b)}</li>`).join('');
+      return `
+        <div>
+          <h2 class="slide-section-heading">${escapeHTML(data.heading || 'Untitled')}</h2>
+          <ul class="slide-bullets-list">${items || '<li class="suppressed-note">No bullets added</li>'}</ul>
+        </div>
+      `;
+    }
+
+    /* ---------------- Data Drilldown (achievement table) ---------------- */
+    function ddEmptyCell() { return '<div class="compare-cell"><span class="cell-empty">—</span></div>'; }
+    function ddLevelCell(record, lvl) {
+      if (!record) return ddEmptyCell();
+      const count = record[lvl.key];
+      const pct = record[lvl.pctKey];
+      const pctDisplay = (pct === null || pct === undefined) ? '—' : `${pct}%`;
+      const countDisplay = (count === null || count === undefined) ? `<span class="suppressed-note">too few to report</span>` : `${count.toLocaleString()} students`;
+      return `<div class="compare-cell"><div class="cell-pct">${pctDisplay}</div><div class="cell-count">${countDisplay}</div></div>`;
+    }
+    function ddPairCell(record, aKey, bKey, aPctKey, bPctKey) {
+      if (!record) return ddEmptyCell();
+      const aP = record[aPctKey], bP = record[bPctKey];
+      if (aP === null || aP === undefined || bP === null || bP === undefined) return ddEmptyCell();
+      const pct = round1(aP + bP);
+      const n = record.n;
+      const a = record[aKey], b = record[bKey];
+      let countDisplay;
+      if (n === null || n === undefined) countDisplay = `<span class="suppressed-note">too few to report</span>`;
+      else if (a !== null && a !== undefined && b !== null && b !== undefined) countDisplay = `${(a + b).toLocaleString()} students`;
+      else countDisplay = `≈ ${Math.round((pct / 100) * n).toLocaleString()} students`;
+      return `<div class="compare-cell"><div class="cell-pct">${pct}%</div><div class="cell-count">${countDisplay}</div></div>`;
+    }
+    function ddTestedCell(record) {
+      if (!record) return ddEmptyCell();
+      const n = record.n;
+      const display = (n === null || n === undefined) ? `<span class="suppressed-note">too few to report</span>` : `${n.toLocaleString()}`;
+      return `<div class="compare-cell"><div class="cell-pct">${display}</div></div>`;
+    }
+
+    function renderDrilldownSlideHTML(data) {
+      const { school, district, state, schoolName, districtName, year, testType, contentArea, gradeLabel, subgroup } = data;
+      const header = `<div></div><div class="compare-head">${escapeHTML(schoolName)}</div><div class="compare-head">${escapeHTML(districtName)}</div><div class="compare-head">Georgia (State)</div>`;
+      const testedRow = `<div class="compare-row-label"><span class="level-label">Students Tested</span></div>${ddTestedCell(school)}${ddTestedCell(district)}${ddTestedCell(state)}`;
+      const levelRows = ACHIEVEMENT_LEVELS.map(lvl => `
+        <div class="compare-row-label"><div class="level-dot" style="background:${lvl.color}"></div><div><div class="level-term">${lvl.term}</div><div class="level-label">${lvl.short}</div></div></div>
+        ${ddLevelCell(school, lvl)}${ddLevelCell(district, lvl)}${ddLevelCell(state, lvl)}
+      `).join('');
+      const notMetRow = `
+        <div class="compare-row-label"><div class="level-dot" style="background:#DC2626"></div><div><div class="level-term">Did Not Meet Expectations</div><div class="level-label">Levels 1 + 2</div></div></div>
+        ${ddPairCell(school, 'l1', 'l2', 'l1p', 'l2p')}${ddPairCell(district, 'l1', 'l2', 'l1p', 'l2p')}${ddPairCell(state, 'l1', 'l2', 'l1p', 'l2p')}
+      `;
+      const metRow = `
+        <div class="compare-row-label"><div class="level-dot" style="background:#059669"></div><div><div class="level-term">Met Expectations</div><div class="level-label">Levels 3 + 4</div></div></div>
+        ${ddPairCell(school, 'l3', 'l4', 'l3p', 'l4p')}${ddPairCell(district, 'l3', 'l4', 'l3p', 'l4p')}${ddPairCell(state, 'l3', 'l4', 'l3p', 'l4p')}
+      `;
+      return `
+        <div>
+          <div class="breadcrumb-note">${escapeHTML(year)} · ${escapeHTML(testType)} · ${escapeHTML(contentArea)} · ${escapeHTML(gradeLabel)} · ${escapeHTML(subgroup)}</div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <h3>Achievement Level Breakdown</h3>
+              <div class="stat-box-sub">${escapeHTML(schoolName)} vs. ${escapeHTML(districtName)} vs. Georgia</div>
+              <div class="compare-table">${header}${testedRow}${levelRows}</div>
+            </div>
+            <div class="stat-box">
+              <h3>Met vs. Did Not Meet Expectations</h3>
+              <div class="stat-box-sub">Levels 1+2 = Did Not Meet · Levels 3+4 = Met</div>
+              <div class="compare-table">${header}${notMetRow}${metRow}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------------- Regression chart ---------------- */
+    // Pure function -- takes a frozen combo + filter snapshot, returns SVG
+    // markup. Shared by the live preview, present mode, and (rasterized) the
+    // PPTX export, so all three are guaranteed to show the same chart.
+    function buildRegressionChartSVG(combo, filters) {
+      const { ols, points } = combo;
+      const visiblePoints = points.filter(p =>
+        (!filters.selectedDistrictCode || p.districtCode === filters.selectedDistrictCode) &&
+        (!filters.selectedLevel || p.level === filters.selectedLevel)
+      );
+      if (!visiblePoints.length) return null;
+
+      let topThresholdResidual = null, bottomThresholdResidual = null;
+      if (filters.selectedPercentile) {
+        const pct = parseInt(filters.selectedPercentile, 10) / 100;
+        const residuals = visiblePoints.map(p => p.y - (ols.slope * p.x + ols.intercept)).sort((a, b) => a - b);
+        const bandCount = Math.max(1, Math.ceil(pct * residuals.length));
+        bottomThresholdResidual = residuals[bandCount - 1];
+        topThresholdResidual = residuals[residuals.length - bandCount];
+      }
+
+      const width = 900, height = 520, margin = { top: 20, right: 30, bottom: 50, left: 55 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const toX = x => margin.left + (x / 100) * plotW;
+      const toY = y => margin.top + plotH - (y / 100) * plotH;
+
+      let svg = '';
+      for (let v = 0; v <= 100; v += 25) {
+        const gx = toX(v), gy = toY(v);
+        svg += `<line x1="${gx}" y1="${margin.top}" x2="${gx}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1"/>`;
+        svg += `<line x1="${margin.left}" y1="${gy}" x2="${margin.left + plotW}" y2="${gy}" stroke="var(--grid-line)" stroke-width="1"/>`;
+        svg += `<text x="${gx}" y="${margin.top + plotH + 20}" font-size="11" fill="var(--brand-text-secondary,#64748B)" text-anchor="middle">${v}%</text>`;
+        svg += `<text x="${margin.left - 10}" y="${gy + 4}" font-size="11" fill="var(--brand-text-secondary,#64748B)" text-anchor="end">${v}%</text>`;
+      }
+      svg += `<line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
+      svg += `<line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
+
+      const clamp = v => Math.max(0, Math.min(100, v));
+      const yAt0 = clamp(ols.intercept);
+      const yAt100 = clamp(ols.slope * 100 + ols.intercept);
+      svg += `<line x1="${toX(0)}" y1="${toY(yAt0)}" x2="${toX(100)}" y2="${toY(yAt100)}" stroke="var(--trend-line)" stroke-width="2" stroke-dasharray="7 5"/>`;
+
+      const drawThresholdLine = residual => {
+        const yAt0T = clamp(ols.intercept + residual);
+        const yAt100T = clamp(ols.slope * 100 + ols.intercept + residual);
+        svg += `<line x1="${toX(0)}" y1="${toY(yAt0T)}" x2="${toX(100)}" y2="${toY(yAt100T)}" stroke="var(--trend-line)" stroke-width="1.5" stroke-dasharray="2 5" stroke-opacity="0.4"/>`;
+      };
+      if (topThresholdResidual !== null) drawThresholdLine(topThresholdResidual);
+      if (bottomThresholdResidual !== null) drawThresholdLine(bottomThresholdResidual);
+
+      const ordered = filters.selectedSchoolCode
+        ? [...visiblePoints.filter(p => p.code !== filters.selectedSchoolCode), ...visiblePoints.filter(p => p.code === filters.selectedSchoolCode)]
+        : visiblePoints;
+
+      ordered.forEach(p => {
+        const isSelected = p.code === filters.selectedSchoolCode;
+        const color = isSelected ? '#DC2626' : (LEVEL_COLORS_HEX[p.level] || '#94A3B8');
+        const radius = isSelected ? 7.5 : 4.5;
+        const cx = toX(p.x), cy = toY(p.y);
+        svg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="${isSelected ? 2 : 1}"/>`;
+      });
+
+      return {
+        svg, width, height, visiblePoints, topThresholdResidual, bottomThresholdResidual,
+        selectedSchoolPoint: filters.selectedSchoolCode ? visiblePoints.find(p => p.code === filters.selectedSchoolCode) : null,
+      };
+    }
+
+    function renderRegressionSlideHTML(data) {
+      const { combo } = data;
+      const { testType, contentArea, year, grade, ols } = combo;
+      const filters = { selectedDistrictCode: data.selectedDistrictCode, selectedLevel: data.selectedLevel, selectedSchoolCode: data.selectedSchoolCode, selectedPercentile: data.selectedPercentile };
+      const chart = buildRegressionChartSVG(combo, filters);
+      if (!chart) {
+        return `<div class="no-data-card"><strong>No schools match these filters</strong>No schools to display for this combination and filter set.</div>`;
+      }
+      const filterBits = [];
+      if (data.selectedDistrictCode) filterBits.push(data.selectedDistrictName);
+      if (data.selectedLevel) filterBits.push(`${data.selectedLevel} schools`);
+      const filterDescription = filterBits.length ? ` — filtered to ${filterBits.join(', ')}` : '';
+      const nDisplay = ols.n.toLocaleString();
+      const visibleDisplay = chart.visiblePoints.length.toLocaleString();
+
+      // Chart + stats table sit side by side (not stacked) -- matches the
+      // proportions pptxRegressionSlide already uses (8.1in chart / 4.0in
+      // table, side by side, which fits fine since PPTX places them at
+      // absolute inch coordinates). Stacking them full-width, each with its
+      // own title/padding/legend, overflowed the fixed 1280x720 slide-canvas
+      // (.slide-canvas, overflow:hidden -- same root cause as the Score
+      // Trend slide). Narrowing the chart's container is enough on its own:
+      // .chart-container svg has width:100%/height:auto, so the SVG's
+      // rendered height shrinks proportionally with its container -- no
+      // change needed to buildRegressionChartSVG's 900x520 viewBox itself,
+      // which stays exactly what pptxRegressionSlide already rasterizes at
+      // that same aspect ratio.
+      return `
+        <div>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div class="viz-card" style="margin-bottom:0; flex:0 0 63%; min-width:0;">
+              <div class="viz-header">
+                <div class="viz-header-titles">
+                  <h2>${testType} — ${contentArea}, ${GRADE_LABELS[grade] || grade} (${year})</h2>
+                  <p>% Econ. Disadvantaged (X) vs. % Met + Exceeded (Y) — ${visibleDisplay} of ${nDisplay} schools${filterDescription}</p>
+                </div>
+              </div>
+              <div class="chart-container">
+                <svg viewBox="0 0 ${chart.width} ${chart.height}" role="img">${chart.svg}</svg>
+              </div>
+              ${chart.selectedSchoolPoint ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${escapeHTML(chart.selectedSchoolPoint.name)}</strong> (red)</div>` : ''}
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-swatch" style="background:var(--level-elementary)"></span> Elementary</div>
+                <div class="legend-item"><span class="legend-swatch" style="background:var(--level-middle)"></span> Middle</div>
+                <div class="legend-item"><span class="legend-swatch" style="background:var(--level-high)"></span> High</div>
+                <div class="legend-item"><span class="legend-line"></span> Regression Fit (statewide)</div>
+              </div>
+            </div>
+            <div class="stats-table-card" style="margin-bottom:0; flex:1; min-width:0;">
+              <h2>Regression Model Summary</h2>
+              <table class="ols-table">
+                <thead><tr><th scope="col">Metric</th><th scope="col">Value</th></tr></thead>
+                <tbody>
+                  <tr><th scope="row">Correlation (r)</th><td>${ols.r}</td></tr>
+                  <tr><th scope="row">R²</th><td>${ols.rSquared}</td></tr>
+                  <tr><th scope="row">Slope</th><td>${ols.slope}</td></tr>
+                  <tr><th scope="row">Intercept</th><td>${ols.intercept}</td></tr>
+                  <tr><th scope="row">Equation</th><td>${ols.equation}</td></tr>
+                  <tr><th scope="row">Schools in Model</th><td>${nDisplay}</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------------- School Profile: Demographics ---------------- */
+    // Matches schoolprofile.html's ENROLLMENT_YEARS / build_school_profile_enrollment.py's
+    // YEAR_FILES -- update all three together if that 3-year window ever shifts.
+    const PROF_ENROLLMENT_YEARS = ['2022-23', '2023-24', '2024-25'];
+
+    // GOSA publishes only percentages for race/gender breakdowns, never raw
+    // counts -- the "~N" figure is computed client-side (real % x real total
+    // enrollment) and always shown with a "~" and the source percentage
+    // alongside it, same rule as schoolprofile.html's demoTableRow().
+    function demoTableRow(label, key, yearsData) {
+      const cells = yearsData.map(rec => {
+        if (!rec) return '<td class="demo-no-data">No data</td>';
+        const pct = rec[key];
+        if (pct === null || pct === undefined) return '<td class="demo-no-data">Suppressed</td>';
+        const total = rec.totalEnrollment;
+        if (total === null || total === undefined) return `<td>${pct}%</td>`;
+        const estCount = Math.round((pct / 100) * total);
+        return `<td>~${estCount.toLocaleString()} (${pct}%)</td>`;
+      }).join('');
+      return `<tr><td>${label}</td>${cells}</tr>`;
+    }
+
+    function demoTotalRow(yearsData) {
+      const cells = yearsData.map(rec => {
+        if (!rec || rec.totalEnrollment === null || rec.totalEnrollment === undefined) {
+          return '<td class="demo-no-data">No data</td>';
+        }
+        return `<td>${rec.totalEnrollment.toLocaleString()}${rec.enrollmentPartial ? ' *' : ''}</td>`;
+      }).join('');
+      return `<tr class="demo-total-row"><td>Total Enrollment</td>${cells}</tr>`;
+    }
+
+    function renderProfileDemoSlideHTML(data) {
+      const byYear = data.enrollment;
+      const yearsData = PROF_ENROLLMENT_YEARS.map(y => (byYear && byYear[y]) || null);
+      if (!byYear || !yearsData.some(rec => rec)) {
+        return `<div class="no-data-card"><strong>No enrollment record available</strong>${escapeHTML(data.schoolName)} has no real enrollment/demographic data on record.</div>`;
+      }
+      const anyPartial = yearsData.some(rec => rec && rec.enrollmentPartial);
+      const headerCells = PROF_ENROLLMENT_YEARS.map(y => `<th scope="col">${y}</th>`).join('');
+      const colspan = PROF_ENROLLMENT_YEARS.length + 1;
+      return `
+        <div>
+          <div class="breadcrumb-note">${escapeHTML(data.schoolName)} · ${escapeHTML(data.districtName)}</div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <h3>Enrollment &amp; Demographics</h3>
+              <div class="stat-box-sub">Real GOSA Enrollment dataset — total enrollment is exact; race/gender figures are "~estimated count (real GOSA %)"</div>
+              <table class="demo-table">
+                <thead><tr><th scope="col"></th>${headerCells}</tr></thead>
+                <tbody>
+                  ${demoTotalRow(yearsData)}
+                  <tr class="demo-section-row"><th scope="rowgroup" colspan="${colspan}">Race / Ethnicity</th></tr>
+                  ${demoTableRow('Asian', 'pctAsian', yearsData)}
+                  ${demoTableRow('Amer. Indian/Native', 'pctNative', yearsData)}
+                  ${demoTableRow('Black', 'pctBlack', yearsData)}
+                  ${demoTableRow('Hispanic', 'pctHispanic', yearsData)}
+                  ${demoTableRow('Multiracial', 'pctMultiracial', yearsData)}
+                  ${demoTableRow('White', 'pctWhite', yearsData)}
+                  <tr class="demo-section-row"><th scope="rowgroup" colspan="${colspan}">Gender</th></tr>
+                  ${demoTableRow('Male', 'pctMale', yearsData)}
+                  ${demoTableRow('Female', 'pctFemale', yearsData)}
+                </tbody>
+              </table>
+              ${anyPartial ? '<p class="suppressed-note" style="margin-top:0.75rem;">* Total enrollment that year is a real but partial sum — some grade-level counts were suppressed by GOSA for privacy.</p>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------------- School Profile: Score Trend ---------------- */
+    // Grouped bar: for each year, 3 bars side by side -- this school, its
+    // district's same-level average, and the statewide same-level average --
+    // matching schoolprofile.html's renderScoreSection(). No longer a single
+    // bar + dashed peer-average line.
+    // Flatter aspect ratio than schoolprofile.html's own copy of this chart
+    // (900x300 here vs 700x380 there) -- this one renders inside the fixed
+    // 1280x720 slide-canvas box (.slide-canvas, overflow:hidden, see CSS
+    // above), which also has to fit the title/subtitle above and the legend
+    // below; schoolprofile.html is a normal scrolling page with no such
+    // ceiling, so it can afford a taller chart.
+    function buildScoreChartSVG(chartData) {
+      const width = 900, height = 300, margin = { top: 20, right: 20, bottom: 40, left: 45 };
+      const plotW = width - margin.left - margin.right;
+      const plotH = height - margin.top - margin.bottom;
+      const n = chartData.length;
+      const colW = plotW / n;
+      const barW = 24;
+      const barGap = 4;
+      const groupW = barW * 3 + barGap * 2;
+      const toY = y => margin.top + plotH - (y / 100) * plotH;
+      let svg = '';
+      for (let v = 0; v <= 100; v += 25) {
+        const gy = toY(v);
+        svg += `<line x1="${margin.left}" y1="${gy}" x2="${margin.left + plotW}" y2="${gy}" stroke="var(--grid-line)" stroke-width="1"/>`;
+        svg += `<text x="${margin.left - 10}" y="${gy + 4}" font-size="11" fill="var(--brand-text-secondary,#64748B)" text-anchor="end">${v}%</text>`;
+      }
+      svg += `<line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="var(--grid-line)" stroke-width="1.5"/>`;
+
+      const series = [
+        { key: 'schoolY', color: 'var(--scope-school)' },
+        { key: 'districtAvg', color: 'var(--scope-district)' },
+        { key: 'stateAvg', color: 'var(--scope-state)' },
+      ];
+
+      let hasAnyDistrictAvg = false, hasAnyStateAvg = false;
+      chartData.forEach((d, i) => {
+        const groupCx = margin.left + colW * i + colW / 2;
+        const groupLeft = groupCx - groupW / 2;
+        svg += `<text x="${groupCx}" y="${margin.top + plotH + 24}" font-size="12" font-weight="700" fill="var(--brand-text-primary,#0F172A)" text-anchor="middle">${d.year}</text>`;
+
+        if (d.districtAvg !== null) hasAnyDistrictAvg = true;
+        if (d.stateAvg !== null) hasAnyStateAvg = true;
+
+        series.forEach((ser, j) => {
+          const value = d[ser.key];
+          const barX = groupLeft + j * (barW + barGap);
+          const barCx = barX + barW / 2;
+          if (value === null) {
+            const emptyH = 24;
+            svg += `<rect x="${barX}" y="${margin.top + plotH - emptyH}" width="${barW}" height="${emptyH}" fill="none" stroke="var(--grid-line)" stroke-width="1.5" stroke-dasharray="3 3" rx="4"/>`;
+          } else {
+            const barY = toY(value);
+            const barH = margin.top + plotH - barY;
+            svg += `<rect x="${barX}" y="${barY}" width="${barW}" height="${barH}" fill="${ser.color}" rx="4"/>`;
+            svg += `<text x="${barCx}" y="${barY - 6}" font-size="10.5" font-weight="800" fill="var(--brand-text-primary,#0F172A)" text-anchor="middle">${value}%</text>`;
+          }
+        });
+      });
+      return { svg, width, height, hasAnyDistrictAvg, hasAnyStateAvg };
+    }
+
+    function renderProfileScoreSlideHTML(data) {
+      const { chartData, schoolName, districtName, testType, contentArea, gradeLabel, level } = data;
+      if (!chartData || !chartData.length) {
+        return `<div class="no-data-card"><strong>No model available</strong>No regression data found for ${testType} ${contentArea}, ${gradeLabel}.</div>`;
+      }
+      const chart = buildScoreChartSVG(chartData);
+      return `
+        <div>
+          <div class="viz-card" style="margin-bottom:0;">
+            <div class="viz-header">
+              <div class="viz-header-titles">
+                <h2>${testType} — ${contentArea}, ${gradeLabel}</h2>
+                <p>% Met + Exceeded, most recent ${chartData.length} year${chartData.length === 1 ? '' : 's'} — ${escapeHTML(schoolName)}</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <svg viewBox="0 0 ${chart.width} ${chart.height}" role="img">${chart.svg}</svg>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-swatch" style="background:var(--scope-school)"></span> ${escapeHTML(schoolName)}</div>
+              ${chart.hasAnyDistrictAvg ? `<div class="legend-item"><span class="legend-swatch" style="background:var(--scope-district)"></span> ${escapeHTML(districtName)} ${level} average</div>` : ''}
+              ${chart.hasAnyStateAvg ? `<div class="legend-item"><span class="legend-swatch" style="background:var(--scope-state)"></span> Statewide ${level} average</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------------- School Profile: Peer Comparison ---------------- */
+    function renderProfilePeersSlideHTML(data) {
+      const { peerPoints, schoolName, level, year, peerScope, testType, contentArea, gradeLabel } = data;
+      if (!peerPoints || !peerPoints.length) {
+        return `<div class="no-data-card"><strong>No peer schools found</strong>No other ${level} schools have a reported result for this combination.</div>`;
+      }
+      const scopeLabel = peerScope === 'statewide' ? 'statewide' : 'within the district';
+      const rows = peerPoints.slice().sort((a, b) => a.name.localeCompare(b.name)).map(p => `
+        <tr><td>${escapeHTML(p.name)}</td><td>${escapeHTML(p.districtName)}</td><td>${p.y}%</td></tr>
+      `).join('');
+      return `
+        <div>
+          <div class="stats-table-card" style="margin-bottom:0;">
+            <h2>Peer Schools — ${level} Level (${year})</h2>
+            <p>Every real ${(level || '').toLowerCase()} school ${scopeLabel} with a reported ${testType} ${contentArea} (${gradeLabel}) result for ${year}, excluding ${escapeHTML(schoolName)}.</p>
+            <div class="school-table-wrap">
+              <table class="school-table">
+                <thead><tr><th scope="col">School</th><th scope="col">District</th><th scope="col">% Met + Exceeded</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* =================================================================
+       DATA DRILLDOWN FUNNEL (dd*) -- ported from index.html, prefixed to
+       avoid id/global collisions with the other two funnels in this file.
+       ================================================================= */
+    let DD_GOSA_DISTRICTS = [];
+    let DD_ALL_SCHOOLS = [];
+    let DD_SELECTED_DISTRICT = null;
+    let DD_SELECTED_SCHOOL = null;
+    let DD_META = null;
+    const DD_DATA_CACHE = {};
+    let DD_LATEST_FETCH_TOKEN = 0;
+    let DD_PENDING = null; // frozen capture, ready to Add to Deck, or null
+
+    async function ddInit() {
+      if (window.GEORGIA_GOSA_MASTER && window.GEORGIA_GOSA_MASTER.districts) {
+        DD_GOSA_DISTRICTS = window.GEORGIA_GOSA_MASTER.districts;
+        DD_ALL_SCHOOLS = window.GEORGIA_GOSA_MASTER.allSchools || [];
+      }
+      ddPopulateDistrictsDropdown();
+      try {
+        const resp = await fetch('data/milestones/_meta.json');
+        DD_META = await resp.json();
+      } catch (e) {
+        console.error('Could not load data/milestones/_meta.json', e);
+        DD_META = { EOC: { years: [], grades: [], subgroups: SDB_SUBGROUPS_FALLBACK, contentAreasByYear: {} }, EOG: { years: [], grades: [], subgroups: SDB_SUBGROUPS_FALLBACK, contentAreasByYear: {} } };
+      }
+      ddPopulateYearDropdown();
+      ddPopulateSubgroupDropdown();
+      ddResetContentAreaAndGrade();
+    }
+
+    function ddPopulateDistrictsDropdown() {
+      const select = document.getElementById('ddDistrictSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      DD_GOSA_DISTRICTS.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.innerText = `${d.name} [Code: ${d.code}]`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onDdDistrictChanged(districtCode) {
+      const district = DD_GOSA_DISTRICTS.find(d => d.code === districtCode || d.name === districtCode);
+      const schoolSelect = document.getElementById('ddSchoolSelect');
+      DD_SELECTED_SCHOOL = null;
+      if (!district || !district.schools || !district.schools.length) {
+        DD_SELECTED_DISTRICT = null;
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        ddRefreshPreview();
+        return;
+      }
+      DD_SELECTED_DISTRICT = district;
+      schoolSelect.innerHTML = '<option value="">— Select —</option>';
+      district.schools.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.innerText = s.name;
+        schoolSelect.appendChild(opt);
+      });
+      ddRefreshPreview();
+    }
+
+    function onDdSchoolChanged(schoolName) {
+      DD_SELECTED_SCHOOL = schoolName ? (DD_ALL_SCHOOLS.find(s => s.name === schoolName) || null) : null;
+      ddRefreshPreview();
+    }
+
+    function ddResetContentAreaAndGrade(placeholder) {
+      const contentAreaSelect = document.getElementById('ddContentAreaSelect');
+      const gradeLevelSelect = document.getElementById('ddGradeLevelSelect');
+      contentAreaSelect.innerHTML = `<option value="">${placeholder || '— Select —'}</option>`;
+      gradeLevelSelect.innerHTML = '<option value="">— Select —</option>';
+    }
+
+    function onDdYearOrTestTypeChanged() {
+      if (!DD_META) return;
+      const testType = document.getElementById('ddTestTypeSelect').value;
+      const year = document.getElementById('ddYearSelect').value;
+      if (!testType || !year) {
+        ddResetContentAreaAndGrade('— Select year & test type first —');
+        ddRefreshPreview();
+        return;
+      }
+      const tyMeta = DD_META[testType] || { contentAreasByYear: {}, grades: [] };
+      const areas = (tyMeta.contentAreasByYear && tyMeta.contentAreasByYear[year]) || [];
+      const contentAreaSelect = document.getElementById('ddContentAreaSelect');
+      contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
+      areas.forEach(area => {
+        const opt = document.createElement('option');
+        opt.value = area; opt.innerText = area;
+        contentAreaSelect.appendChild(opt);
+      });
+      const gradeLevelSelect = document.getElementById('ddGradeLevelSelect');
+      gradeLevelSelect.innerHTML = '<option value="">— Select —</option>';
+      const allGradesOpt = document.createElement('option');
+      allGradesOpt.value = 'ALL';
+      allGradesOpt.innerText = testType === 'EOC' ? 'All Grades (course-based)' : 'All Grades (03-08 combined)';
+      gradeLevelSelect.appendChild(allGradesOpt);
+      if (testType === 'EOG') {
+        EOG_GRADES.forEach(g => {
+          const opt = document.createElement('option');
+          opt.value = g; opt.innerText = `Grade ${parseInt(g, 10)}`;
+          gradeLevelSelect.appendChild(opt);
+        });
+      }
+      if (!areas.length) contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${year}</option>`;
+      ddRefreshPreview();
+    }
+
+    function ddPopulateYearDropdown() {
+      const select = document.getElementById('ddYearSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      const years = new Set([...(DD_META.EOC.years || []), ...(DD_META.EOG.years || [])]);
+      Array.from(years).sort().reverse().forEach(yr => {
+        const opt = document.createElement('option');
+        opt.value = yr; opt.innerText = yr;
+        select.appendChild(opt);
+      });
+    }
+
+    function ddPopulateSubgroupDropdown() {
+      const select = document.getElementById('ddSubgroupSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      const subgroups = (DD_META.EOC.subgroups && DD_META.EOC.subgroups.length) ? DD_META.EOC.subgroups : SDB_SUBGROUPS_FALLBACK;
+      const ordered = ['All Students', ...subgroups.filter(s => s !== 'All Students').sort()];
+      ordered.forEach(sg => {
+        const opt = document.createElement('option');
+        opt.value = sg; opt.innerText = sg;
+        select.appendChild(opt);
+      });
+    }
+
+    function onDdSelectionChanged() { ddRefreshPreview(); }
+
+    async function ddRefreshPreview() {
+      const year = document.getElementById('ddYearSelect').value;
+      const testType = document.getElementById('ddTestTypeSelect').value;
+      const contentArea = document.getElementById('ddContentAreaSelect').value;
+      const grade = document.getElementById('ddGradeLevelSelect').value;
+      const subgroup = document.getElementById('ddSubgroupSelect').value;
+
+      DD_PENDING = null;
+      if (CURRENT_EDITOR_TYPE === 'drilldown') refreshAddButtonState();
+
+      if (!DD_SELECTED_DISTRICT || !DD_SELECTED_SCHOOL || !year || !testType || !contentArea || !grade || !subgroup) {
+        if (CURRENT_EDITOR_TYPE === 'drilldown') renderPreviewPrompt('Choose a school year, district, school, test type, content area, grade level, and subgroup to preview an achievement table.');
+        return;
+      }
+
+      const districtCode = DD_SELECTED_DISTRICT.code;
+      const chunkKey = `${districtCode}__${testType}_${year}`;
+      const fetchToken = ++DD_LATEST_FETCH_TOKEN;
+      if (CURRENT_EDITOR_TYPE === 'drilldown') renderPreviewLoading();
+
+      let chunk = DD_DATA_CACHE[chunkKey];
+      if (chunk === undefined) {
+        try {
+          const resp = await fetch(`data/milestones/${chunkKey}.json`);
+          chunk = resp.ok ? await resp.json() : null;
+        } catch (e) { chunk = null; }
+        DD_DATA_CACHE[chunkKey] = chunk;
+      }
+      if (fetchToken !== DD_LATEST_FETCH_TOKEN) return;
+
+      if (!chunk) {
+        if (CURRENT_EDITOR_TYPE === 'drilldown') renderPreviewNoData(`GOSA has no ${testType} data file for ${DD_SELECTED_DISTRICT.name} in ${year}.`);
+        return;
+      }
+
+      const instnNumber = (DD_SELECTED_SCHOOL.code || '').split('-')[1];
+      const keyFor = entity => `${contentArea}|${grade}|${subgroup}|${entity}`;
+      const schoolRecord = chunk[keyFor(instnNumber)] || null;
+      const districtRecord = chunk[keyFor('DISTRICT')] || null;
+      const stateRecord = chunk[keyFor('STATE')] || null;
+
+      if (!schoolRecord) {
+        if (CURRENT_EDITOR_TYPE === 'drilldown') renderPreviewNoData(`${DD_SELECTED_SCHOOL.name} has no reported ${testType} results for this exact combination in ${year}. Try "All Students", a different content area/grade, or a different school.`);
+        return;
+      }
+
+      const gradeOpt = document.getElementById('ddGradeLevelSelect').selectedOptions[0];
+      DD_PENDING = {
+        year, testType, contentArea, grade,
+        gradeLabel: gradeOpt ? gradeOpt.innerText : grade,
+        subgroup,
+        districtCode: DD_SELECTED_DISTRICT.code, districtName: DD_SELECTED_DISTRICT.name,
+        schoolCode: DD_SELECTED_SCHOOL.code, schoolName: DD_SELECTED_SCHOOL.name,
+        school: schoolRecord, district: districtRecord, state: stateRecord,
+      };
+      if (CURRENT_EDITOR_TYPE === 'drilldown') {
+        refreshAddButtonState();
+        renderSlidePreview({ type: 'drilldown', data: DD_PENDING }, document.getElementById('slidePreview'));
+      }
+    }
+
+    async function restoreDrilldownEditor(d) {
+      document.getElementById('ddYearSelect').value = d.year;
+      document.getElementById('ddTestTypeSelect').value = d.testType;
+      onDdYearOrTestTypeChanged();
+      document.getElementById('ddContentAreaSelect').value = d.contentArea;
+      document.getElementById('ddGradeLevelSelect').value = d.grade;
+      document.getElementById('ddSubgroupSelect').value = d.subgroup;
+      document.getElementById('ddDistrictSelect').value = d.districtCode;
+      onDdDistrictChanged(d.districtCode);
+      document.getElementById('ddSchoolSelect').value = d.schoolName;
+      onDdSchoolChanged(d.schoolName);
+      await ddRefreshPreview();
+    }
+
+    /* =================================================================
+       REGRESSION FUNNEL (reg*) -- ported from regression.html
+       ================================================================= */
+    let REG_META = null;
+    let REG_CURRENT_COMBO = null;
+    let REG_SELECTED_DISTRICT_CODE = '';
+    let REG_SELECTED_LEVEL = '';
+    let REG_SELECTED_SCHOOL_CODE = '';
+    let REG_SELECTED_PERCENTILE = '';
+    let REG_LATEST_FETCH_TOKEN = 0;
+    const REG_DATA_CACHE = {};
+    let REG_PENDING = null;
+
+    async function regInit() {
+      try {
+        const resp = await fetch('data/regression/_meta.json');
+        REG_META = await resp.json();
+      } catch (e) {
+        console.error('Could not load data/regression/_meta.json', e);
+        REG_META = { EOC: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} }, EOG: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} } };
+      }
+      regPopulateYearDropdown();
+      regPopulateDistrictDropdown();
+    }
+
+    function regPopulateYearDropdown() {
+      const select = document.getElementById('regYearSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      const years = new Set([...(REG_META.EOC.years || []), ...(REG_META.EOG.years || [])]);
+      Array.from(years).sort().reverse().forEach(yr => {
+        const opt = document.createElement('option');
+        opt.value = yr; opt.innerText = yr;
+        select.appendChild(opt);
+      });
+    }
+
+    function regPopulateDistrictDropdown() {
+      const select = document.getElementById('regDistrictSelect');
+      select.innerHTML = '<option value="">All Districts</option>';
+      if (!window.GEORGIA_GOSA_MASTER || !window.GEORGIA_GOSA_MASTER.districts) return;
+      window.GEORGIA_GOSA_MASTER.districts.forEach(d => {
+        if (!d.schools || !d.schools.length) return;
+        const opt = document.createElement('option');
+        opt.value = d.code; opt.innerText = `${d.name} [Code: ${d.code}]`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onRegYearOrTestTypeChanged() {
+      const year = document.getElementById('regYearSelect').value;
+      const testType = document.getElementById('regTestTypeSelect').value;
+      const contentAreaSelect = document.getElementById('regContentAreaSelect');
+      if (!year || !testType) {
+        contentAreaSelect.innerHTML = '<option value="">— Select year &amp; test type first —</option>';
+        regResetGradeSelect('— Select content area first —');
+        REG_CURRENT_COMBO = null; REG_PENDING = null;
+        if (CURRENT_EDITOR_TYPE === 'regression') { refreshAddButtonState(); renderPreviewPrompt('Choose a school year, test type, content area, and grade to load a model.'); }
+        return;
+      }
+      const tyMeta = REG_META[testType] || { contentAreasByYear: {} };
+      const areas = (tyMeta.contentAreasByYear && tyMeta.contentAreasByYear[year]) || [];
+      contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
+      areas.forEach(area => {
+        const opt = document.createElement('option');
+        opt.value = area; opt.innerText = area;
+        contentAreaSelect.appendChild(opt);
+      });
+      if (!areas.length) contentAreaSelect.innerHTML = `<option value="">No ${testType} data for ${year}</option>`;
+      regResetGradeSelect('— Select content area first —');
+      REG_CURRENT_COMBO = null; REG_PENDING = null;
+      if (CURRENT_EDITOR_TYPE === 'regression') { refreshAddButtonState(); renderPreviewPrompt('Choose a content area and grade to load a model.'); }
+    }
+
+    function regResetGradeSelect(placeholder) {
+      document.getElementById('regGradeSelect').innerHTML = `<option value="">${placeholder}</option>`;
+    }
+
+    function onRegContentAreaChanged() {
+      const year = document.getElementById('regYearSelect').value;
+      const testType = document.getElementById('regTestTypeSelect').value;
+      const contentArea = document.getElementById('regContentAreaSelect').value;
+      const gradeSelect = document.getElementById('regGradeSelect');
+      if (!contentArea) {
+        regResetGradeSelect('— Select content area first —');
+        return;
+      }
+      const tyMeta = REG_META[testType] || { gradesByContentAreaYear: {} };
+      const grades = ((tyMeta.gradesByContentAreaYear || {})[year] || {})[contentArea] || [];
+      gradeSelect.innerHTML = '<option value="">— Select —</option>';
+      [...grades].sort((a, b) => (a === 'ALL' ? -1 : b === 'ALL' ? 1 : a.localeCompare(b))).forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g; opt.innerText = GRADE_LABELS[g] || g;
+        gradeSelect.appendChild(opt);
+      });
+      if (!grades.length) gradeSelect.innerHTML = '<option value="">No data for this combination</option>';
+    }
+
+    function onRegDistrictFilterChanged() {
+      REG_SELECTED_DISTRICT_CODE = document.getElementById('regDistrictSelect').value;
+      REG_SELECTED_SCHOOL_CODE = '';
+      const schoolSelect = document.getElementById('regSchoolSelect');
+      if (!REG_SELECTED_DISTRICT_CODE) {
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        schoolSelect.disabled = true;
+      } else {
+        const district = window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === REG_SELECTED_DISTRICT_CODE);
+        schoolSelect.innerHTML = '<option value="">— All schools in district (highlight) —</option>';
+        schoolSelect.disabled = false;
+        (district && district.schools || []).forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.code; opt.innerText = s.name;
+          schoolSelect.appendChild(opt);
+        });
+      }
+      regBuildPendingAndRender();
+    }
+    function onRegSchoolFilterChanged() {
+      REG_SELECTED_SCHOOL_CODE = document.getElementById('regSchoolSelect').value;
+      regBuildPendingAndRender();
+    }
+    function onRegFilterChanged() {
+      REG_SELECTED_LEVEL = document.getElementById('regLevelSelect').value;
+      regBuildPendingAndRender();
+    }
+    function onRegPercentileFilterChanged() {
+      REG_SELECTED_PERCENTILE = document.getElementById('regPercentileSelect').value;
+      regBuildPendingAndRender();
+    }
+
+    async function onRegCombinationChanged() {
+      const year = document.getElementById('regYearSelect').value;
+      const testType = document.getElementById('regTestTypeSelect').value;
+      const contentArea = document.getElementById('regContentAreaSelect').value;
+      const grade = document.getElementById('regGradeSelect').value;
+      if (!year || !testType || !contentArea || !grade) return;
+
+      const key = `${testType}_${slugify(contentArea)}_${year}_${grade}`;
+      const fetchToken = ++REG_LATEST_FETCH_TOKEN;
+      if (CURRENT_EDITOR_TYPE === 'regression') renderPreviewLoading();
+
+      let combo = REG_DATA_CACHE[key];
+      if (combo === undefined) {
+        try {
+          const resp = await fetch(`data/regression/${key}.json`);
+          combo = resp.ok ? await resp.json() : null;
+        } catch (e) { combo = null; }
+        REG_DATA_CACHE[key] = combo;
+      }
+      if (fetchToken !== REG_LATEST_FETCH_TOKEN) return;
+
+      if (!combo) {
+        REG_CURRENT_COMBO = null; REG_PENDING = null;
+        if (CURRENT_EDITOR_TYPE === 'regression') { refreshAddButtonState(); renderPreviewNoData(`No regression model available for ${testType} ${contentArea}, ${GRADE_LABELS[grade] || grade}, in ${year}.`); }
+        return;
+      }
+      REG_CURRENT_COMBO = combo;
+      regBuildPendingAndRender();
+    }
+
+    function regBuildPendingAndRender() {
+      if (!REG_CURRENT_COMBO) { REG_PENDING = null; if (CURRENT_EDITOR_TYPE === 'regression') refreshAddButtonState(); return; }
+      let districtName = '';
+      if (REG_SELECTED_DISTRICT_CODE) {
+        const d = (window.GEORGIA_GOSA_MASTER.districts || []).find(x => x.code === REG_SELECTED_DISTRICT_CODE);
+        districtName = d ? d.name : '';
+      }
+      REG_PENDING = {
+        combo: REG_CURRENT_COMBO,
+        selectedDistrictCode: REG_SELECTED_DISTRICT_CODE,
+        selectedDistrictName: districtName,
+        selectedLevel: REG_SELECTED_LEVEL,
+        selectedSchoolCode: REG_SELECTED_SCHOOL_CODE,
+        selectedPercentile: REG_SELECTED_PERCENTILE,
+      };
+      if (CURRENT_EDITOR_TYPE === 'regression') {
+        refreshAddButtonState();
+        renderSlidePreview({ type: 'regression', data: REG_PENDING }, document.getElementById('slidePreview'));
+      }
+    }
+
+    async function restoreRegressionEditor(d) {
+      document.getElementById('regYearSelect').value = d.combo.year;
+      document.getElementById('regTestTypeSelect').value = d.combo.testType;
+      onRegYearOrTestTypeChanged();
+      document.getElementById('regContentAreaSelect').value = d.combo.contentArea;
+      onRegContentAreaChanged();
+      document.getElementById('regGradeSelect').value = d.combo.grade;
+      await onRegCombinationChanged();
+      document.getElementById('regLevelSelect').value = d.selectedLevel || '';
+      REG_SELECTED_LEVEL = d.selectedLevel || '';
+      document.getElementById('regDistrictSelect').value = d.selectedDistrictCode || '';
+      onRegDistrictFilterChanged();
+      if (d.selectedSchoolCode) {
+        document.getElementById('regSchoolSelect').value = d.selectedSchoolCode;
+        REG_SELECTED_SCHOOL_CODE = d.selectedSchoolCode;
+      }
+      document.getElementById('regPercentileSelect').value = d.selectedPercentile || '';
+      REG_SELECTED_PERCENTILE = d.selectedPercentile || '';
+      regBuildPendingAndRender();
+    }
+
+    /* =================================================================
+       SCHOOL PROFILE FUNNEL (prof*) -- ported from schoolprofile.html.
+       Shared by all three profile-* slide types; which capture function
+       runs at Add-time depends on CURRENT_EDITOR_TYPE.
+       ================================================================= */
+    let PROF_META = null;
+    let PROF_ENROLLMENT_DATA = null;
+    let PROF_SELECTED_SCHOOL = null;
+    let PROF_SELECTED_TEST_TYPE = '';
+    let PROF_SELECTED_CONTENT_AREA = '';
+    let PROF_SELECTED_GRADE = '';
+    let PROF_PEER_SCOPE = 'statewide';
+    let PROF_LATEST_FETCH_TOKEN = 0;
+    const PROF_DATA_CACHE = {};
+    let PROF_LAST_CHART_DATA = null;
+
+    async function profInit() {
+      try {
+        const [regResp, enrollResp] = await Promise.all([
+          fetch('data/regression/_meta.json'),
+          fetch('data/enrollment/enrollment_profile.json'),
+        ]);
+        PROF_META = await regResp.json();
+        PROF_ENROLLMENT_DATA = await enrollResp.json();
+      } catch (e) {
+        console.error('Could not load profile data', e);
+        PROF_META = { EOC: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} }, EOG: { years: [], contentAreasByYear: {}, gradesByContentAreaYear: {} } };
+        PROF_ENROLLMENT_DATA = {};
+      }
+      profPopulateDistrictDropdown();
+    }
+
+    function profPopulateDistrictDropdown() {
+      const select = document.getElementById('profDistrictSelect');
+      select.innerHTML = '<option value="">— Select —</option>';
+      if (!window.GEORGIA_GOSA_MASTER || !window.GEORGIA_GOSA_MASTER.districts) return;
+      window.GEORGIA_GOSA_MASTER.districts.forEach(d => {
+        if (!d.schools || !d.schools.length) return;
+        const opt = document.createElement('option');
+        opt.value = d.code; opt.innerText = `${d.name} [Code: ${d.code}]`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onProfDistrictChanged() {
+      const districtCode = document.getElementById('profDistrictSelect').value;
+      const schoolSelect = document.getElementById('profSchoolSelect');
+      PROF_SELECTED_SCHOOL = null;
+      profResetTestScoreControls();
+      if (!districtCode) {
+        schoolSelect.innerHTML = '<option value="">— Select a district first —</option>';
+        schoolSelect.disabled = true;
+        profRenderPreview();
+        return;
+      }
+      const district = window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === districtCode);
+      schoolSelect.innerHTML = '<option value="">— Select —</option>';
+      schoolSelect.disabled = false;
+      (district && district.schools || []).slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.code; opt.innerText = s.name;
+        schoolSelect.appendChild(opt);
+      });
+      profRenderPreview();
+    }
+
+    function onProfSchoolChanged() {
+      const schoolCode = document.getElementById('profSchoolSelect').value;
+      profResetTestScoreControls();
+      if (!schoolCode) {
+        PROF_SELECTED_SCHOOL = null;
+        profRenderPreview();
+        return;
+      }
+      const districtCode = document.getElementById('profDistrictSelect').value;
+      const district = window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === districtCode);
+      const school = (district && district.schools || []).find(s => s.code === schoolCode);
+      if (!school) { profRenderPreview(); return; }
+      PROF_SELECTED_SCHOOL = { ...school, level: classifyLevel(school.grades) };
+      profPopulateTestTypeDropdown();
+      profRenderPreview();
+    }
+
+    function profResetTestScoreControls() {
+      PROF_SELECTED_TEST_TYPE = ''; PROF_SELECTED_CONTENT_AREA = ''; PROF_SELECTED_GRADE = '';
+      PROF_LAST_CHART_DATA = null;
+      const testTypeSelect = document.getElementById('profTestTypeSelect');
+      testTypeSelect.innerHTML = '<option value="">— Select a school first —</option>';
+      testTypeSelect.disabled = true;
+      profResetContentAreaSelect('— Select test type first —');
+      profResetGradeSelect();
+    }
+    function profResetContentAreaSelect(placeholder) {
+      const select = document.getElementById('profContentAreaSelect');
+      select.innerHTML = `<option value="">${placeholder}</option>`;
+      select.disabled = true;
+    }
+    function profResetGradeSelect() {
+      const box = document.getElementById('profGradeBox');
+      const select = document.getElementById('profGradeSelect');
+      box.dataset.wantsShow = '0';
+      box.style.display = 'none';
+      select.innerHTML = '<option value="">— Select —</option>';
+      select.disabled = true;
+    }
+    function profPopulateTestTypeDropdown() {
+      const select = document.getElementById('profTestTypeSelect');
+      select.innerHTML = '<option value="">— Select —</option><option value="EOC">End of Course (EOC)</option><option value="EOG">End of Grade (EOG)</option>';
+      select.disabled = false;
+    }
+    function profMostRecentYearWithContentAreas(testType) {
+      const years = (PROF_META[testType] && PROF_META[testType].years || []).slice().sort().reverse();
+      return years.find(y => (PROF_META[testType].contentAreasByYear[y] || []).length) || null;
+    }
+
+    function onProfTestTypeChanged() {
+      PROF_SELECTED_TEST_TYPE = document.getElementById('profTestTypeSelect').value;
+      PROF_SELECTED_CONTENT_AREA = '';
+      profResetGradeSelect();
+      const contentAreaSelect = document.getElementById('profContentAreaSelect');
+      if (!PROF_SELECTED_TEST_TYPE) {
+        profResetContentAreaSelect('— Select test type first —');
+        profRenderPreview();
+        return;
+      }
+      const anchorYear = profMostRecentYearWithContentAreas(PROF_SELECTED_TEST_TYPE);
+      const areas = anchorYear ? (PROF_META[PROF_SELECTED_TEST_TYPE].contentAreasByYear[anchorYear] || []) : [];
+      contentAreaSelect.innerHTML = '<option value="">— Select —</option>';
+      areas.forEach(area => {
+        const opt = document.createElement('option');
+        opt.value = area; opt.innerText = area;
+        contentAreaSelect.appendChild(opt);
+      });
+      contentAreaSelect.disabled = false;
+      if (!areas.length) contentAreaSelect.innerHTML = `<option value="">No ${PROF_SELECTED_TEST_TYPE} data available</option>`;
+      profRenderPreview();
+    }
+
+    function onProfContentAreaChanged() {
+      PROF_SELECTED_CONTENT_AREA = document.getElementById('profContentAreaSelect').value;
+      PROF_SELECTED_GRADE = '';
+      if (!PROF_SELECTED_CONTENT_AREA) { profResetGradeSelect(); profRenderPreview(); return; }
+
+      if (PROF_SELECTED_TEST_TYPE !== 'EOG') {
+        profResetGradeSelect();
+        PROF_SELECTED_GRADE = 'ALL';
+        profLoadScoreData();
+        return;
+      }
+      const box = document.getElementById('profGradeBox');
+      const select = document.getElementById('profGradeSelect');
+      const anchorYear = profMostRecentYearWithContentAreas(PROF_SELECTED_TEST_TYPE);
+      const metaGrades = new Set(((PROF_META.EOG.gradesByContentAreaYear[anchorYear] || {})[PROF_SELECTED_CONTENT_AREA] || []));
+      const schoolGrades = new Set((PROF_SELECTED_SCHOOL.grades || '').split(',').map(g => g.trim()));
+      const available = EOG_GRADES.filter(g => metaGrades.has(g) && schoolGrades.has(g));
+      box.dataset.wantsShow = '1';
+      box.style.display = '';
+      select.disabled = false;
+      if (!available.length) {
+        select.innerHTML = '<option value="">No matching grade for this school</option>';
+        profRenderPreview();
+        return;
+      }
+      select.innerHTML = '<option value="">— Select —</option>' + available.map(g => `<option value="${g}">${GRADE_LABELS[g]}</option>`).join('');
+      profRenderPreview();
+    }
+
+    function onProfGradeChanged() {
+      PROF_SELECTED_GRADE = document.getElementById('profGradeSelect').value;
+      if (!PROF_SELECTED_GRADE) { profRenderPreview(); return; }
+      profLoadScoreData();
+    }
+
+    function onProfPeerScopeChanged() {
+      PROF_PEER_SCOPE = document.getElementById('profPeerScopeSelect').value;
+      if (PROF_SELECTED_SCHOOL && PROF_SELECTED_TEST_TYPE && PROF_SELECTED_CONTENT_AREA && PROF_SELECTED_GRADE) profLoadScoreData();
+    }
+
+    async function profLoadScoreData() {
+      const s = PROF_SELECTED_SCHOOL;
+      const testType = PROF_SELECTED_TEST_TYPE, contentArea = PROF_SELECTED_CONTENT_AREA, grade = PROF_SELECTED_GRADE;
+      const fetchToken = ++PROF_LATEST_FETCH_TOKEN;
+      if (CURRENT_EDITOR_TYPE === 'profile-score' || CURRENT_EDITOR_TYPE === 'profile-peers') renderPreviewLoading();
+
+      const years = (PROF_META[testType].years || []).slice().sort().reverse();
+      const anchorIdx = years.findIndex(y => (PROF_META[testType].contentAreasByYear[y] || []).includes(contentArea));
+      const yearsToTry = anchorIdx === -1 ? [] : years.slice(anchorIdx, anchorIdx + 3);
+
+      const combos = await Promise.all(yearsToTry.map(async year => {
+        const key = `${testType}_${slugify(contentArea)}_${year}_${grade}`;
+        if (PROF_DATA_CACHE[key] !== undefined) return { year, combo: PROF_DATA_CACHE[key] };
+        try {
+          const resp = await fetch(`data/regression/${key}.json`);
+          const combo = resp.ok ? await resp.json() : null;
+          PROF_DATA_CACHE[key] = combo;
+          return { year, combo };
+        } catch (e) { PROF_DATA_CACHE[key] = null; return { year, combo: null }; }
+      }));
+      if (fetchToken !== PROF_LATEST_FETCH_TOKEN) return;
+
+      const avg = points => points.length
+        ? Math.round((points.reduce((sum, p) => sum + p.y, 0) / points.length) * 10) / 10
+        : null;
+
+      // Matches schoolprofile.html's loadScoreData(): the chart always shows
+      // both the district and statewide same-level averages together (no
+      // toggle) -- PROF_PEER_SCOPE now only controls which population feeds
+      // the Peer Schools table below the chart, via peerPoints.
+      const chartData = combos.slice().reverse().map(({ year, combo }) => {
+        if (!combo) return { year, schoolY: null, districtAvg: null, districtCount: 0, stateAvg: null, stateCount: 0, peerPoints: [] };
+        const schoolPoint = combo.points.find(p => p.code === s.code);
+        const sameLevelPeers = combo.points.filter(p => p.level === s.level && p.code !== s.code);
+        const districtPeers = sameLevelPeers.filter(p => p.districtCode === s.districtCode);
+        const peerPoints = PROF_PEER_SCOPE === 'statewide' ? sameLevelPeers : districtPeers;
+        return {
+          year,
+          schoolY: schoolPoint ? schoolPoint.y : null,
+          districtAvg: avg(districtPeers), districtCount: districtPeers.length,
+          stateAvg: avg(sameLevelPeers), stateCount: sameLevelPeers.length,
+          peerPoints,
+        };
+      });
+
+      PROF_LAST_CHART_DATA = chartData;
+      profRenderPreview();
+    }
+
+    function buildProfileDemoCapture() {
+      const s = PROF_SELECTED_SCHOOL;
+      return { schoolCode: s.code, schoolName: s.name, districtName: s.districtName, level: s.level, enrollment: (PROF_ENROLLMENT_DATA && PROF_ENROLLMENT_DATA[s.code]) || null };
+    }
+    function buildProfileScoreCapture() {
+      const s = PROF_SELECTED_SCHOOL;
+      return {
+        schoolCode: s.code, schoolName: s.name, districtName: s.districtName, level: s.level,
+        testType: PROF_SELECTED_TEST_TYPE, contentArea: PROF_SELECTED_CONTENT_AREA, grade: PROF_SELECTED_GRADE,
+        gradeLabel: GRADE_LABELS[PROF_SELECTED_GRADE] || PROF_SELECTED_GRADE,
+        chartData: PROF_LAST_CHART_DATA,
+      };
+    }
+    function buildProfilePeersCapture() {
+      const s = PROF_SELECTED_SCHOOL;
+      const latest = PROF_LAST_CHART_DATA[PROF_LAST_CHART_DATA.length - 1];
+      return {
+        schoolCode: s.code, schoolName: s.name, districtName: s.districtName, level: s.level,
+        testType: PROF_SELECTED_TEST_TYPE, contentArea: PROF_SELECTED_CONTENT_AREA, grade: PROF_SELECTED_GRADE,
+        gradeLabel: GRADE_LABELS[PROF_SELECTED_GRADE] || PROF_SELECTED_GRADE,
+        peerScope: PROF_PEER_SCOPE, year: latest ? latest.year : null, peerPoints: latest ? latest.peerPoints : [],
+      };
+    }
+
+    function profRenderPreview() {
+      if (!CURRENT_EDITOR_TYPE.startsWith('profile')) { refreshAddButtonState(); return; }
+      if (!PROF_SELECTED_SCHOOL) {
+        renderPreviewPrompt('Choose a district and school to preview.');
+        refreshAddButtonState();
+        return;
+      }
+      if (CURRENT_EDITOR_TYPE === 'profile-demo') {
+        renderSlidePreview({ type: 'profile-demo', data: buildProfileDemoCapture() }, document.getElementById('slidePreview'));
+      } else if (!PROF_LAST_CHART_DATA || !PROF_LAST_CHART_DATA.length) {
+        renderPreviewPrompt('Choose a test type, subject, and grade to preview.');
+      } else if (CURRENT_EDITOR_TYPE === 'profile-score') {
+        renderSlidePreview({ type: 'profile-score', data: buildProfileScoreCapture() }, document.getElementById('slidePreview'));
+      } else if (CURRENT_EDITOR_TYPE === 'profile-peers') {
+        renderSlidePreview({ type: 'profile-peers', data: buildProfilePeersCapture() }, document.getElementById('slidePreview'));
+      }
+      refreshAddButtonState();
+    }
+
+    async function restoreProfileEditor(d) {
+      const districtCode = d.schoolCode.split('-')[0];
+      document.getElementById('profDistrictSelect').value = districtCode;
+      onProfDistrictChanged();
+      document.getElementById('profSchoolSelect').value = d.schoolCode;
+      onProfSchoolChanged();
+      if (d.testType) {
+        document.getElementById('profTestTypeSelect').value = d.testType;
+        onProfTestTypeChanged();
+        document.getElementById('profContentAreaSelect').value = d.contentArea;
+        onProfContentAreaChanged();
+        if (d.grade && d.grade !== 'ALL') {
+          document.getElementById('profGradeSelect').value = d.grade;
+        }
+        document.getElementById('profPeerScopeSelect').value = d.peerScope || 'statewide';
+        PROF_PEER_SCOPE = d.peerScope || 'statewide';
+        await profLoadScoreData();
+      }
+    }
+
+    /* =================================================================
+       Present mode -- real Fullscreen API (not a CSS-only overlay), so
+       browser chrome disappears and this reads as an actual presentation.
+       ================================================================= */
+    let PRESENT_INDEX = 0;
+
+    function enterPresentMode() {
+      const deck = getActiveDeck();
+      if (!deck || !deck.slides.length) { alert('Add at least one slide before presenting.'); return; }
+      const overlay = document.getElementById('presentOverlay');
+      overlay.setAttribute('data-brand', deck.brandId);
+      overlay.classList.add('active');
+      if (overlay.requestFullscreen) overlay.requestFullscreen().catch(() => {});
+      PRESENT_INDEX = 0;
+      const startIdx = deck.slides.findIndex(s => s.id === SELECTED_SLIDE_ID_FOR_PREVIEW);
+      if (startIdx !== -1) PRESENT_INDEX = startIdx;
+      renderPresentSlide();
+      document.addEventListener('keydown', onPresentKeydown);
+    }
+
+    function renderPresentSlide() {
+      const deck = getActiveDeck();
+      if (!deck) return;
+      const slide = deck.slides[PRESENT_INDEX];
+      renderSlidePreview(slide, document.getElementById('presentSlideFrame'));
+      document.getElementById('presentCounter').textContent = `${PRESENT_INDEX + 1} / ${deck.slides.length}`;
+    }
+
+    function nextPresentSlide() {
+      const deck = getActiveDeck();
+      if (!deck) return;
+      if (PRESENT_INDEX < deck.slides.length - 1) { PRESENT_INDEX++; renderPresentSlide(); }
+    }
+    function prevPresentSlide() {
+      if (PRESENT_INDEX > 0) { PRESENT_INDEX--; renderPresentSlide(); }
+    }
+    function onPresentKeydown(e) {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextPresentSlide(); }
+      else if (e.key === 'ArrowLeft') { prevPresentSlide(); }
+      else if (e.key === 'Escape') { exitPresentMode(); }
+    }
+    function handlePresentClick(e) {
+      if (e.target.closest('#presentExitBtn')) return;
+      const x = e.clientX, w = window.innerWidth;
+      if (x < w / 2) prevPresentSlide(); else nextPresentSlide();
+    }
+    function exitPresentMode() {
+      document.getElementById('presentOverlay').classList.remove('active');
+      document.removeEventListener('keydown', onPresentKeydown);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    }
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        document.getElementById('presentOverlay').classList.remove('active');
+        document.removeEventListener('keydown', onPresentKeydown);
+      }
+    });
+
+    /* =================================================================
+       JSON export / import (no backend -- decks are portable files)
+       ================================================================= */
+    function exportDeckJSON() {
+      const deck = getActiveDeck();
+      if (!deck) { alert('Select a deck first.'); return; }
+      const blob = new Blob([JSON.stringify(deck, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${safeFileName(deck.name)}.slidedeck.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    function triggerImport() { document.getElementById('importFileInput').click(); }
+    function handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (parsed.version !== 1 || !Array.isArray(parsed.slides)) throw new Error('Unrecognized deck file format.');
+          parsed.deckId = uid('deck'); // avoid colliding with an existing deck
+          parsed.updatedAt = new Date().toISOString();
+          if (!parsed.brandId) parsed.brandId = 'columbia-county';
+          DECKS.push(parsed);
+          ACTIVE_DECK_ID = parsed.deckId;
+          SELECTED_SLIDE_ID_FOR_PREVIEW = null;
+          persistAndRerender();
+        } catch (err) {
+          alert('Could not import this file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    /* =================================================================
+       PPTX export via the vendored pptxgenjs bundle. Every slide type maps
+       to native, editable PowerPoint text/table/chart shapes, except the
+       regression scatter -- pptxgenjs has no chart type that fits an
+       irregular point cloud with 3 categorical colors, so that one chart
+       (not its stats table) is rasterized from the same SVG the live
+       preview draws. See CLAUDE.md for why this is the one deliberate
+       raster element in an otherwise fully-native export.
+       ================================================================= */
+    function rgbStringToHex(rgbStr) {
+      const m = /rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/.exec(rgbStr || '');
+      if (!m) return (rgbStr || '').replace('#', '').trim() || '000000';
+      const toHex = n => parseInt(n, 10).toString(16).padStart(2, '0');
+      return (toHex(m[1]) + toHex(m[2]) + toHex(m[3])).toUpperCase();
+    }
+
+    function getBrandColorsHex(brandId) {
+      const prevBrand = document.documentElement.getAttribute('data-brand');
+      document.documentElement.setAttribute('data-brand', brandId);
+      const cs = getComputedStyle(document.documentElement);
+      const colors = {
+        primary: rgbStringToHex(cs.getPropertyValue('--brand-primary').trim()),
+        secondary: rgbStringToHex(cs.getPropertyValue('--brand-secondary').trim()),
+        accent: rgbStringToHex(cs.getPropertyValue('--brand-accent').trim()),
+        textPrimary: rgbStringToHex(cs.getPropertyValue('--brand-text-primary').trim()),
+        textSecondary: rgbStringToHex(cs.getPropertyValue('--brand-text-secondary').trim()),
+        bg: rgbStringToHex(cs.getPropertyValue('--brand-bg').trim()),
+        surface: rgbStringToHex(cs.getPropertyValue('--brand-surface').trim()),
+      };
+      document.documentElement.setAttribute('data-brand', prevBrand);
+      return colors;
+    }
+
+    // PowerPoint can't embed the actual web fonts (Barlow/Inter/Merriweather),
+    // so this is a deliberate, documented "closest available system font"
+    // choice, not an attempt at pixel parity.
+    function pptxFontForBrand(brandId) {
+      return brandId === 'georgia-southern' ? 'Georgia' : 'Calibri';
+    }
+
+    const FIXED_CHART_TOKENS = {
+      '--level-elementary': '#2a78d6', '--level-middle': '#eb6834', '--level-high': '#1baf7a',
+      '--score-bar': '#2a78d6', '--trend-line': '#475569', '--grid-line': '#e1e0d9',
+    };
+    function resolveSvgVarsToStatic(svgStr, brand) {
+      const brandTokenMap = {
+        '--brand-text-secondary': '#' + brand.textSecondary,
+        '--brand-text-primary': '#' + brand.textPrimary,
+        '--brand-primary': '#' + brand.primary,
+        '--brand-surface': '#' + brand.surface,
+      };
+      return svgStr.replace(/var\(\s*(--[a-zA-Z0-9-]+)\s*(?:,\s*([^)]+))?\)/g, (m, token, fallback) => {
+        return FIXED_CHART_TOKENS[token] || brandTokenMap[token] || (fallback ? fallback.trim() : '#000000');
+      });
+    }
+
+    async function svgStringToPngDataUri(svgInner, width, height, brand) {
+      const resolved = resolveSvgVarsToStatic(svgInner, brand);
+      const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#FFFFFF"/>${resolved}</svg>`;
+      const svgBlob = new Blob([fullSvg], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      try {
+        const img = await new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = reject;
+          image.src = url;
+        });
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 2;
+        canvas.height = height * 2;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+        ctx.drawImage(img, 0, 0, width, height);
+        return canvas.toDataURL('image/png');
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function pptxTitleSlide(pptx, s, data, brand, font) {
+      s.addText(data.heading || 'Untitled', { x: 0.7, y: 2.7, w: 11.93, h: 1.4, fontSize: 40, bold: true, color: brand.primary, align: 'center', fontFace: font });
+      if (data.subheading) s.addText(data.subheading, { x: 0.7, y: 4.1, w: 11.93, h: 0.8, fontSize: 20, color: brand.textSecondary, align: 'center', fontFace: font });
+    }
+
+    function pptxBulletsSlide(pptx, s, data, brand, font) {
+      s.addText(data.heading || 'Untitled', { x: 0.6, y: 0.5, w: 12.1, h: 0.9, fontSize: 28, bold: true, color: brand.primary, fontFace: font });
+      const bullets = (data.bullets && data.bullets.length) ? data.bullets : ['(no bullets added)'];
+      s.addText(bullets.map(b => ({ text: b, options: { bullet: true, breakLine: true, paraSpaceAfter: 12 } })), { x: 0.8, y: 1.7, w: 11.7, h: 5.2, fontSize: 20, color: brand.textPrimary, valign: 'top', fontFace: font });
+    }
+
+    function pptxDrilldownSlide(pptx, s, data, brand, font) {
+      s.addText(`${data.schoolName} — ${data.contentArea}, ${data.gradeLabel} (${data.year})`, { x: 0.5, y: 0.35, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: brand.primary, fontFace: font });
+      s.addText(`${data.testType} · ${data.subgroup} · vs. ${data.districtName} and Georgia (State)`, { x: 0.5, y: 0.9, w: 12.3, h: 0.4, fontSize: 13, color: brand.textSecondary, fontFace: font });
+
+      const cellText = (record, kind) => {
+        if (!record) return '—';
+        if (kind.n) return (record.n === null || record.n === undefined) ? 'too few to report' : record.n.toLocaleString();
+        if (kind.key) {
+          const pct = record[kind.pctKey], count = record[kind.key];
+          const pctDisplay = (pct === null || pct === undefined) ? '—' : `${pct}%`;
+          const countDisplay = (count === null || count === undefined) ? 'too few to report' : `${count.toLocaleString()} students`;
+          return `${pctDisplay}\n${countDisplay}`;
+        }
+        const aP = record[kind.pctA], bP = record[kind.pctB];
+        if (aP === null || aP === undefined || bP === null || bP === undefined) return '—';
+        return `${round1(aP + bP)}%`;
+      };
+
+      const headerFill = { fill: { color: brand.primary }, color: 'FFFFFF', bold: true, fontFace: font };
+      const rows = [[
+        { text: '', options: headerFill },
+        { text: data.schoolName, options: headerFill },
+        { text: data.districtName, options: headerFill },
+        { text: 'Georgia (State)', options: headerFill },
+      ]];
+      rows.push(['Students Tested', cellText(data.school, { n: true }), cellText(data.district, { n: true }), cellText(data.state, { n: true })]);
+      ACHIEVEMENT_LEVELS.forEach(lvl => {
+        rows.push([`${lvl.term} (${lvl.short})`, cellText(data.school, { key: lvl.key, pctKey: lvl.pctKey }), cellText(data.district, { key: lvl.key, pctKey: lvl.pctKey }), cellText(data.state, { key: lvl.key, pctKey: lvl.pctKey })]);
+      });
+      rows.push(['Did Not Meet (L1+L2)', cellText(data.school, { pctA: 'l1p', pctB: 'l2p' }), cellText(data.district, { pctA: 'l1p', pctB: 'l2p' }), cellText(data.state, { pctA: 'l1p', pctB: 'l2p' })]);
+      rows.push(['Met Expectations (L3+L4)', cellText(data.school, { pctA: 'l3p', pctB: 'l4p' }), cellText(data.district, { pctA: 'l3p', pctB: 'l4p' }), cellText(data.state, { pctA: 'l3p', pctB: 'l4p' })]);
+
+      s.addTable(rows, { x: 0.5, y: 1.5, w: 12.3, h: 5.3, fontSize: 12, color: brand.textPrimary, fontFace: font, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 }, colW: [3.2, 3.03, 3.03, 3.03], valign: 'middle', autoPage: false });
+    }
+
+    async function pptxRegressionSlide(pptx, s, data, brand, font) {
+      const { combo } = data;
+      const filters = { selectedDistrictCode: data.selectedDistrictCode, selectedLevel: data.selectedLevel, selectedSchoolCode: data.selectedSchoolCode, selectedPercentile: data.selectedPercentile };
+      const chart = buildRegressionChartSVG(combo, filters);
+      s.addText(`${combo.testType} — ${combo.contentArea}, ${GRADE_LABELS[combo.grade] || combo.grade} (${combo.year})`, { x: 0.5, y: 0.3, w: 12.3, h: 0.6, fontSize: 20, bold: true, color: brand.primary, fontFace: font });
+
+      if (chart) {
+        const dataUri = await svgStringToPngDataUri(chart.svg, chart.width, chart.height, brand);
+        s.addImage({ data: dataUri, x: 0.6, y: 1.0, w: 8.1, h: 4.68 });
+      } else {
+        s.addText('No schools match these filters.', { x: 0.6, y: 1.5, w: 8, h: 1, fontSize: 16, color: brand.textSecondary, fontFace: font });
+      }
+
+      const ols = combo.ols;
+      const headerFill = { fill: { color: brand.primary }, color: 'FFFFFF', bold: true, fontFace: font };
+      const rows = [
+        [{ text: 'Metric', options: headerFill }, { text: 'Value', options: headerFill }],
+        ['Correlation (r)', String(ols.r)],
+        ['R²', String(ols.rSquared)],
+        ['Slope', String(ols.slope)],
+        ['Intercept', String(ols.intercept)],
+        ['Equation', ols.equation],
+        ['Schools in Model', ols.n.toLocaleString()],
+      ];
+      s.addTable(rows, { x: 8.9, y: 1.0, w: 4.0, h: 4.68, fontSize: 10, color: brand.textPrimary, fontFace: font, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 }, colW: [1.7, 2.3], valign: 'middle' });
+    }
+
+    function pptxProfileDemoSlide(pptx, s, data, brand, font) {
+      const byYear = data.enrollment;
+      const years = PROF_ENROLLMENT_YEARS;
+      const yearsData = years.map(y => (byYear && byYear[y]) || null);
+      s.addText(`${data.schoolName} — Enrollment & Demographics`, { x: 0.5, y: 0.35, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: brand.primary, fontFace: font });
+
+      if (!byYear || !yearsData.some(rec => rec)) {
+        s.addText('No real enrollment/demographic data on record for this school.', { x: 0.6, y: 1.3, w: 11, h: 1, fontSize: 16, color: brand.textSecondary, fontFace: font });
+        return;
+      }
+
+      // Same real-data-only rule as demoTableRow() above: GOSA publishes
+      // race/gender percentages only, never raw counts, so "~N (X%)" is a
+      // client-computed estimate (real % x real total enrollment), always
+      // labeled with "~" and shown next to the real percentage.
+      const cellText = (rec, key) => {
+        if (!rec) return 'No data';
+        const pct = rec[key];
+        if (pct === null || pct === undefined) return 'Suppressed';
+        const total = rec.totalEnrollment;
+        if (total === null || total === undefined) return `${pct}%`;
+        const estCount = Math.round((pct / 100) * total);
+        return `~${estCount.toLocaleString()} (${pct}%)`;
+      };
+      const totalText = rec => (!rec || rec.totalEnrollment === null || rec.totalEnrollment === undefined)
+        ? 'No data'
+        : `${rec.totalEnrollment.toLocaleString()}${rec.enrollmentPartial ? ' *' : ''}`;
+
+      const headerFill = { fill: { color: brand.primary }, color: 'FFFFFF', bold: true, fontFace: font };
+      const sectionFill = { fill: { color: 'F1F5F9' }, color: brand.textSecondary, bold: true, fontFace: font, fontSize: 10, colspan: years.length + 1 };
+
+      const rows = [
+        [{ text: '', options: headerFill }, ...years.map(y => ({ text: y, options: headerFill }))],
+        ['Total Enrollment', ...yearsData.map(totalText)],
+        [{ text: 'Race / Ethnicity', options: sectionFill }],
+        ['Asian', ...yearsData.map(r => cellText(r, 'pctAsian'))],
+        ['Amer. Indian/Native', ...yearsData.map(r => cellText(r, 'pctNative'))],
+        ['Black', ...yearsData.map(r => cellText(r, 'pctBlack'))],
+        ['Hispanic', ...yearsData.map(r => cellText(r, 'pctHispanic'))],
+        ['Multiracial', ...yearsData.map(r => cellText(r, 'pctMultiracial'))],
+        ['White', ...yearsData.map(r => cellText(r, 'pctWhite'))],
+        [{ text: 'Gender', options: sectionFill }],
+        ['Male', ...yearsData.map(r => cellText(r, 'pctMale'))],
+        ['Female', ...yearsData.map(r => cellText(r, 'pctFemale'))],
+      ];
+
+      s.addTable(rows, { x: 0.5, y: 1.2, w: 12.3, h: 5.6, fontSize: 12, color: brand.textPrimary, fontFace: font, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 }, colW: [3.3, 3.0, 3.0, 3.0], valign: 'middle', autoPage: false });
+
+      if (yearsData.some(rec => rec && rec.enrollmentPartial)) {
+        s.addText('* Total enrollment that year is a real but partial sum — some grade-level counts were suppressed by GOSA for privacy.', { x: 0.5, y: 6.85, w: 12.3, h: 0.4, fontSize: 9, italic: true, color: brand.textSecondary, fontFace: font });
+      }
+    }
+
+    function pptxProfileScoreSlide(pptx, s, data, brand, font) {
+      const { chartData, schoolName, districtName, testType, contentArea, gradeLabel, level } = data;
+      s.addText(`${testType} — ${contentArea}, ${gradeLabel}`, { x: 0.5, y: 0.35, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: brand.primary, fontFace: font });
+      s.addText(`% Met + Exceeded — ${schoolName}, most recent ${chartData.length} year${chartData.length === 1 ? '' : 's'}`, { x: 0.5, y: 0.95, w: 12.3, h: 0.4, fontSize: 13, color: brand.textSecondary, fontFace: font });
+
+      if (!chartData || !chartData.length) {
+        s.addText('No regression data found for this combination.', { x: 0.6, y: 1.6, w: 11, h: 1, fontSize: 16, color: brand.textSecondary, fontFace: font });
+        return;
+      }
+
+      // Clustered 3-series bar chart -- matches the live preview's grouped
+      // bars (this school / district same-level average / statewide
+      // same-level average), not a bar + single peer-average line.
+      const years = chartData.map(d => d.year);
+      const hasAnyDistrictAvg = chartData.some(d => d.districtAvg !== null);
+      const hasAnyStateAvg = chartData.some(d => d.stateAvg !== null);
+
+      const series = [{ name: schoolName, labels: years, values: chartData.map(d => d.schoolY) }];
+      const colors = [brand.primary];
+      if (hasAnyDistrictAvg) {
+        series.push({ name: `${districtName} ${level} average`, labels: years, values: chartData.map(d => d.districtAvg) });
+        colors.push('EB6834');
+      }
+      if (hasAnyStateAvg) {
+        series.push({ name: `Statewide ${level} average`, labels: years, values: chartData.map(d => d.stateAvg) });
+        colors.push('1BAF7A');
+      }
+
+      try {
+        s.addChart(pptx.ChartType.BAR, series, {
+          x: 0.6, y: 1.5, w: 12.1, h: 5.3,
+          barGrouping: 'clustered',
+          chartColors: colors,
+          valAxisMinVal: 0, valAxisMaxVal: 100,
+          showLegend: true, legendPos: 'b', showTitle: false,
+          catAxisLabelColor: brand.textSecondary, valAxisLabelColor: brand.textSecondary,
+          fontFace: font,
+        });
+      } catch (e) {
+        console.error('Native chart failed for Score Trend slide, falling back to a table', e);
+        const rows = [['Year', schoolName].concat(hasAnyDistrictAvg ? [`${districtName} avg.`] : []).concat(hasAnyStateAvg ? ['Statewide avg.'] : [])];
+        chartData.forEach(d => {
+          const row = [d.year, d.schoolY === null ? 'No data' : `${d.schoolY}%`];
+          if (hasAnyDistrictAvg) row.push(d.districtAvg === null ? '—' : `${d.districtAvg}%`);
+          if (hasAnyStateAvg) row.push(d.stateAvg === null ? '—' : `${d.stateAvg}%`);
+          rows.push(row);
+        });
+        s.addTable(rows, { x: 0.6, y: 1.6, w: 8, h: 4, fontSize: 14, color: brand.textPrimary, fontFace: font, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 } });
+      }
+    }
+
+    function pptxProfilePeersSlide(pptx, s, data, brand, font) {
+      const { peerPoints, schoolName, level, year, testType, contentArea, gradeLabel } = data;
+      s.addText(`Peer Schools — ${level} Level (${year || ''})`, { x: 0.5, y: 0.35, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: brand.primary, fontFace: font });
+      s.addText(`${testType} ${contentArea} (${gradeLabel}), excluding ${schoolName}`, { x: 0.5, y: 0.95, w: 12.3, h: 0.4, fontSize: 13, color: brand.textSecondary, fontFace: font });
+
+      if (!peerPoints || !peerPoints.length) {
+        s.addText('No peer schools found for this combination.', { x: 0.6, y: 1.6, w: 11, h: 1, fontSize: 16, color: brand.textSecondary, fontFace: font });
+        return;
+      }
+      const sorted = peerPoints.slice().sort((a, b) => a.name.localeCompare(b.name));
+      const MAX_ROWS = 40; // keeps the exported table on one readable slide -- the live dashboard is the place for the full statewide list
+      const headerFill = { fill: { color: brand.primary }, color: 'FFFFFF', bold: true, fontFace: font };
+      const rows = [[{ text: 'School', options: headerFill }, { text: 'District', options: headerFill }, { text: '% Met + Exceeded', options: headerFill }]];
+      sorted.slice(0, MAX_ROWS).forEach(p => rows.push([p.name, p.districtName, `${p.y}%`]));
+      s.addTable(rows, { x: 0.5, y: 1.5, w: 12.3, h: 5.3, fontSize: 11, color: brand.textPrimary, fontFace: font, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 }, colW: [6, 4, 2.3], autoPage: false });
+      if (sorted.length > MAX_ROWS) {
+        s.addText(`+ ${sorted.length - MAX_ROWS} more schools not shown -- see the live dashboard for the full list.`, { x: 0.5, y: 6.9, w: 12.3, h: 0.4, fontSize: 11, italic: true, color: brand.textSecondary, fontFace: font });
+      }
+    }
+
+    async function addSlideToPptx(pptx, s, slide, brand, font) {
+      switch (slide.type) {
+        case 'title': return pptxTitleSlide(pptx, s, slide.data, brand, font);
+        case 'bullets': return pptxBulletsSlide(pptx, s, slide.data, brand, font);
+        case 'drilldown': return pptxDrilldownSlide(pptx, s, slide.data, brand, font);
+        case 'regression': return await pptxRegressionSlide(pptx, s, slide.data, brand, font);
+        case 'profile-demo': return pptxProfileDemoSlide(pptx, s, slide.data, brand, font);
+        case 'profile-score': return pptxProfileScoreSlide(pptx, s, slide.data, brand, font);
+        case 'profile-peers': return pptxProfilePeersSlide(pptx, s, slide.data, brand, font);
+      }
+    }
+
+    async function exportDeckPptx() {
+      const deck = getActiveDeck();
+      if (!deck || !deck.slides.length) { alert('Add at least one slide before exporting.'); return; }
+      if (typeof PptxGenJS === 'undefined') { alert('The PowerPoint export library did not load (client/vendor/pptxgen.bundle.js missing).'); return; }
+      try {
+        const pptx = new PptxGenJS();
+        pptx.layout = 'LAYOUT_16x9';
+        const brand = getBrandColorsHex(deck.brandId);
+        const font = pptxFontForBrand(deck.brandId);
+
+        for (const slide of deck.slides) {
+          const s = pptx.addSlide();
+          s.background = { color: brand.bg };
+          try {
+            await addSlideToPptx(pptx, s, slide, brand, font);
+          } catch (e) {
+            console.error(`Failed to render slide "${slideCaption(slide)}" to PPTX`, e);
+            s.addText(`Could not render this slide (${SLIDE_TYPE_LABELS[slide.type] || slide.type}): ${e.message}`, { x: 0.6, y: 0.6, w: 11, h: 2, fontSize: 16, color: brand.textSecondary, fontFace: font });
+          }
+        }
+        await pptx.writeFile({ fileName: `${safeFileName(deck.name)}.pptx` });
+      } catch (e) {
+        console.error('PPTX export failed', e);
+        alert('Could not export this deck to PowerPoint: ' + e.message);
+      }
+    }
+
+    /* =================================================================
+       PDF export -- no PDF-generation library (this app has exactly one
+       deliberate third-party dependency, pptxgenjs, for real .pptx output
+       that has no browser-native equivalent; a PDF *does* have one). Builds
+       real print content -- N-up pages of the same renderSlidePreview()
+       output used for the live editor and Present mode -- then hands off to
+       the browser's native print dialog, where every modern browser offers
+       "Save as PDF" as a destination. See #pdfPrintArea's CSS for how it
+       stays measurable (not display:none) while positioned off-screen until
+       @media print repositions it and hides the rest of the app.
+       ================================================================= */
+    function removePdfPrintArea() {
+      const existing = document.getElementById('pdfPrintArea');
+      if (existing) existing.remove();
+    }
+
+    function exportDeckPdf() {
+      const deck = getActiveDeck();
+      if (!deck || !deck.slides.length) { alert('Add at least one slide before exporting.'); return; }
+
+      const perPage = parseInt(document.getElementById('pdfLayoutSelect').value, 10) || 1;
+
+      removePdfPrintArea();
+      const printArea = document.createElement('div');
+      printArea.id = 'pdfPrintArea';
+
+      for (let i = 0; i < deck.slides.length; i += perPage) {
+        const pageSlides = deck.slides.slice(i, i + perPage);
+        const page = document.createElement('div');
+        page.className = `pdf-page pdf-layout-${perPage}`;
+        pageSlides.forEach(slide => {
+          const frame = document.createElement('div');
+          frame.className = 'pdf-slide-frame';
+          page.appendChild(frame);
+          renderSlidePreview(slide, frame);
+        });
+        printArea.appendChild(page);
+      }
+
+      document.body.appendChild(printArea);
+      // Give the browser a paint frame so the off-screen layout (and the
+      // clientWidth-based scaling inside renderSlidePreview/fitSlideCanvas)
+      // is settled before print() reads it.
+      requestAnimationFrame(() => window.print());
+    }
+
+    window.addEventListener('afterprint', removePdfPrintArea);
+
+    // No OAuth/Drive API integration here -- that needs a Google Cloud
+    // OAuth Client ID only the site owner can provision. This just opens
+    // Drive in a new tab so a just-downloaded .pptx/.pdf can be dragged in
+    // manually; it does not touch or upload the downloaded file itself.
+    function openGoogleDrive() {
+      window.open('https://drive.google.com/drive/my-drive', '_blank', 'noopener');
+    }
+
+    /* =================================================================
+       Boot
+       ================================================================= */
+    function switchTheme(brandId) {
+      document.documentElement.setAttribute('data-brand', brandId);
+      if (brandId === 'georgia-southern') {
+        document.getElementById('headerLogo').innerText = 'GS';
+        document.getElementById('headerTitle').innerText = 'Georgia Southern Educational Analytics';
+      } else {
+        document.getElementById('headerLogo').innerText = 'GA';
+        document.getElementById('headerTitle').innerText = 'Georgia Educational Analytics';
+      }
+    }
+
+    async function initSlidesPage() {
+      DECKS = loadDecks();
+      ACTIVE_DECK_ID = localStorage.getItem(SDB_ACTIVE_KEY);
+      if (!DECKS.find(d => d.deckId === ACTIVE_DECK_ID)) ACTIVE_DECK_ID = DECKS.length ? DECKS[0].deckId : null;
+
+      switchEditorType('title');
+      await Promise.all([ddInit(), regInit(), profInit()]);
+      renderAll();
+    }
+
+    initSlidesPage();
+  </script>
+</body>
+</html>

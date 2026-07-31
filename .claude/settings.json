@@ -1,4 +1,10 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c ' *)",
+      "Bash(curl -sL --max-time 30 \"https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js\" -o /Users/ncarroll/Claude/client/vendor/pptxgen.bundle.js)"
+    ]
+  },
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,

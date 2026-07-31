@@ -79,6 +79,11 @@
       --level-high: #1baf7a;
       --trend-line: #475569;
       --grid-line: #e1e0d9;
+      /* 4th slot of the same validated categorical palette -- used only as a
+         highlight ring around a chosen district's dots (see "Highlight My
+         District"), never as a fill, so it doesn't compete with the level
+         colors above for point identity. */
+      --highlight-district: #eda100;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -213,7 +218,7 @@
       gap: 1.25rem;
     }
     .control-box { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
-    .control-box label { font-size: 0.82rem; font-weight: 700; color: var(--brand-text-primary); }
+    .control-box label { font-size: 0.82rem; font-weight: 700; color: var(--brand-text-primary); line-height: 1.3; min-height: 2.6em; }
     .control-box select {
       width: 100%;
       padding: 0.7rem 0.9rem;
@@ -413,6 +418,8 @@
   <nav class="page-nav" aria-label="Site sections">
     <a href="index.html">Data Drilldown</a>
     <a href="regression.html" class="active" aria-current="page">Regression Analysis</a>
+    <a href="schoolprofile.html">School Profile</a>
+    <a href="slides.html">Slide Deck Builder</a>
   </nav>
 
   <main class="main-container">
@@ -467,26 +474,32 @@
           </select>
         </div>
         <div class="control-box">
-          <label for="regDistrictSelect">6. County / District</label>
+          <label for="regDistrictSelect">6. County / District (filter)</label>
           <select id="regDistrictSelect" onchange="onDistrictFilterChanged()">
             <option value="">All Districts</option>
           </select>
         </div>
         <div class="control-box">
-          <label for="regSchoolSelect">7. School (highlight)</label>
+          <label for="regHighlightDistrictSelect">7. Highlight My District (shown alongside all schools)</label>
+          <select id="regHighlightDistrictSelect" onchange="onHighlightDistrictChanged()">
+            <option value="">None</option>
+          </select>
+        </div>
+        <div class="control-box">
+          <label for="regSchoolSelect">8. School (highlight)</label>
           <select id="regSchoolSelect" onchange="onSchoolFilterChanged()" disabled>
             <option value="">— Select a district first —</option>
           </select>
         </div>
         <div class="control-box">
-          <label for="regPercentileSelect">8. Show Top % by Relative Performance</label>
+          <label for="regPercentileSelect">9. Highlight Top &amp; Bottom % by Relative Performance</label>
           <select id="regPercentileSelect" onchange="onPercentileFilterChanged()">
-            <option value="">All Schools</option>
-            <option value="20">Top 20%</option>
-            <option value="15">Top 15%</option>
-            <option value="10">Top 10%</option>
-            <option value="5">Top 5%</option>
-            <option value="1">Top 1%</option>
+            <option value="">None</option>
+            <option value="20">Top &amp; Bottom 20%</option>
+            <option value="15">Top &amp; Bottom 15%</option>
+            <option value="10">Top &amp; Bottom 10%</option>
+            <option value="5">Top &amp; Bottom 5%</option>
+            <option value="1">Top &amp; Bottom 1%</option>
           </select>
         </div>
       </div>
@@ -504,7 +517,8 @@
     let SELECTED_DISTRICT_CODE = '';
     let SELECTED_LEVEL = '';
     let SELECTED_SCHOOL_CODE = '';
-    let SELECTED_PERCENTILE = ''; // '', '1', '5', '10', '15', '20' -- top N% by residual, within whatever District/Level already filtered
+    let HIGHLIGHT_DISTRICT_CODE = ''; // additive, visual-only -- distinct from SELECTED_DISTRICT_CODE, which FILTERS the chart. This one draws a ring around a district's dots without hiding anyone else, so "my county vs. everyone" can be compared directly.
+    let SELECTED_PERCENTILE = ''; // '', '1', '5', '10', '15', '20' -- highlights top/bottom N% by residual with reference lines, within whatever District/Level already filtered; does not remove any points
     let LATEST_FETCH_TOKEN = 0;
     const DATA_CACHE = {};
 
@@ -522,6 +536,7 @@
       }
       populateYearDropdown();
       populateDistrictDropdown();
+      populateHighlightDistrictDropdown();
       renderPrompt();
     }
 
@@ -549,6 +564,27 @@
         opt.innerText = `${d.name} [Code: ${d.code}]`;
         select.appendChild(opt);
       });
+    }
+
+    // Same district list/population as populateDistrictDropdown() -- a
+    // second, independent selector since this one highlights rather than
+    // filters (see HIGHLIGHT_DISTRICT_CODE).
+    function populateHighlightDistrictDropdown() {
+      const select = document.getElementById('regHighlightDistrictSelect');
+      select.innerHTML = '<option value="">None</option>';
+      if (!window.GEORGIA_GOSA_MASTER || !window.GEORGIA_GOSA_MASTER.districts) return;
+      window.GEORGIA_GOSA_MASTER.districts.forEach(d => {
+        if (!d.schools || !d.schools.length) return;
+        const opt = document.createElement('option');
+        opt.value = d.code;
+        opt.innerText = `${d.name} [Code: ${d.code}]`;
+        select.appendChild(opt);
+      });
+    }
+
+    function onHighlightDistrictChanged() {
+      HIGHLIGHT_DISTRICT_CODE = document.getElementById('regHighlightDistrictSelect').value;
+      if (CURRENT_COMBO) renderChart(CURRENT_COMBO);
     }
 
     function onYearOrTestTypeChanged() {
@@ -738,22 +774,27 @@
         return;
       }
 
-      // "Top N% by relative performance" ranks by residual (actual - the
-      // STATEWIDE trend line's prediction) -- "beating the odds" given a
-      // school's own ED%, not just raw achievement -- and narrows WITHIN
-      // whatever District/Level already filtered, per how this is meant to
-      // compose (e.g. District=Columbia County + Top 10% = the top 10% of
-      // Columbia County's own schools, not the statewide top decile).
-      let percentileThresholdResidual = null;
+      // "Top & Bottom N% by relative performance" ranks by residual (actual
+      // minus the STATEWIDE trend line's prediction) -- "beating the odds"
+      // or "underperforming the odds" given a school's own ED%, not just raw
+      // achievement -- computed WITHIN whatever District/Level already
+      // filtered (e.g. District=Columbia County + 10% = the top/bottom 10%
+      // of Columbia County's own schools, not the statewide top/bottom
+      // decile). This no longer removes any dots -- every school that passed
+      // the District/Level filter above stays visible; the two cutoff lines
+      // below just mark where the top N% and bottom N% bands begin.
+      let topThresholdResidual = null;
+      let bottomThresholdResidual = null;
+      let highlightDescription = '';
       if (SELECTED_PERCENTILE) {
         const pct = parseInt(SELECTED_PERCENTILE, 10) / 100;
-        const withResiduals = visiblePoints
-          .map(p => ({ ...p, _residual: p.y - (ols.slope * p.x + ols.intercept) }))
-          .sort((a, b) => b._residual - a._residual);
-        const keepCount = Math.max(1, Math.ceil(pct * withResiduals.length));
-        visiblePoints = withResiduals.slice(0, keepCount);
-        percentileThresholdResidual = visiblePoints[visiblePoints.length - 1]._residual;
-        filterBits.push(`Top ${SELECTED_PERCENTILE}% by relative performance`);
+        const residuals = visiblePoints
+          .map(p => p.y - (ols.slope * p.x + ols.intercept))
+          .sort((a, b) => a - b);
+        const bandCount = Math.max(1, Math.ceil(pct * residuals.length));
+        bottomThresholdResidual = residuals[bandCount - 1];
+        topThresholdResidual = residuals[residuals.length - bandCount];
+        highlightDescription = ` — highlighting top & bottom ${SELECTED_PERCENTILE}% by relative performance`;
       }
       const filterDescription = filterBits.length ? ` — filtered to ${filterBits.join(', ')}` : '';
 
@@ -785,16 +826,18 @@
       const yAt100 = clamp(ols.slope * 100 + ols.intercept);
       svg += `<line x1="${toX(0)}" y1="${toY(yAt0)}" x2="${toX(100)}" y2="${toY(yAt100)}" stroke="var(--trend-line)" stroke-width="2" stroke-dasharray="7 5"/>`;
 
-      // Faint threshold line marking the residual cutoff for the selected
-      // percentile band -- a second line parallel to the trend line, offset
-      // by the constant residual value at that cutoff (residual is already
+      // Faint threshold lines marking the residual cutoffs for the top and
+      // bottom bands -- each is a line parallel to the trend line, offset by
+      // the constant residual value at that cutoff (residual is already
       // "actual minus the line", so shifting the whole line by a constant
-      // reproduces "the line, moved up by exactly that much").
-      if (percentileThresholdResidual !== null) {
-        const yAt0Thresh = clamp(ols.intercept + percentileThresholdResidual);
-        const yAt100Thresh = clamp(ols.slope * 100 + ols.intercept + percentileThresholdResidual);
+      // reproduces "the line, moved up/down by exactly that much").
+      const drawThresholdLine = residual => {
+        const yAt0Thresh = clamp(ols.intercept + residual);
+        const yAt100Thresh = clamp(ols.slope * 100 + ols.intercept + residual);
         svg += `<line x1="${toX(0)}" y1="${toY(yAt0Thresh)}" x2="${toX(100)}" y2="${toY(yAt100Thresh)}" stroke="var(--trend-line)" stroke-width="1.5" stroke-dasharray="2 5" stroke-opacity="0.4"/>`;
-      }
+      };
+      if (topThresholdResidual !== null) drawThresholdLine(topThresholdResidual);
+      if (bottomThresholdResidual !== null) drawThresholdLine(bottomThresholdResidual);
 
       // Selected school (if any) draws last so it sits on top of its peers.
       const ordered = SELECTED_SCHOOL_CODE
@@ -802,11 +845,23 @@
         : visiblePoints;
 
       let pointsSvg = '';
+      let highlightedCount = 0;
       ordered.forEach((p, i) => {
         const isSelectedSchool = p.code === SELECTED_SCHOOL_CODE;
         const color = isSelectedSchool ? '#DC2626' : (LEVEL_COLORS_HEX[p.level] || '#94A3B8');
         const radius = isSelectedSchool ? 7.5 : 4.5;
         const cx = toX(p.x), cy = toY(p.y);
+
+        // District highlight draws as a ring BEHIND the normal dot (same
+        // center, larger radius, no fill) -- an annotation, not a
+        // replacement fill, so it never competes with the level-color
+        // legend above for what a dot's color means. Drawn before the dot
+        // itself so the dot still renders on top, inside the ring.
+        if (HIGHLIGHT_DISTRICT_CODE && p.districtCode === HIGHLIGHT_DISTRICT_CODE) {
+          highlightedCount++;
+          pointsSvg += `<circle cx="${cx}" cy="${cy}" r="${radius + 4}" fill="none" stroke="var(--highlight-district)" stroke-width="2.5"/>`;
+        }
+
         pointsSvg += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}" fill-opacity="0.9" stroke="#FFFFFF" stroke-width="${isSelectedSchool ? 2 : 1}" data-idx="${i}"/>`;
         pointsSvg += `<circle cx="${cx}" cy="${cy}" r="12" fill="transparent" data-idx="${i}" class="hit-target"/>`;
       });
@@ -815,13 +870,16 @@
       const nDisplay = ols.n.toLocaleString();
       const visibleDisplay = visiblePoints.length.toLocaleString();
       const selectedSchoolPoint = SELECTED_SCHOOL_CODE ? visiblePoints.find(p => p.code === SELECTED_SCHOOL_CODE) : null;
+      const highlightDistrictName = HIGHLIGHT_DISTRICT_CODE
+        ? (window.GEORGIA_GOSA_MASTER.districts.find(d => d.code === HIGHLIGHT_DISTRICT_CODE) || {}).name
+        : '';
 
       document.getElementById('regressionResultsArea').innerHTML = `
         <div class="viz-card">
           <div class="viz-header">
             <div class="viz-header-titles">
               <h2>${testType} — ${contentArea}, ${GRADE_LABELS[grade] || grade} (${year})</h2>
-              <p>% Economically Disadvantaged (X) vs. % Met + Exceeded on Georgia Milestones (Y) — showing ${visibleDisplay} of ${nDisplay} real Georgia schools${filterDescription}</p>
+              <p>% Economically Disadvantaged (X) vs. % Met + Exceeded on Georgia Milestones (Y) — showing ${visibleDisplay} of ${nDisplay} real Georgia schools${filterDescription}${highlightDescription}</p>
             </div>
           </div>
           <div class="chart-container">
@@ -834,16 +892,19 @@
             Scatter plot with a downward-sloping linear regression line: ${visibleDisplay} Georgia schools plotted by percent economically
             disadvantaged on the X axis and percent meeting or exceeding expectations on ${contentArea} (${testType}, ${GRADE_LABELS[grade] || grade}, ${year}) on the
             Y axis, out of ${nDisplay} statewide. Correlation r = ${ols.r}, R-squared = ${ols.rSquared} (statewide, unfiltered). Elementary schools are blue,
-            middle schools orange, high schools aqua.${percentileThresholdResidual !== null ? ` A faint parallel line marks the residual cutoff for the Top ${SELECTED_PERCENTILE}% by relative performance.` : ''} A full data table is available below the chart.
+            middle schools orange, high schools aqua.${topThresholdResidual !== null ? ` Two faint parallel lines mark the residual cutoffs for the top and bottom ${SELECTED_PERCENTILE}% by relative performance.` : ''} A full data table is available below the chart.
           </p>
           ${selectedSchoolPoint ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${selectedSchoolPoint.name}</strong> (red) — ${selectedSchoolPoint.x}% economically disadvantaged, ${selectedSchoolPoint.y}% met + exceeded.</div>` : ''}
+          ${highlightedCount ? `<div class="stat-box-sub" style="margin-top:0.5rem;">Highlighting <strong>${highlightedCount}</strong> school${highlightedCount === 1 ? '' : 's'} from <strong>${highlightDistrictName}</strong> (amber ring) among the ${visibleDisplay} shown above — every other school stays visible for comparison.</div>` : ''}
           <div class="chart-legend">
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-elementary)"></span> Elementary</div>
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-middle)"></span> Middle</div>
             <div class="legend-item"><span class="legend-swatch" style="background:var(--level-high)"></span> High</div>
             ${selectedSchoolPoint ? '<div class="legend-item"><span class="legend-swatch" style="background:#DC2626"></span> Selected School</div>' : ''}
+            ${highlightedCount ? `<div class="legend-item"><span class="legend-swatch" style="background:none;border:2.5px solid var(--highlight-district);width:9px;height:9px;"></span> ${highlightDistrictName} (highlighted)</div>` : ''}
             <div class="legend-item"><span class="legend-line"></span> Regression Fit (statewide, all schools)</div>
-            ${percentileThresholdResidual !== null ? `<div class="legend-item"><span class="legend-line-faint"></span> Top ${SELECTED_PERCENTILE}% Cutoff (${percentileThresholdResidual >= 0 ? '+' : ''}${percentileThresholdResidual.toFixed(1)} pts vs. predicted)</div>` : ''}
+            ${topThresholdResidual !== null ? `<div class="legend-item"><span class="legend-line-faint"></span> Top ${SELECTED_PERCENTILE}% Cutoff (${topThresholdResidual >= 0 ? '+' : ''}${topThresholdResidual.toFixed(1)} pts vs. predicted)</div>` : ''}
+            ${bottomThresholdResidual !== null ? `<div class="legend-item"><span class="legend-line-faint"></span> Bottom ${SELECTED_PERCENTILE}% Cutoff (${bottomThresholdResidual >= 0 ? '+' : ''}${bottomThresholdResidual.toFixed(1)} pts vs. predicted)</div>` : ''}
           </div>
         </div>
 
@@ -887,7 +948,16 @@
       sorted.forEach(p => {
         const tr = document.createElement('tr');
         const nameTd = document.createElement('td');
-        nameTd.textContent = p.name;
+        if (HIGHLIGHT_DISTRICT_CODE && p.districtCode === HIGHLIGHT_DISTRICT_CODE) {
+          const ring = document.createElement('span');
+          ring.className = 'level-dot';
+          ring.style.background = 'none';
+          ring.style.border = '2px solid var(--highlight-district)';
+          ring.style.boxSizing = 'border-box';
+          ring.title = 'Highlighted district';
+          nameTd.appendChild(ring);
+        }
+        nameTd.appendChild(document.createTextNode(p.name));
         const distTd = document.createElement('td');
         distTd.textContent = p.districtName;
         const levelTd = document.createElement('td');
