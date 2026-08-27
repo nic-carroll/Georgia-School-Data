@@ -519,6 +519,7 @@
     <a href="regression.html">Regression Analysis</a>
     <a href="schoolprofile.html">School Profile</a>
     <a href="slides.html" class="active" aria-current="page">Slide Deck Builder</a>
+    <a href="thirdpartyapps.html">Third-Party Apps</a>
   </nav>
 
   <main class="main-container">
@@ -2494,6 +2495,7 @@
     const FIXED_CHART_TOKENS = {
       '--level-elementary': '#2a78d6', '--level-middle': '#eb6834', '--level-high': '#1baf7a',
       '--score-bar': '#2a78d6', '--trend-line': '#475569', '--grid-line': '#e1e0d9',
+      '--scope-school': '#2a78d6', '--scope-district': '#eb6834', '--scope-state': '#1baf7a',
     };
     function resolveSvgVarsToStatic(svgStr, brand) {
       const brandTokenMap = {
@@ -2657,7 +2659,7 @@
       }
     }
 
-    function pptxProfileScoreSlide(pptx, s, data, brand, font) {
+    async function pptxProfileScoreSlide(pptx, s, data, brand, font) {
       const { chartData, schoolName, districtName, testType, contentArea, gradeLabel, level } = data;
       s.addText(`${testType} — ${contentArea}, ${gradeLabel}`, { x: 0.5, y: 0.35, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: brand.primary, fontFace: font });
       s.addText(`% Met + Exceeded — ${schoolName}, most recent ${chartData.length} year${chartData.length === 1 ? '' : 's'}`, { x: 0.5, y: 0.95, w: 12.3, h: 0.4, fontSize: 13, color: brand.textSecondary, fontFace: font });
@@ -2667,45 +2669,27 @@
         return;
       }
 
-      // Clustered 3-series bar chart -- matches the live preview's grouped
-      // bars (this school / district same-level average / statewide
-      // same-level average), not a bar + single peer-average line.
-      const years = chartData.map(d => d.year);
-      const hasAnyDistrictAvg = chartData.some(d => d.districtAvg !== null);
-      const hasAnyStateAvg = chartData.some(d => d.stateAvg !== null);
+      // Rasterized from the exact same buildScoreChartSVG() the live preview
+      // uses (see pptxRegressionSlide for why this project rasterizes rather
+      // than rebuilding as a native pptx chart: pptxgenjs's native BAR chart
+      // renders with its own fonts/spacing/gridlines and can't reproduce the
+      // grouped-bar styling schoolprofile.html and the live preview share).
+      const chart = buildScoreChartSVG(chartData);
+      const dataUri = await svgStringToPngDataUri(chart.svg, chart.width, chart.height, brand);
+      s.addImage({ data: dataUri, x: 0.6, y: 1.45, w: 12.1, h: (12.1 / chart.width) * chart.height });
 
-      const series = [{ name: schoolName, labels: years, values: chartData.map(d => d.schoolY) }];
-      const colors = [brand.primary];
-      if (hasAnyDistrictAvg) {
-        series.push({ name: `${districtName} ${level} average`, labels: years, values: chartData.map(d => d.districtAvg) });
-        colors.push('EB6834');
-      }
-      if (hasAnyStateAvg) {
-        series.push({ name: `Statewide ${level} average`, labels: years, values: chartData.map(d => d.stateAvg) });
-        colors.push('1BAF7A');
-      }
+      const legendY = 1.45 + (12.1 / chart.width) * chart.height + 0.15;
+      const legendItems = [{ label: schoolName, color: '2A78D6' }];
+      if (chart.hasAnyDistrictAvg) legendItems.push({ label: `${districtName} ${level} average`, color: 'EB6834' });
+      if (chart.hasAnyStateAvg) legendItems.push({ label: `Statewide ${level} average`, color: '1BAF7A' });
 
-      try {
-        s.addChart(pptx.ChartType.BAR, series, {
-          x: 0.6, y: 1.5, w: 12.1, h: 5.3,
-          barGrouping: 'clustered',
-          chartColors: colors,
-          valAxisMinVal: 0, valAxisMaxVal: 100,
-          showLegend: true, legendPos: 'b', showTitle: false,
-          catAxisLabelColor: brand.textSecondary, valAxisLabelColor: brand.textSecondary,
-          fontFace: font,
-        });
-      } catch (e) {
-        console.error('Native chart failed for Score Trend slide, falling back to a table', e);
-        const rows = [['Year', schoolName].concat(hasAnyDistrictAvg ? [`${districtName} avg.`] : []).concat(hasAnyStateAvg ? ['Statewide avg.'] : [])];
-        chartData.forEach(d => {
-          const row = [d.year, d.schoolY === null ? 'No data' : `${d.schoolY}%`];
-          if (hasAnyDistrictAvg) row.push(d.districtAvg === null ? '—' : `${d.districtAvg}%`);
-          if (hasAnyStateAvg) row.push(d.stateAvg === null ? '—' : `${d.stateAvg}%`);
-          rows.push(row);
-        });
-        s.addTable(rows, { x: 0.6, y: 1.6, w: 8, h: 4, fontSize: 14, color: brand.textPrimary, fontFace: font, border: { type: 'solid', color: 'E2E8F0', pt: 0.5 } });
-      }
+      let legendX = 0.6;
+      legendItems.forEach(item => {
+        s.addShape(pptx.ShapeType.rect, { x: legendX, y: legendY, w: 0.16, h: 0.16, fill: { color: item.color }, line: { type: 'none' } });
+        const labelW = Math.min(4.5, 0.12 * item.label.length + 0.4);
+        s.addText(item.label, { x: legendX + 0.24, y: legendY - 0.06, w: labelW, h: 0.3, fontSize: 11, color: brand.textSecondary, fontFace: font, valign: 'middle' });
+        legendX += 0.24 + labelW + 0.25;
+      });
     }
 
     function pptxProfilePeersSlide(pptx, s, data, brand, font) {
@@ -2735,7 +2719,7 @@
         case 'drilldown': return pptxDrilldownSlide(pptx, s, slide.data, brand, font);
         case 'regression': return await pptxRegressionSlide(pptx, s, slide.data, brand, font);
         case 'profile-demo': return pptxProfileDemoSlide(pptx, s, slide.data, brand, font);
-        case 'profile-score': return pptxProfileScoreSlide(pptx, s, slide.data, brand, font);
+        case 'profile-score': return await pptxProfileScoreSlide(pptx, s, slide.data, brand, font);
         case 'profile-peers': return pptxProfilePeersSlide(pptx, s, slide.data, brand, font);
       }
     }
@@ -2807,9 +2791,15 @@
       }
 
       document.body.appendChild(printArea);
-      // Give the browser a paint frame so the off-screen layout (and the
-      // clientWidth-based scaling inside renderSlidePreview/fitSlideCanvas)
-      // is settled before print() reads it.
+      // renderSlidePreview() above already called fitSlideCanvas() on each
+      // frame, but at that point the frames were only attached to a
+      // detached `page`/`printArea` -- not yet in document.body -- so every
+      // frame.clientWidth read 0 and every slide got scaled to 0 (a blank
+      // PDF). Re-fit now that printArea is actually in the document, so
+      // clientWidth reflects the real off-screen layout width.
+      printArea.querySelectorAll('.pdf-slide-frame').forEach(fitSlideCanvas);
+      // Give the browser a paint frame so that re-fit settles before
+      // print() reads it.
       requestAnimationFrame(() => window.print());
     }
 

@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en" data-brand="georgia-southern">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Third-Party Applications | Georgia Southern University</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root[data-brand="georgia-southern"] {
+      --brand-id: "georgia-southern";
+      --brand-name: "Georgia Southern University";
+      --brand-primary: rgb(0, 19, 68);
+      --brand-secondary: rgb(185, 131, 45);
+      --brand-accent: rgb(104, 202, 235);
+      --brand-bg: #F4F6F9;
+      --brand-surface: #FFFFFF;
+      --brand-text-primary: #0F172A;
+      --brand-text-secondary: #475569;
+      --brand-border: rgba(0, 19, 68, 0.14);
+      --brand-font: 'Merriweather', 'Barlow', serif;
+    }
+
+    /* Status palette -- reserved for review-state meaning (rating badges,
+       rubric answers, compliance icons), never reused for chart series
+       identity. Fixed regardless of brand, light-mode only (this app has no
+       dark mode anywhere -- see styles.md "Reality Check"). */
+    :root {
+      --status-good: #0ca30c;
+      --status-warning: #fab219;
+      --status-serious: #ec835a;
+      --status-critical: #d03b3b;
+      --status-info: #2a78d6;
+      --status-muted: #898781;
+      --grid-line: #e1e0d9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--brand-bg);
+      color: var(--brand-text-primary);
+      font-family: var(--brand-font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    .header-branding { display: flex; align-items: center; gap: 1rem; }
+    .header-logo {
+      width: 42px; height: 42px;
+      background: var(--brand-secondary);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: #FFFFFF;
+    }
+    .header-title h1 { font-size: 1.25rem; font-weight: 700; line-height: 1.2; }
+    .header-title p { font-size: 0.8rem; opacity: 0.85; }
+
+    .page-nav {
+      background: var(--brand-surface);
+      border-bottom: 1px solid var(--brand-border);
+      display: flex;
+      gap: 0.25rem;
+      padding: 0 2rem;
+    }
+    .page-nav a {
+      display: inline-block;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--brand-text-secondary);
+      text-decoration: none;
+      border-bottom: 3px solid transparent;
+    }
+    .page-nav a.active { color: var(--brand-primary); border-bottom-color: var(--brand-secondary); }
+    .page-nav a:hover:not(.active) { color: var(--brand-text-primary); }
+
+    .subtabs {
+      background: var(--brand-surface);
+      border-bottom: 1px solid var(--brand-border);
+      display: flex;
+      gap: 0.25rem;
+      padding: 0 2rem;
+    }
+    .subtabs button {
+      appearance: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.7rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: var(--brand-font);
+      color: var(--brand-text-secondary);
+      border-bottom: 3px solid transparent;
+    }
+    .subtabs button.active { color: var(--brand-primary); border-bottom-color: var(--brand-secondary); }
+    .subtabs button:hover:not(.active) { color: var(--brand-text-primary); }
+
+    .main-container { max-width: 1280px; margin: 2rem auto; padding: 0 1.5rem; width: 100%; }
+
+    .hero-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      border: 1px solid var(--brand-border);
+      border-top: 4px solid var(--brand-secondary);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .hero-card h2 { font-size: 1.35rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.5rem; }
+    .hero-card p { font-size: 0.94rem; color: var(--brand-text-secondary); line-height: 1.55; }
+
+    .stat-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-tile {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.1rem 1.3rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    .stat-tile .stat-label { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand-text-secondary); }
+    .stat-tile .stat-value { font-size: 1.9rem; font-weight: 800; color: var(--brand-primary); margin-top: 0.2rem; font-variant-numeric: tabular-nums; }
+    .stat-tile .stat-sub { font-size: 0.78rem; color: var(--brand-text-secondary); margin-top: 0.15rem; }
+
+    .selector-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .selector-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand-text-secondary); margin-bottom: 1rem; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+    .toolbar input[type="text"], .toolbar input[type="search"] {
+      flex: 1 1 240px;
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--brand-border);
+      font-size: 0.92rem;
+      font-family: var(--brand-font);
+      outline: none;
+    }
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.1rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: var(--brand-font);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--brand-primary); color: #FFFFFF; }
+    .btn-primary:hover { opacity: 0.92; }
+    .btn-secondary { background: #FFFFFF; color: var(--brand-primary); border: 1px solid var(--brand-border); }
+    .btn-secondary:hover { background: #F8FAFC; }
+    .btn-danger { background: #FFFFFF; color: var(--status-critical); border: 1px solid var(--status-critical); }
+    .btn-danger:hover { background: color-mix(in srgb, var(--status-critical) 8%, white); }
+    .btn-sm { padding: 0.4rem 0.7rem; font-size: 0.76rem; border-radius: 6px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .viz-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .no-data-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.75rem;
+      border: 1px dashed var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      color: var(--brand-text-secondary);
+      margin-bottom: 1.5rem;
+    }
+    .no-data-card strong { display: block; color: var(--brand-text-primary); font-size: 1.05rem; margin-bottom: 0.4rem; }
+
+    .stats-table-card {
+      background: var(--brand-surface);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      border: 1px solid var(--brand-border);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      margin-bottom: 1.5rem;
+    }
+    .stats-table-card h2 { font-size: 1.05rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.25rem; }
+    .stats-table-card > p.card-sub { font-size: 0.85rem; color: var(--brand-text-secondary); margin-bottom: 1rem; }
+
+    table.app-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    table.app-table thead th {
+      position: sticky; top: 0; background: #F8FAFC; z-index: 1;
+      padding: 0.6rem 0.8rem; text-align: left;
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em;
+      color: var(--brand-text-secondary);
+      border-bottom: 1px solid var(--brand-border);
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    table.app-table thead th:hover { color: var(--brand-primary); }
+    table.app-table td { padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--brand-border); vertical-align: middle; }
+    table.app-table tbody tr { cursor: pointer; }
+    table.app-table tbody tr:hover { background: #F8FAFC; }
+    .app-table-wrap { max-height: 640px; overflow-y: auto; border: 1px solid var(--brand-border); border-radius: 10px; }
+
+    .app-name-cell { display: flex; align-items: center; gap: 0.6rem; }
+    .app-icon {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      background: var(--brand-primary); color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.85rem;
+    }
+    .app-name-text .app-name { font-weight: 700; color: var(--brand-text-primary); }
+    .app-name-text .app-vendor { font-size: 0.76rem; color: var(--brand-text-secondary); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.28rem 0.6rem; border-radius: 999px;
+      font-size: 0.74rem; font-weight: 700; color: var(--brand-text-primary);
+      white-space: nowrap;
+    }
+    .badge svg { flex-shrink: 0; }
+    .badge-good { background: color-mix(in srgb, var(--status-good) 14%, white); }
+    .badge-warning { background: color-mix(in srgb, var(--status-warning) 20%, white); }
+    .badge-serious { background: color-mix(in srgb, var(--status-serious) 18%, white); }
+    .badge-critical { background: color-mix(in srgb, var(--status-critical) 14%, white); }
+    .badge-info { background: color-mix(in srgb, var(--status-info) 14%, white); }
+    .badge-muted { background: #F1F1EF; color: var(--brand-text-secondary); }
+
+    .chip { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 6px; background: #EEF2F7; color: var(--brand-text-secondary); font-size: 0.72rem; font-weight: 700; margin: 0.1rem 0.2rem 0.1rem 0; }
+
+    .icon-btn {
+      appearance: none; border: none; border-radius: 50%;
+      width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+      background: color-mix(in srgb, var(--status-critical) 12%, white); color: var(--status-critical);
+      cursor: pointer;
+    }
+    .icon-btn:hover { background: color-mix(in srgb, var(--status-critical) 22%, white); }
+
+    .field-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1.1rem; }
+    .field-group label { font-size: 0.82rem; font-weight: 700; color: var(--brand-text-primary); }
+    .field-group input, .field-group select, .field-group textarea {
+      padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--brand-border);
+      font-size: 0.9rem; font-family: var(--brand-font); outline: none; background: #FBFCFE;
+      width: 100%;
+    }
+    .field-group textarea { min-height: 90px; resize: vertical; }
+    .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5);
+      display: none; align-items: flex-start; justify-content: center;
+      padding: 3rem 1rem; overflow-y: auto; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-panel {
+      background: var(--brand-surface); border-radius: 12px; max-width: 640px; width: 100%;
+      padding: 1.75rem; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+    .modal-panel-header h2 { font-size: 1.15rem; font-weight: 800; color: var(--brand-primary); }
+    .modal-close { appearance: none; border: none; background: none; font-size: 1.3rem; cursor: pointer; color: var(--brand-text-secondary); line-height: 1; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.25rem; }
+
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .checkbox-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .checkbox-list label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 500; color: var(--brand-text-primary); }
+
+    .breadcrumb { font-size: 0.85rem; color: var(--brand-text-secondary); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--brand-primary); text-decoration: none; font-weight: 700; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .detail-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+    .detail-header-left { display: flex; gap: 1rem; align-items: center; }
+    .detail-app-icon { width: 52px; height: 52px; font-size: 1.3rem; }
+    .detail-header h2 { font-size: 1.35rem; font-weight: 800; color: var(--brand-primary); }
+    .detail-header .app-vendor { font-size: 0.88rem; color: var(--brand-text-secondary); margin-top: 0.15rem; }
+
+    .status-trail { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-top: 0.9rem; }
+    .status-trail .chip { background: #F1F1EF; }
+    .status-trail .arrow { color: var(--brand-text-secondary); font-size: 0.8rem; }
+
+    .meta-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--brand-border); }
+    .meta-row .meta-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--brand-text-secondary); }
+    .meta-row .meta-value { font-size: 0.92rem; font-weight: 700; color: var(--brand-text-primary); margin-top: 0.15rem; }
+
+    .compliance-grid { display: grid; grid-template-columns: 1fr auto; gap: 0.6rem 1rem; }
+    .compliance-grid .compliance-label { font-size: 0.88rem; font-weight: 600; color: var(--brand-text-primary); padding: 0.5rem 0; border-bottom: 1px solid var(--brand-border); }
+    .compliance-grid .compliance-value { padding: 0.5rem 0; border-bottom: 1px solid var(--brand-border); }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+    .policy-list { display: flex; flex-direction: column; gap: 0.6rem; font-size: 0.88rem; }
+    .policy-list a { color: var(--brand-primary); font-weight: 700; text-decoration: none; word-break: break-all; }
+    .policy-list a:hover { text-decoration: underline; }
+    .policy-list .not-on-file { color: var(--brand-text-secondary); font-style: italic; }
+
+    .pie-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+    .pie-card { text-align: center; }
+    .pie-card svg { width: 140px; height: 140px; }
+    .pie-card .pie-title { font-size: 0.82rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.5rem; }
+    .pie-legend { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.6rem; font-size: 0.72rem; text-align: left; }
+    .pie-legend .legend-item { display: flex; align-items: center; gap: 0.4rem; color: var(--brand-text-secondary); }
+    .pie-legend .legend-swatch { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+    table.rubric-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 1rem; }
+    table.rubric-table th { text-align: left; padding: 0.55rem 0.8rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--brand-text-secondary); border-bottom: 1px solid var(--brand-border); background: #F8FAFC; }
+    table.rubric-table td { padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--brand-border); }
+    table.rubric-table .rubric-cat-cell { font-weight: 800; color: var(--brand-primary); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    .rubric-notes { font-size: 0.8rem; color: var(--brand-text-secondary); font-style: italic; padding: 0.5rem 0.8rem 1rem; }
+
+    .tag-input-row { display: flex; gap: 0.5rem; }
+    .tag-input-row input { flex: 1; }
+    .tag-chips { margin-top: 0.5rem; }
+
+    .empty-state { text-align: center; padding: 3rem 1.5rem; color: var(--brand-text-secondary); }
+    .empty-state strong { display: block; color: var(--brand-text-primary); font-size: 1.05rem; margin-bottom: 0.4rem; }
+
+    #storageWarning {
+      display: none;
+      background: color-mix(in srgb, var(--status-critical) 10%, white);
+      border: 1px solid var(--status-critical);
+      color: var(--status-critical);
+      border-radius: 10px;
+      padding: 0.9rem 1.1rem;
+      font-size: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .count-note { font-size: 0.82rem; color: var(--brand-text-secondary); margin: 0.75rem 0; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-branding">
+      <div class="header-logo">GS</div>
+      <div class="header-title">
+        <h1>Third-Party Application Registry</h1>
+        <p>Georgia Southern University &middot; Vendor Security &amp; Privacy Review Tracker</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="page-nav" aria-label="Site sections">
+    <a href="index.html">Data Drilldown</a>
+    <a href="regression.html">Regression Analysis</a>
+    <a href="schoolprofile.html">School Profile</a>
+    <a href="slides.html">Slide Deck Builder</a>
+    <a href="thirdpartyapps.html" class="active" aria-current="page">Third-Party Apps</a>
+  </nav>
+
+  <nav class="subtabs" aria-label="Third-party app sections">
+    <button data-view="directory" onclick="location.hash='directory'">Directory</button>
+    <button data-view="users" onclick="location.hash='users'">Users</button>
+    <button data-view="changelog" onclick="location.hash='changelog'">Changelog</button>
+    <button data-view="setup" onclick="location.hash='setup'">Setup</button>
+  </nav>
+
+  <main class="main-container">
+    <div id="storageWarning"></div>
+    <div id="pageBody">Loading&hellip;</div>
+  </main>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-panel" id="modalPanel"></div>
+  </div>
+
+  <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="handleImportFile(event)" />
+
+  <script>
+    /* ---------- Constants & state ---------- */
+    const OVERLAY_KEY = 'thirdPartyAppRegistry.overlay.v1';
+    const RATING_META = {
+      approved:        { label: 'Approved',         cls: 'badge-good',     icon: 'check' },
+      renewal_pending:  { label: 'Renewal Pending',  cls: 'badge-warning',  icon: 'mail' },
+      expired:          { label: 'Expired',          cls: 'badge-serious',  icon: 'clock' },
+      denied:           { label: 'Denied',           cls: 'badge-critical', icon: 'x' },
+      under_review:     { label: 'Under Review',     cls: 'badge-info',     icon: 'hourglass' },
+      unrated:          { label: 'Unrated',          cls: 'badge-muted',    icon: 'dash' },
+      preferred:        { label: 'Preferred',        cls: 'badge-good',     icon: 'star' },
+      approved_limited: { label: 'Approved (Limited)', cls: 'badge-warning', icon: 'check' },
+    };
+    const ANSWER_META = {
+      'Meets':          { label: 'Meets',    cls: 'badge-good',     icon: 'check' },
+      'Partially':      { label: 'Partial',  cls: 'badge-warning',  icon: 'triangle' },
+      'Unmet':          { label: 'Unmet',    cls: 'badge-critical', icon: 'x' },
+      'N/A':            { label: 'N/A',      cls: 'badge-muted',    icon: 'dash' },
+      'Unknown':        { label: 'Unknown',  cls: 'badge-muted',    icon: 'question' },
+      'Not yet scored': { label: 'Not Yet Scored', cls: 'badge-muted', icon: 'clock' },
+    };
+    const VERIFY_META = {
+      'SEARCH-CONFIRMED':  { cls: 'badge-good' },
+      'FETCH-CONFIRMED':   { cls: 'badge-good' },
+      'Yes':               { cls: 'badge-good' },
+      'NOT FOUND':         { cls: 'badge-serious' },
+      'No':                { cls: 'badge-serious' },
+      'NOT YET VERIFIED':  { cls: 'badge-muted' },
+      'UK':                { cls: 'badge-muted' },
+    };
+    const RUBRIC_CATEGORY_LABELS = {
+      dataCollection: 'Data Collection',
+      security: 'Security',
+      thirdPartyData: 'Third Party Data',
+      advertising: 'Advertising',
+      usgHandbook: 'USG IT Handbook',
+    };
+
+    let APPS = {};        // real records fetched from data/thirdpartyapps/apps.json, keyed by id
+    let META = {};        // data/thirdpartyapps/meta.json
+    let OVERLAY = null;   // localStorage-backed edits
+    let SORT_STATE = { key: 'name', dir: 'asc' };
+    let SEARCH_TERM = '';
+    let ACTIVE_FILTERS = { ratings: [], dataClasses: [], gdpr: '', ferpa: '', coppa: '', hasInfo: false, customOnly: false };
+
+    /* ---------- Small helpers ---------- */
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    function uid(prefix) { return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`; }
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : ''));
+      if (isNaN(d.getTime())) return esc(iso);
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    function fmtTs(iso) {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return esc(iso);
+      return d.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    function ICONS() {
+      return {
+        check: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5 6.5 12 13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        x: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        triangle: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2.5 14.5 13.5h-13z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 6.5v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.8" fill="currentColor"/></svg>',
+        dash: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+        question: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M5.5 6a2.5 2.5 0 1 1 3.7 2.2c-.7.4-1.2.9-1.2 1.6v.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="12.5" r="0.9" fill="currentColor"/></svg>',
+        clock: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.5V8l2.5 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        hourglass: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 2.5h8M4 13.5h8M4.5 2.5c0 3 3.5 3.5 3.5 5.5s-3.5 2.5-3.5 5.5M11.5 2.5c0 3-3.5 3.5-3.5 5.5s3.5 2.5 3.5 5.5" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+        mail: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="4" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 4.8 8 8.8l5-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        star: '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5l1.9 4.2 4.6.5-3.4 3.1.9 4.6L8 11.7l-4 2.2.9-4.6-3.4-3.1 4.6-.5z"/></svg>',
+      };
+    }
+
+    function ratingBadgeHtml(rating, overridden) {
+      const meta = RATING_META[rating] || RATING_META.unrated;
+      const title = overridden ? ' title="Manually set rating"' : ' title="Derived from the vendor\'s most recent review status"';
+      return `<span class="badge ${meta.cls}"${title}>${ICONS()[meta.icon] || ''}${esc(meta.label)}</span>`;
+    }
+    function answerBadgeHtml(answer) {
+      const meta = ANSWER_META[answer] || ANSWER_META['Not yet scored'];
+      return `<span class="badge ${meta.cls}">${ICONS()[meta.icon] || ''}${esc(meta.label)}</span>`;
+    }
+    function complianceBadgeHtml(value) {
+      const v = (value || 'Unknown');
+      if (v === 'Yes') return `<span class="badge badge-good">${ICONS().check}Yes</span>`;
+      if (v === 'No') return `<span class="badge badge-critical">${ICONS().x}No</span>`;
+      return `<span class="badge badge-warning">${ICONS().triangle}${esc(v)}</span>`;
+    }
+    function verifyBadgeHtml(value) {
+      const meta = VERIFY_META[value] || { cls: 'badge-muted' };
+      return `<span class="badge ${meta.cls}">${esc(value || 'NOT YET VERIFIED')}</span>`;
+    }
+
+    /* ---------- Overlay persistence (localStorage) ---------- */
+    function defaultOverlay() {
+      return {
+        version: 1,
+        identity: { name: '', email: '' },
+        additionalInfo: {},
+        ratingOverrides: {},
+        customApps: {},
+        hiddenIds: [],
+        users: [],
+        changelog: [],
+      };
+    }
+    function loadOverlay() {
+      try {
+        const raw = localStorage.getItem(OVERLAY_KEY);
+        if (!raw) return defaultOverlay();
+        const parsed = JSON.parse(raw);
+        return Object.assign(defaultOverlay(), parsed);
+      } catch (e) {
+        console.error('Could not read saved third-party app data', e);
+        return defaultOverlay();
+      }
+    }
+    function saveOverlay() {
+      const warn = document.getElementById('storageWarning');
+      try {
+        localStorage.setItem(OVERLAY_KEY, JSON.stringify(OVERLAY));
+        warn.style.display = 'none';
+      } catch (e) {
+        console.error('Could not save third-party app data', e);
+        warn.style.display = 'block';
+        warn.innerHTML = '<strong>Could not save this change</strong> &mdash; local storage may be full. Use Setup &rarr; Backup &amp; Restore to export your data to a file so you do not lose it.';
+      }
+    }
+    function logChange(applicationLabel, activity) {
+      OVERLAY.changelog.unshift({
+        id: uid('log'),
+        ts: new Date().toISOString(),
+        application: applicationLabel,
+        activity,
+        name: OVERLAY.identity.name || '—',
+        email: OVERLAY.identity.email || '—',
+      });
+      saveOverlay();
+    }
+
+    function effectiveRating(id, record) {
+      const override = OVERLAY.ratingOverrides[id];
+      return { rating: override || record.rating, overridden: !!override };
+    }
+    function hasAdditionalInfo(id) {
+      const info = OVERLAY.additionalInfo[id];
+      if (!info) return false;
+      return !!(info.technicalNotes || info.instructionalNotes || info.licensingFees || info.licensingExpirationDate || (info.tags && info.tags.length));
+    }
+
+    function allApps() {
+      const merged = Object.assign({}, APPS);
+      Object.entries(OVERLAY.customApps).forEach(([id, app]) => { merged[id] = app; });
+      return merged;
+    }
+    function visibleApps() {
+      const merged = allApps();
+      OVERLAY.hiddenIds.forEach(id => { delete merged[id]; });
+      return merged;
+    }
+
+    /* ---------- Data load & routing ---------- */
+    async function init() {
+      OVERLAY = loadOverlay();
+      try {
+        const [appsResp, metaResp] = await Promise.all([
+          fetch('data/thirdpartyapps/apps.json'),
+          fetch('data/thirdpartyapps/meta.json'),
+        ]);
+        APPS = await appsResp.json();
+        META = await metaResp.json();
+      } catch (e) {
+        console.error('Could not load data/thirdpartyapps/apps.json', e);
+        APPS = {};
+        META = { totalApps: 0 };
+      }
+      window.addEventListener('hashchange', route);
+      route();
+    }
+
+    function route() {
+      const hash = (location.hash || '#directory').slice(1);
+      const [view, param] = hash.split('/');
+      document.querySelectorAll('.subtabs button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view || (view === 'app' && btn.dataset.view === 'directory'));
+      });
+      if (view === 'app' && param) renderAppDetail(decodeURIComponent(param));
+      else if (view === 'users') renderUsers();
+      else if (view === 'changelog') renderChangelog();
+      else if (view === 'setup') renderSetup();
+      else renderDirectory();
+    }
+
+    /* ---------- Directory view ---------- */
+    function computeStats() {
+      const apps = visibleApps();
+      const ids = Object.keys(apps);
+      let approved = 0, needsAttention = 0, denied = 0;
+      ids.forEach(id => {
+        const { rating } = effectiveRating(id, apps[id]);
+        if (rating === 'approved' || rating === 'preferred') approved++;
+        else if (rating === 'denied') denied++;
+        else if (rating === 'renewal_pending' || rating === 'under_review' || rating === 'expired') needsAttention++;
+      });
+      return { total: ids.length, approved, needsAttention, denied };
+    }
+
+    function filteredSortedApps() {
+      const apps = visibleApps();
+      let ids = Object.keys(apps);
+      const term = SEARCH_TERM.trim().toLowerCase();
+      if (term) {
+        ids = ids.filter(id => {
+          const a = apps[id];
+          return (a.name || '').toLowerCase().includes(term) || (a.vendor || '').toLowerCase().includes(term);
+        });
+      }
+      if (ACTIVE_FILTERS.ratings.length) {
+        ids = ids.filter(id => ACTIVE_FILTERS.ratings.includes(effectiveRating(id, apps[id]).rating));
+      }
+      if (ACTIVE_FILTERS.dataClasses.length) {
+        ids = ids.filter(id => (apps[id].dataClasses || []).some(dc => ACTIVE_FILTERS.dataClasses.includes(dc)));
+      }
+      ['gdpr', 'ferpa', 'coppa'].forEach(k => {
+        if (ACTIVE_FILTERS[k]) ids = ids.filter(id => (apps[id].compliance || {})[k] === ACTIVE_FILTERS[k]);
+      });
+      if (ACTIVE_FILTERS.hasInfo) ids = ids.filter(id => hasAdditionalInfo(id));
+      if (ACTIVE_FILTERS.customOnly) ids = ids.filter(id => !!apps[id].isCustom);
+
+      const { key, dir } = SORT_STATE;
+      ids.sort((a, b) => {
+        const ra = apps[a], rb = apps[b];
+        let va, vb;
+        if (key === 'rating') { va = effectiveRating(a, ra).rating; vb = effectiveRating(b, rb).rating; }
+        else if (key === 'vendor') { va = ra.vendor || ''; vb = rb.vendor || ''; }
+        else { va = ra.name || ''; vb = rb.name || ''; }
+        const cmp = String(va).localeCompare(String(vb));
+        return dir === 'asc' ? cmp : -cmp;
+      });
+      return { ids, apps };
+    }
+
+    function renderDirectory() {
+      const stats = computeStats();
+      const body = document.getElementById('pageBody');
+      body.innerHTML = `
+        <div class="hero-card">
+          <h2>Third-Party Application Registry</h2>
+          <p>
+            Real vendor security &amp; privacy review records for applications requested across Georgia Southern
+            University, tracked against GDPR/FERPA/COPPA compliance claims, security attestations (HECVAT / SOC 2),
+            and a ${29}-question rubric spanning Data Collection, Security, Third Party Data, Advertising, and the
+            USG IT Handbook. Source data last refreshed ${META.builtAt ? fmtTs(META.builtAt) : 'unknown'}.
+          </p>
+        </div>
+
+        <div class="stat-tiles">
+          <div class="stat-tile"><div class="stat-label">Total Applications</div><div class="stat-value">${stats.total.toLocaleString()}</div></div>
+          <div class="stat-tile"><div class="stat-label">Approved</div><div class="stat-value" style="color:var(--status-good)">${stats.approved.toLocaleString()}</div></div>
+          <div class="stat-tile"><div class="stat-label">Needs Attention</div><div class="stat-value" style="color:var(--status-warning)">${stats.needsAttention.toLocaleString()}</div><div class="stat-sub">Renewal pending, under review, or expired</div></div>
+          <div class="stat-tile"><div class="stat-label">Denied</div><div class="stat-value" style="color:var(--status-critical)">${stats.denied.toLocaleString()}</div></div>
+        </div>
+
+        <div class="selector-card">
+          <div class="selector-title">Directory</div>
+          <div class="toolbar">
+            <input type="search" id="searchInput" placeholder="Search by application or vendor name&hellip;" value="${esc(SEARCH_TERM)}" oninput="onSearchInput(this.value)" />
+            <button class="btn btn-secondary" onclick="openFilterModal()">Filter${activeFilterCount() ? ` (${activeFilterCount()})` : ''}</button>
+            <button class="btn btn-secondary" onclick="exportCsv()">Export CSV</button>
+            <button class="btn btn-primary" onclick="openAddCustomAppModal()">+ Add Custom App</button>
+          </div>
+        </div>
+
+        <div id="directoryTableArea"></div>
+      `;
+      renderDirectoryTable();
+    }
+
+    function activeFilterCount() {
+      let n = ACTIVE_FILTERS.ratings.length + ACTIVE_FILTERS.dataClasses.length;
+      if (ACTIVE_FILTERS.gdpr) n++;
+      if (ACTIVE_FILTERS.ferpa) n++;
+      if (ACTIVE_FILTERS.coppa) n++;
+      if (ACTIVE_FILTERS.hasInfo) n++;
+      if (ACTIVE_FILTERS.customOnly) n++;
+      return n;
+    }
+
+    function onSearchInput(value) {
+      SEARCH_TERM = value;
+      renderDirectoryTable();
+    }
+
+    function sortBy(key) {
+      if (SORT_STATE.key === key) SORT_STATE.dir = SORT_STATE.dir === 'asc' ? 'desc' : 'asc';
+      else SORT_STATE = { key, dir: 'asc' };
+      renderDirectoryTable();
+    }
+
+    function renderDirectoryTable() {
+      const area = document.getElementById('directoryTableArea');
+      const { ids, apps } = filteredSortedApps();
+
+      if (!ids.length) {
+        area.innerHTML = `
+          <div class="empty-state">
+            <strong>No applications match these filters</strong>
+            Try a different search term, or clear filters to see the full directory.
+          </div>`;
+        return;
+      }
+
+      const rowsHtml = ids.map(id => {
+        const a = apps[id];
+        const { rating, overridden } = effectiveRating(id, a);
+        const initial = (a.name || '?').trim().charAt(0).toUpperCase();
+        const dataClasses = (a.dataClasses || []).map(dc => `<span class="chip">${esc(dc)}</span>`).join('') || '—';
+        const compliance = a.compliance || {};
+        const infoHas = hasAdditionalInfo(id);
+        const deleteTitle = a.isCustom ? 'Delete this custom app' : 'Hide from directory';
+        return `
+          <tr onclick="if(!event.target.closest('button')) location.hash='app/${encodeURIComponent(id)}'">
+            <td>
+              <div class="app-name-cell">
+                <div class="app-icon">${esc(initial)}</div>
+                <div class="app-name-text">
+                  <div class="app-name">${esc(a.name)}${a.isCustom ? ' <span class="chip" style="margin-left:0.3rem;">custom</span>' : ''}</div>
+                  <div class="app-vendor">${esc(a.vendor || '—')}</div>
+                </div>
+              </div>
+            </td>
+            <td>${ratingBadgeHtml(rating, overridden)}</td>
+            <td>${dataClasses}</td>
+            <td>${complianceBadgeHtml(compliance.gdpr)} GDPR<br/>${complianceBadgeHtml(compliance.ferpa)} FERPA<br/>${complianceBadgeHtml(compliance.coppa)} COPPA</td>
+            <td title="${esc(a.statusRaw || '')}">${esc((a.statusRaw || '—').length > 40 ? (a.statusRaw.slice(0, 40) + '…') : (a.statusRaw || '—'))}</td>
+            <td>
+              <button class="btn btn-sm ${infoHas ? 'btn-secondary' : 'btn-primary'}" onclick="event.stopPropagation(); openAdditionalInfoModal('${esc(id)}')">${infoHas ? 'Edit' : 'Add'} Info</button>
+            </td>
+            <td><button class="icon-btn" title="${deleteTitle}" onclick="event.stopPropagation(); deleteApp('${esc(id)}')">${ICONS().x}</button></td>
+          </tr>`;
+      }).join('');
+
+      area.innerHTML = `
+        <div class="stats-table-card">
+          <p class="card-sub">Showing ${ids.length.toLocaleString()} of ${Object.keys(visibleApps()).length.toLocaleString()} applications${OVERLAY.hiddenIds.length ? ` (${OVERLAY.hiddenIds.length} hidden — manage in Setup)` : ''}</p>
+          <div class="app-table-wrap">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th onclick="sortBy('name')">Application${SORT_STATE.key === 'name' ? (SORT_STATE.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                  <th onclick="sortBy('rating')">Rating${SORT_STATE.key === 'rating' ? (SORT_STATE.dir === 'asc' ? ' ▲' : ' ▼') : ''}</th>
+                  <th>Data Class</th>
+                  <th>Compliance</th>
+                  <th>Status</th>
+                  <th>Additional Info</th>
+                  <th>Remove</th>
+                </tr>
+              </thead>
+              <tbody>${rowsHtml}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    function deleteApp(id) {
+      const apps = allApps();
+      const a = apps[id];
+      if (!a) return;
+      if (a.isCustom) {
+        if (!confirm(`Permanently delete "${a.name}"? This cannot be undone.`)) return;
+        delete OVERLAY.customApps[id];
+        logChange(a.name, 'Delete');
+      } else {
+        if (!confirm(`Hide "${a.name}" from the directory? You can restore it later from Setup.`)) return;
+        OVERLAY.hiddenIds.push(id);
+        logChange(a.name, 'Hide');
+      }
+      saveOverlay();
+      renderDirectoryTable();
+    }
+
+    /* ---------- Filter modal ---------- */
+    function openModal(html) {
+      document.getElementById('modalPanel').innerHTML = html;
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+    function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+    function openFilterModal() {
+      const ratingOptions = Object.entries(RATING_META).filter(([k]) => ['approved','renewal_pending','expired','denied','under_review','unrated'].includes(k));
+      openModal(`
+        <div class="modal-panel-header"><h2>Filter Applications</h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+        <div class="filter-grid">
+          <div>
+            <label style="font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--brand-text-secondary);display:block;margin-bottom:0.5rem;">Rating</label>
+            <div class="checkbox-list">
+              ${ratingOptions.map(([k, meta]) => `<label><input type="checkbox" value="${k}" ${ACTIVE_FILTERS.ratings.includes(k) ? 'checked' : ''} onchange="toggleFilterArray('ratings','${k}',this.checked)"/> ${esc(meta.label)}</label>`).join('')}
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.05em;color:var(--brand-text-secondary);display:block;margin-bottom:0.5rem;">Data Class</label>
+            <div class="checkbox-list">
+              ${['Class 1','Class 2','Class 3'].map(dc => `<label><input type="checkbox" value="${dc}" ${ACTIVE_FILTERS.dataClasses.includes(dc) ? 'checked' : ''} onchange="toggleFilterArray('dataClasses','${dc}',this.checked)"/> ${dc}</label>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group"><label>GDPR Compliant</label><select id="filterGdpr" onchange="ACTIVE_FILTERS.gdpr=this.value">
+            <option value="">Any</option><option value="Yes" ${ACTIVE_FILTERS.gdpr==='Yes'?'selected':''}>Yes</option><option value="Unknown" ${ACTIVE_FILTERS.gdpr==='Unknown'?'selected':''}>Unknown</option></select></div>
+          <div class="field-group"><label>FERPA Compliant</label><select id="filterFerpa" onchange="ACTIVE_FILTERS.ferpa=this.value">
+            <option value="">Any</option><option value="Yes" ${ACTIVE_FILTERS.ferpa==='Yes'?'selected':''}>Yes</option><option value="Unknown" ${ACTIVE_FILTERS.ferpa==='Unknown'?'selected':''}>Unknown</option></select></div>
+          <div class="field-group"><label>COPPA Compliant</label><select id="filterCoppa" onchange="ACTIVE_FILTERS.coppa=this.value">
+            <option value="">Any</option><option value="Yes" ${ACTIVE_FILTERS.coppa==='Yes'?'selected':''}>Yes</option><option value="Unknown" ${ACTIVE_FILTERS.coppa==='Unknown'?'selected':''}>Unknown</option></select></div>
+        </div>
+        <div class="checkbox-list" style="margin-top:0.5rem;">
+          <label><input type="checkbox" ${ACTIVE_FILTERS.hasInfo ? 'checked' : ''} onchange="ACTIVE_FILTERS.hasInfo=this.checked"/> Has Additional Info on file</label>
+          <label><input type="checkbox" ${ACTIVE_FILTERS.customOnly ? 'checked' : ''} onchange="ACTIVE_FILTERS.customOnly=this.checked"/> Custom apps only</label>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="clearFilters()">Clear All</button>
+          <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+        </div>
+      `);
+    }
+    function toggleFilterArray(field, value, checked) {
+      const arr = ACTIVE_FILTERS[field];
+      const idx = arr.indexOf(value);
+      if (checked && idx === -1) arr.push(value);
+      if (!checked && idx !== -1) arr.splice(idx, 1);
+    }
+    function clearFilters() {
+      ACTIVE_FILTERS = { ratings: [], dataClasses: [], gdpr: '', ferpa: '', coppa: '', hasInfo: false, customOnly: false };
+      closeModal();
+      renderDirectoryTable();
+      renderDirectory();
+    }
+    function applyFilters() {
+      closeModal();
+      renderDirectory();
+    }
+
+    /* ---------- Add Custom App ---------- */
+    function openAddCustomAppModal() {
+      openModal(`
+        <div class="modal-panel-header"><h2>Add Custom Application</h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+        <div class="field-group"><label>Application Name *</label><input type="text" id="customAppName" placeholder="Enter application name" /></div>
+        <div class="field-group"><label>Application Supplier *</label><input type="text" id="customAppVendor" placeholder="Enter application supplier" /></div>
+        <div class="field-group"><label>Application URL *</label><input type="text" id="customAppUrl" placeholder="https://" /></div>
+        <div class="field-group"><label>Rating</label>
+          <select id="customAppRating">
+            <option value="unrated">Unrated</option>
+            <option value="preferred">Preferred</option>
+            <option value="approved">Approved</option>
+            <option value="approved_limited">Approved (Limited)</option>
+            <option value="under_review">Under Review</option>
+            <option value="denied">Denied</option>
+          </select>
+        </div>
+        <div class="field-group"><label>Application Description *</label><textarea id="customAppDesc" placeholder="Describe your application here"></textarea></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="submitCustomApp()">Submit</button>
+        </div>
+      `);
+    }
+    function submitCustomApp() {
+      const name = document.getElementById('customAppName').value.trim();
+      const vendor = document.getElementById('customAppVendor').value.trim();
+      const url = document.getElementById('customAppUrl').value.trim();
+      const rating = document.getElementById('customAppRating').value;
+      const description = document.getElementById('customAppDesc').value.trim();
+      if (!name || !vendor || !url || !description) { alert('Please fill in all required fields.'); return; }
+      const id = uid('custom');
+      OVERLAY.customApps[id] = {
+        name, vendor, url, description, rating, isCustom: true,
+        statusRaw: null, statusHistory: [], dataClasses: [],
+        compliance: { gdpr: 'Unknown', ferpa: 'Unknown', coppa: 'Unknown', under13: 'Unknown', accessibilityStatement: 'Unknown' },
+        security: { hecvat: 'Unknown', soc2: 'Unknown' },
+        policies: { privacyPolicy: null, termsOfService: null, accessibilityStatementUrl: null, trustCenter: null },
+        verificationMethod: 'NOT YET VERIFIED', rubricScored: null, sourceRecords: 0,
+        rubric: { general: { genq1: 'Not yet scored' },
+          dataCollection: { questions: Array(5).fill('Not yet scored'), notes: null },
+          security: { questions: Array(5).fill('Not yet scored'), notes: null },
+          thirdPartyData: { questions: Array(5).fill('Not yet scored'), notes: null },
+          advertising: { questions: Array(5).fill('Not yet scored'), notes: null },
+          usgHandbook: { questions: Array(13).fill('Not yet scored'), notes: null } },
+      };
+      logChange(name, 'Add');
+      saveOverlay();
+      closeModal();
+      renderDirectory();
+    }
+
+    /* ---------- Additional Info modal ---------- */
+    function openAdditionalInfoModal(id) {
+      const apps = allApps();
+      const a = apps[id];
+      if (!a) return;
+      const info = OVERLAY.additionalInfo[id] || {};
+      openModal(`
+        <div class="modal-panel-header"><h2>${esc(a.name)} &mdash; Additional Info</h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+        <div class="field-group"><label>Technical Notes</label><textarea id="infoTech">${esc(info.technicalNotes || '')}</textarea></div>
+        <div class="field-group"><label>Instructional Notes</label><textarea id="infoInstr">${esc(info.instructionalNotes || '')}</textarea></div>
+        <div class="field-row">
+          <div class="field-group"><label>Licensing Fees</label><input type="text" id="infoFees" placeholder="e.g. $100.00" value="${esc(info.licensingFees || '')}" /></div>
+          <div class="field-group"><label>Licensing Expiration Date</label><input type="date" id="infoExpiry" value="${esc(info.licensingExpirationDate || '')}" /></div>
+        </div>
+        <div class="field-group"><label>Application Tags (comma-separated)</label><input type="text" id="infoTags" placeholder="e.g. lms, math, k-12" value="${esc((info.tags || []).join(', '))}" /></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveAdditionalInfo('${esc(id)}')">Save</button>
+        </div>
+      `);
+    }
+    function saveAdditionalInfo(id) {
+      const apps = allApps();
+      const a = apps[id];
+      const wasEmpty = !hasAdditionalInfo(id);
+      const tags = document.getElementById('infoTags').value.split(',').map(t => t.trim()).filter(Boolean);
+      OVERLAY.additionalInfo[id] = {
+        technicalNotes: document.getElementById('infoTech').value.trim(),
+        instructionalNotes: document.getElementById('infoInstr').value.trim(),
+        licensingFees: document.getElementById('infoFees').value.trim(),
+        licensingExpirationDate: document.getElementById('infoExpiry').value,
+        tags,
+      };
+      logChange(a ? a.name : id, wasEmpty ? 'Add' : 'Edit');
+      saveOverlay();
+      closeModal();
+      route();
+    }
+
+    /* ---------- CSV export ---------- */
+    function csvField(v) {
+      const s = String(v ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    }
+    function exportCsv() {
+      const { ids, apps } = filteredSortedApps();
+      const header = ['Application', 'Vendor', 'Rating', 'Status', 'Data Classes', 'GDPR', 'FERPA', 'COPPA', 'Verification Method'];
+      const rows = ids.map(id => {
+        const a = apps[id];
+        const { rating } = effectiveRating(id, a);
+        return [a.name, a.vendor, RATING_META[rating] ? RATING_META[rating].label : rating, a.statusRaw || '', (a.dataClasses || []).join('; '), (a.compliance||{}).gdpr, (a.compliance||{}).ferpa, (a.compliance||{}).coppa, a.verificationMethod || ''].map(csvField).join(',');
+      });
+      const csv = [header.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'third-party-apps.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    /* ---------- App detail / vetting profile ---------- */
+    function rubricTally(questions) {
+      const counts = { Meets: 0, Partially: 0, Unmet: 0, notScored: 0 };
+      (questions || []).forEach(q => {
+        if (q === 'Meets') counts.Meets++;
+        else if (q === 'Partially') counts.Partially++;
+        else if (q === 'Unmet') counts.Unmet++;
+        else counts.notScored++; // N/A, Unknown, Not yet scored -- merged for the chart; raw value stays in the table below
+      });
+      return counts;
+    }
+
+    function renderPieSvg(counts) {
+      const total = counts.Meets + counts.Partially + counts.Unmet + counts.notScored;
+      const segments = [
+        { value: counts.Meets, color: 'var(--status-good)' },
+        { value: counts.Partially, color: 'var(--status-warning)' },
+        { value: counts.Unmet, color: 'var(--status-critical)' },
+        { value: counts.notScored, color: '#D8D7D1' },
+      ];
+      const r = 30, cx = 35, cy = 35, circumference = 2 * Math.PI * r;
+      let offset = 0;
+      let circles = '';
+      if (total === 0) {
+        circles = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#EDECE8" stroke-width="10"/>`;
+      } else {
+        segments.forEach(seg => {
+          if (seg.value <= 0) return;
+          const len = (seg.value / total) * circumference;
+          circles += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${seg.color}" stroke-width="10" stroke-dasharray="${len} ${circumference - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+          offset += len;
+        });
+      }
+      return `<svg viewBox="0 0 70 70"><g>${circles}</g><text x="35" y="39" text-anchor="middle" font-size="11" font-weight="800" fill="var(--brand-text-primary)">${total ? Math.round((counts.Meets / total) * 100) + '%' : 'N/A'}</text></svg>`;
+    }
+
+    function pieCardHtml(title, questions) {
+      const counts = rubricTally(questions);
+      const total = questions.length;
+      return `
+        <div class="pie-card">
+          <div class="pie-title">${esc(title)}</div>
+          ${renderPieSvg(counts)}
+          <div class="pie-legend">
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--status-good)"></span>Meets (${counts.Meets}/${total})</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--status-warning)"></span>Partial (${counts.Partially}/${total})</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:var(--status-critical)"></span>Unmet (${counts.Unmet}/${total})</div>
+            <div class="legend-item"><span class="legend-swatch" style="background:#D8D7D1"></span>Not Scored / N/A (${counts.notScored}/${total})</div>
+          </div>
+        </div>`;
+    }
+
+    function renderAppDetail(id) {
+      const apps = allApps();
+      const a = apps[id];
+      const body = document.getElementById('pageBody');
+      if (!a) {
+        body.innerHTML = `<div class="empty-state"><strong>Application not found</strong>It may have been removed. <a href="#directory">Back to Directory</a></div>`;
+        return;
+      }
+      const { rating, overridden } = effectiveRating(id, a);
+      const initial = (a.name || '?').trim().charAt(0).toUpperCase();
+      const info = OVERLAY.additionalInfo[id] || {};
+      const compliance = a.compliance || {};
+      const policies = a.policies || {};
+      const security = a.security || {};
+      const rubric = a.rubric || {};
+
+      const statusTrail = (a.statusHistory && a.statusHistory.length)
+        ? a.statusHistory.map((s, i, arr) => `<span class="chip">${esc(s)}</span>${i < arr.length - 1 ? '<span class="arrow">&rarr;</span>' : ''}`).join('')
+        : '<span class="chip">No review status on file</span>';
+
+      const policyRow = (label, url) => `<div><strong>${esc(label)}</strong><br/>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(url)}</a>` : '<span class="not-on-file">Not on file</span>'}</div>`;
+
+      const genq1Answer = (rubric.general || {}).genq1 || 'Not yet scored';
+
+      const rubricRows = (cat, catData) => {
+        const catLabel = RUBRIC_CATEGORY_LABELS[cat];
+        const rowsHtml = (catData.questions || []).map((ans, i) => `
+          <tr>
+            <td class="rubric-cat-cell">${i === 0 ? esc(catLabel) : ''}</td>
+            <td>Question ${i + 1}</td>
+            <td>${answerBadgeHtml(ans)}</td>
+          </tr>`).join('');
+        const notesHtml = catData.notes ? `<div class="rubric-notes">${esc(catData.notes)}</div>` : '';
+        return rowsHtml + (catData.notes ? `<tr><td colspan="3" style="border-bottom:none;padding:0;">${notesHtml}</td></tr>` : '');
+      };
+
+      body.innerHTML = `
+        <div class="breadcrumb"><a href="#directory">Directory</a> / ${esc(a.name)}</div>
+
+        <div class="viz-card">
+          <div class="detail-header">
+            <div class="detail-header-left">
+              <div class="app-icon detail-app-icon">${esc(initial)}</div>
+              <div>
+                <h2>${esc(a.name)}</h2>
+                <div class="app-vendor">${esc(a.vendor || '—')}</div>
+              </div>
+            </div>
+            ${ratingBadgeHtml(rating, overridden)}
+          </div>
+          <div class="status-trail">${statusTrail}</div>
+
+          <div class="meta-row">
+            <div><div class="meta-label">Initial Request Date</div><div class="meta-value">${fmtDate(a.initialRequestDate)}</div></div>
+            <div><div class="meta-label">Data Class(es)</div><div class="meta-value">${(a.dataClasses || []).join(', ') || '—'}</div></div>
+            <div><div class="meta-label">Verification</div><div class="meta-value">${verifyBadgeHtml(a.verificationMethod)}</div></div>
+            <div><div class="meta-label">Rubric Scored?</div><div class="meta-value" style="font-weight:600;font-size:0.85rem;">${esc(a.rubricScored || '—')}</div></div>
+            <div><div class="meta-label">Source Records</div><div class="meta-value">${a.sourceRecords ?? '—'}</div></div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="viz-card">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);margin-bottom:1rem;">Regulatory Compliance</h2>
+            <div class="compliance-grid">
+              <div class="compliance-label">GDPR Compliant</div><div class="compliance-value">${complianceBadgeHtml(compliance.gdpr)}</div>
+              <div class="compliance-label">FERPA Compliant</div><div class="compliance-value">${complianceBadgeHtml(compliance.ferpa)}</div>
+              <div class="compliance-label">COPPA Compliant</div><div class="compliance-value">${complianceBadgeHtml(compliance.coppa)}</div>
+              <div class="compliance-label">Approved for children under 13</div><div class="compliance-value">${complianceBadgeHtml(compliance.under13)}</div>
+              <div class="compliance-label">Accessibility Statement</div><div class="compliance-value">${complianceBadgeHtml(compliance.accessibilityStatement)}</div>
+              <div class="compliance-label">HECVAT on file</div><div class="compliance-value">${complianceBadgeHtml(security.hecvat)}</div>
+              <div class="compliance-label">SOC 2 Type II</div><div class="compliance-value" style="font-size:0.82rem;font-weight:700;">${esc(security.soc2 || 'Unknown')}</div>
+            </div>
+          </div>
+          <div class="viz-card">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);margin-bottom:1rem;">Policies Cited</h2>
+            <div class="policy-list">
+              ${policyRow('Privacy Policy', policies.privacyPolicy)}
+              ${policyRow('Terms of Service', policies.termsOfService)}
+              ${policyRow('Accessibility Statement', policies.accessibilityStatementUrl)}
+              ${policyRow('Trust Center', policies.trustCenter)}
+            </div>
+          </div>
+        </div>
+
+        <div class="viz-card">
+          <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);">Rubric Results</h2>
+          <p class="card-sub" style="margin-top:0.25rem;">Computed from this application's real per-question answers &mdash; most Georgia Southern vendor reviews are still in progress, so a large "Not Scored / N/A" share is expected, not an error.</p>
+          <div class="count-note">General &mdash; how are changes to key policies managed? ${answerBadgeHtml(genq1Answer)}</div>
+          <div class="pie-grid">
+            ${pieCardHtml('Data Collection', (rubric.dataCollection || {}).questions || [])}
+            ${pieCardHtml('Security', (rubric.security || {}).questions || [])}
+            ${pieCardHtml('Third Party Data', (rubric.thirdPartyData || {}).questions || [])}
+            ${pieCardHtml('Advertising', (rubric.advertising || {}).questions || [])}
+            ${pieCardHtml('USG IT Handbook', (rubric.usgHandbook || {}).questions || [])}
+          </div>
+
+          <button class="data-table-toggle btn btn-secondary btn-sm" style="margin-top:1.25rem;" onclick="document.getElementById('rubricTableWrap').style.display = document.getElementById('rubricTableWrap').style.display === 'block' ? 'none' : 'block'">Show full rubric answers</button>
+          <div id="rubricTableWrap" style="display:none;">
+            <table class="rubric-table">
+              <thead><tr><th>Category</th><th>Question</th><th>Answer</th></tr></thead>
+              <tbody>
+                ${rubricRows('dataCollection', rubric.dataCollection || { questions: [] })}
+                ${rubricRows('security', rubric.security || { questions: [] })}
+                ${rubricRows('thirdPartyData', rubric.thirdPartyData || { questions: [] })}
+                ${rubricRows('advertising', rubric.advertising || { questions: [] })}
+                ${rubricRows('usgHandbook', rubric.usgHandbook || { questions: [] })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="viz-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.75rem;">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);">Additional Info</h2>
+            <button class="btn btn-sm ${hasAdditionalInfo(id) ? 'btn-secondary' : 'btn-primary'}" onclick="openAdditionalInfoModal('${esc(id)}')">${hasAdditionalInfo(id) ? 'Edit' : 'Add'} Additional Info</button>
+          </div>
+          <div class="meta-row" style="border-top:none;padding-top:0.5rem;">
+            <div style="grid-column:1/-1;"><div class="meta-label">Technical Notes</div><div class="meta-value" style="font-weight:400;white-space:pre-wrap;">${esc(info.technicalNotes) || '—'}</div></div>
+            <div style="grid-column:1/-1;"><div class="meta-label">Instructional Notes</div><div class="meta-value" style="font-weight:400;white-space:pre-wrap;">${esc(info.instructionalNotes) || '—'}</div></div>
+            <div><div class="meta-label">Licensing Fees</div><div class="meta-value">${esc(info.licensingFees) || '—'}</div></div>
+            <div><div class="meta-label">Licensing Expiration</div><div class="meta-value">${info.licensingExpirationDate ? fmtDate(info.licensingExpirationDate) : '—'}</div></div>
+            <div style="grid-column:1/-1;"><div class="meta-label">Tags</div><div class="tag-chips">${(info.tags && info.tags.length) ? info.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('') : '—'}</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------- Users view ---------- */
+    function renderUsers() {
+      const body = document.getElementById('pageBody');
+      const rows = OVERLAY.users.map(u => `
+        <tr>
+          <td>${esc(u.name)}</td>
+          <td>${esc(u.email)}</td>
+          <td><span class="chip">${esc(u.role)}</span></td>
+          <td><button class="icon-btn" onclick="deleteUser('${esc(u.id)}')">${ICONS().x}</button></td>
+        </tr>`).join('');
+      body.innerHTML = `
+        <div class="selector-card">
+          <div class="toolbar" style="justify-content:space-between;">
+            <div class="selector-title" style="margin-bottom:0;">Users</div>
+            <button class="btn btn-primary" onclick="openAddUserModal()">+ Add User</button>
+          </div>
+        </div>
+        <div class="stats-table-card">
+          ${OVERLAY.users.length ? `
+            <table class="app-table">
+              <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Remove</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>` : `
+            <div class="empty-state"><strong>No users added yet</strong>Add the people who help manage this registry so changelog entries can be attributed to them.</div>`}
+        </div>`;
+    }
+    function openAddUserModal() {
+      openModal(`
+        <div class="modal-panel-header"><h2>Add User</h2><button class="modal-close" onclick="closeModal()">&times;</button></div>
+        <div class="field-group"><label>Name *</label><input type="text" id="userName" /></div>
+        <div class="field-group"><label>Email *</label><input type="email" id="userEmail" /></div>
+        <div class="field-group"><label>Role</label>
+          <select id="userRole"><option>Admin</option><option>Editor</option><option>Viewer</option></select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="submitUser()">Add User</button>
+        </div>`);
+    }
+    function submitUser() {
+      const name = document.getElementById('userName').value.trim();
+      const email = document.getElementById('userEmail').value.trim();
+      const role = document.getElementById('userRole').value;
+      if (!name || !email) { alert('Please fill in all required fields.'); return; }
+      OVERLAY.users.push({ id: uid('user'), name, email, role });
+      logChange(`User: ${name}`, 'Add');
+      saveOverlay();
+      closeModal();
+      renderUsers();
+    }
+    function deleteUser(id) {
+      const u = OVERLAY.users.find(x => x.id === id);
+      if (!u || !confirm(`Remove ${u.name}?`)) return;
+      OVERLAY.users = OVERLAY.users.filter(x => x.id !== id);
+      logChange(`User: ${u.name}`, 'Delete');
+      saveOverlay();
+      renderUsers();
+    }
+
+    /* ---------- Changelog view ---------- */
+    function renderChangelog() {
+      const body = document.getElementById('pageBody');
+      const rows = OVERLAY.changelog.map(entry => `
+        <tr>
+          <td>${fmtTs(entry.ts)}</td>
+          <td>${esc(entry.application)}</td>
+          <td><span class="chip">${esc(entry.activity)}</span></td>
+          <td>${esc(entry.name)}</td>
+          <td>${esc(entry.email)}</td>
+        </tr>`).join('');
+      body.innerHTML = `
+        <div class="selector-card"><div class="selector-title" style="margin-bottom:0;">Changelog</div></div>
+        <div class="stats-table-card">
+          ${OVERLAY.changelog.length ? `
+            <table class="app-table">
+              <thead><tr><th>Date</th><th>Application</th><th>Activity</th><th>Name</th><th>Email</th></tr></thead>
+              <tbody>${rows}</tbody>
+            </table>` : `
+            <div class="empty-state"><strong>No activity yet</strong>Edits you make to applications, users, and additional info will show up here.</div>`}
+        </div>`;
+    }
+
+    /* ---------- Setup view ---------- */
+    function renderSetup() {
+      const body = document.getElementById('pageBody');
+      const hidden = allApps();
+      const hiddenRows = OVERLAY.hiddenIds.map(id => `
+        <tr><td>${esc(hidden[id] ? hidden[id].name : id)}</td><td><button class="btn btn-sm btn-secondary" onclick="restoreApp('${esc(id)}')">Restore</button></td></tr>`).join('');
+
+      body.innerHTML = `
+        <div class="two-col">
+          <div class="viz-card">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);margin-bottom:1rem;">Your Identity</h2>
+            <p class="card-sub">Used to attribute changelog entries. Stored only in this browser.</p>
+            <div class="field-group"><label>Name</label><input type="text" id="setupName" value="${esc(OVERLAY.identity.name)}" /></div>
+            <div class="field-group"><label>Email</label><input type="email" id="setupEmail" value="${esc(OVERLAY.identity.email)}" /></div>
+            <button class="btn btn-primary" onclick="saveIdentity()">Save</button>
+          </div>
+
+          <div class="viz-card">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);margin-bottom:1rem;">Data Source</h2>
+            <div class="meta-row" style="border-top:none;padding-top:0;">
+              <div><div class="meta-label">Total Applications</div><div class="meta-value">${(META.totalApps || 0).toLocaleString()}</div></div>
+              <div><div class="meta-label">Last Refreshed</div><div class="meta-value" style="font-size:0.8rem;">${META.builtAt ? fmtTs(META.builtAt) : 'Unknown'}</div></div>
+            </div>
+            <p class="card-sub" style="margin-top:1rem;">To pull the latest data from the live tracker, run:</p>
+            <code style="display:block;background:#F8FAFC;border:1px solid var(--brand-border);border-radius:8px;padding:0.75rem 1rem;font-size:0.8rem;">python3 server/scripts/build_thirdparty_apps_data.py</code>
+          </div>
+        </div>
+
+        <div class="viz-card">
+          <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);margin-bottom:1rem;">Hidden Applications</h2>
+          ${OVERLAY.hiddenIds.length ? `
+            <table class="app-table"><thead><tr><th>Application</th><th></th></tr></thead><tbody>${hiddenRows}</tbody></table>
+          ` : `<p class="card-sub">No applications are hidden. Use the &times; button in the Directory to hide one.</p>`}
+        </div>
+
+        <div class="two-col">
+          <div class="viz-card">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--brand-primary);margin-bottom:1rem;">Backup &amp; Restore</h2>
+            <p class="card-sub">Your notes, custom apps, users, and changelog live only in this browser. Export a backup before clearing browser data.</p>
+            <div class="toolbar">
+              <button class="btn btn-secondary" onclick="exportOverlay()">Export Backup (.json)</button>
+              <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()">Import Backup</button>
+            </div>
+          </div>
+          <div class="viz-card">
+            <h2 style="font-size:1.05rem;font-weight:800;color:var(--status-critical);margin-bottom:1rem;">Danger Zone</h2>
+            <p class="card-sub">Permanently erase all locally-stored notes, custom apps, users, and changelog history in this browser. Export a backup first.</p>
+            <button class="btn btn-danger" onclick="clearLocalData()">Clear All Local Data</button>
+          </div>
+        </div>`;
+    }
+    function saveIdentity() {
+      OVERLAY.identity = { name: document.getElementById('setupName').value.trim(), email: document.getElementById('setupEmail').value.trim() };
+      saveOverlay();
+      renderSetup();
+    }
+    function restoreApp(id) {
+      OVERLAY.hiddenIds = OVERLAY.hiddenIds.filter(x => x !== id);
+      saveOverlay();
+      renderSetup();
+    }
+    function exportOverlay() {
+      const blob = new Blob([JSON.stringify(OVERLAY, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'third-party-app-registry-backup.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    function handleImportFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (parsed.version !== 1) throw new Error('Unrecognized backup file format.');
+          OVERLAY = Object.assign(defaultOverlay(), parsed);
+          saveOverlay();
+          route();
+          alert('Backup imported successfully.');
+        } catch (err) {
+          alert('Could not import this file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+    function clearLocalData() {
+      if (!confirm('This permanently deletes all locally-stored notes, custom apps, users, and changelog history in this browser. This cannot be undone. Continue?')) return;
+      OVERLAY = defaultOverlay();
+      saveOverlay();
+      route();
+    }
+
+    init();
+  </script>
+</body>
+</html>

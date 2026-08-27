@@ -1,0 +1,13 @@
+{
+  "builtAt": "2026-08-27T02:01:10Z",
+  "ratingCounts": {
+    "approved": 1175,
+    "denied": 41,
+    "expired": 50,
+    "renewal_pending": 39,
+    "under_review": 23,
+    "unrated": 2
+  },
+  "sourceUrl": "https://docs.google.com/spreadsheets/d/1GCAvxfE2_Lp5f23rH7ieviDK23dhlAY8p-ZRznc3cOk/export?format=csv&gid=1347534544",
+  "totalApps": 1330
+}
