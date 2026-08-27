@@ -56,3 +56,16 @@ server/data/gosa/enrollment_profile/
 
 # client/data/enrollment/ is INTENTIONALLY NOT ignored -- same reason as
 # client/data/milestones/ above.
+
+# Same pattern again for the Third-Party Application Registry data
+# (regenerate with server/scripts/build_thirdparty_apps_data.py, sourced
+# from Georgia Southern's live vendor-review Google Sheet) -- just avoiding
+# the redundant server-side copy.
+server/data/thirdparty_apps/
+
+# client/data/thirdpartyapps/ is INTENTIONALLY NOT ignored -- same reason as
+# client/data/milestones/ above.
+
+# Machine-local permission allowlist. Auto-accumulates approved commands,
+# which can include credentials from other projects -- never publish it.
+.claude/settings.json
