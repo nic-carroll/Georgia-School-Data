@@ -74,7 +74,7 @@ server/data/thirdparty_apps/
 # (nic-carroll/m365-tenant-audit) -- never commit it into this one.
 m365-audit/
 # Georgia Southern work projects live in their own repositories under the
-# work GitHub account -- never in this personal learning repo.
-gs-thirdparty-registry/
+# work GitHub account -- never in this personal learning repo. (The registry
+# was briefly gs-thirdparty-registry/ before folding into m365-audit/.)
 # Session-generated artifact pages (work documents render here) -- local only.
 Artifacts/
