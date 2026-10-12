@@ -74,6 +74,11 @@ server/data/thirdparty_apps/
 # commands for Georgia Southern work projects (EagleAudit) -- local only.
 .claude/launch.json
 
+# Scheduled-task prompts. The ones here (TPSA vendor verification / rubric
+# scoring) are Georgia Southern work and were scrubbed from this repo's
+# history on 2026-10-11 -- local only.
+Scheduled/
+
 # The M365 tenant-audit tool is its own project with its own repository
 # (nic-carroll/m365-tenant-audit) -- never commit it into this one.
 m365-audit/
