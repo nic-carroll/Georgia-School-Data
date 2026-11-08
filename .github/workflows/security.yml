@@ -1,0 +1,41 @@
+name: Security scan
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["server/data/gosa/**"]
+  schedule:
+    - cron: "37 9 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Scan full history for credentials
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks git . --redact --no-banner
+  dependencies:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dir: [server, client]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Known vulnerabilities in production packages
+        working-directory: ${{ matrix.dir }}
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm audit --omit=dev --audit-level=high
+  code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static analysis
+        run: |
+          pipx install semgrep
+          semgrep scan --config p/security-audit --config p/javascript --config p/nodejs --severity ERROR --error --metrics off --exclude client/vendor --exclude server/data --exclude client/data
