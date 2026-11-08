@@ -12,7 +12,7 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with: { fetch-depth: 0 }
       - name: Scan full history for credentials
         run: |
@@ -25,7 +25,7 @@ jobs:
       matrix:
         dir: [server, client]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Known vulnerabilities in production packages
         working-directory: ${{ matrix.dir }}
         run: |
@@ -34,7 +34,7 @@ jobs:
   code:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Static analysis
         run: |
           pipx install semgrep
